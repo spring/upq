@@ -1,0 +1,47 @@
+# This file is part of the "upq" program used on springfiles.com to manage file
+# uploads, mirror distribution etc. It is published under the GPLv3.
+#
+#Copyright (C) 2011 Daniel Troeder (daniel #at# admin-box #dot# com)
+#
+#You should have received a copy of the GNU General Public License
+#along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import logging
+import logging.handlers
+
+logger=None
+
+def init_logging(conf):
+    import logging.handlers
+    
+    global logger
+    
+    if conf.has_key('loglevel'):
+        loglevel = conf['loglevel'].upper()
+    else:
+        loglevel = 'INFO'
+        
+    if conf.has_key('logfile'):
+        logfile = conf['logfile']
+        if logfile[:2] == "./":
+            # convert relative to absolute path
+            logfile = os.path.realpath(os.path.dirname(__file__))+logfile[1:]            
+    else:
+        logfile = '/tmp/upq.log'
+    
+    if conf.has_key('log_format'):
+        logformat = conf['log_format']
+    else:
+        logformat = "%(asctime)s %(levelname)-8s %(name)s.%(module)s : %(message)s"
+
+    logging.basicConfig(level=logging.__getattribute__(loglevel),
+                        format=logformat,
+                        filename=logfile,
+                        filemode='a')
+    
+    logger = logging.getLogger("upq")
+    return logger
+
+def getLogger(*args, **kwargs):
+    return logging.getLogger(*args, **kwargs)
+

@@ -1,0 +1,126 @@
+#!/usr/bin/env python
+
+# "upq" program used on springfiles.com to manage file uploads, mirror
+# distribution etc. It is published under the GPLv3.
+#
+#Copyright (C) 2011 Daniel Troeder (daniel #at# admin-box #dot# com)
+#
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#
+# main()
+#
+
+import sys
+import getopt
+import ConfigParser
+import socket
+import signal
+import sys
+import os, os.path
+import threading
+
+import parseconfig
+import log
+import upqserver
+import upqdb
+
+
+class Upq():
+    # don't use "logger" before readConfig() ran!
+    logger = None
+    paths  = {}
+    jobs   = {}
+    tasks  = {}
+    
+    def __init__(self, paths, jobs, tasks):
+        self.paths, self.jobs, self.tasks = paths, jobs, tasks
+        self.logger = log.getLogger("upq")
+    
+    def signal_handler(self, signal, frame):
+        self.logger.debug("SIGINT / Ctrl+C received.")
+    
+    def start_server(self):
+        if os.path.exists(self.paths['socket']):
+            self.logger.debug("File '%s' exists - removing it.", self.paths['socket'])
+            os.remove(self.paths['socket'])
+        
+        server = upqserver.UpqServer(self.paths['socket'], upqserver.UpqRequestHandler)
+        self.logger.info("Server listening on '%s'.", server.server_address)
+        server.set_jobs_tasks_paths(self.jobs, self.tasks, self.paths)
+    
+        # Start a thread with the server -- that thread will then start one
+        # more thread for each request
+        server_thread = threading.Thread(target=server.serve_forever)
+        # Exit the server thread when the main thread terminates
+        server_thread.setDaemon(True)
+        server_thread.start()
+        self.logger.debug("Server main thread is '%s'.", server_thread.getName())
+        
+        # everything should be fine now, so let's revive unfinnished jobs
+        unfinnished_business = upqdb.UpqDB().getdb(server_thread.getName()).revive_jobs()
+        self.logger.debug("unfinnished_business='%s'", unfinnished_business)
+        self.logger.info("Starting %d unfinnished jobs found in DB.",
+                          len(unfinnished_business))
+        for job in unfinnished_business:
+            self.logger.info("Starting unfinnished job '%s' with jobid '%d'",
+                             job.jobname, job.jobid)
+            job.enqueue_job()
+        
+        signal.signal(signal.SIGINT, self.signal_handler)
+        self.logger.debug("Server waiting for SIGINT / Ctrl+C.")
+        signal.pause()
+        
+        self.logger.info("Good bye.")
+        upqdb.UpqDB().getdb(server_thread.getName()).cleanup()
+        server.shutdown()
+
+
+class Usage(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv
+    try:
+        try:
+            opts, args = getopt.getopt(argv[1:], "h", ["help"])
+        except getopt.error, msg:
+             raise Usage(msg)
+        
+        try:
+            # read ini file
+            paths, jobs, tasks, db = parseconfig.ParseConfig().readConfig()
+            # setup and test DB
+            upqdb.UpqDB().set_connection(**db)
+            upqdb.UpqDB().paths = paths
+            db = upqdb.UpqDB().getdb("Thread-main")
+            db.version()
+            # start server
+            upq = Upq(paths, jobs, tasks)
+            upq.start_server()
+        except Exception, ex:
+            print >>sys.stderr, "Could not initialize system, please see log."
+            print >>sys.stderr, "Exception: '%s'"%ex
+            db.cleanup()
+            sys.exit(1)
+        
+    except Usage, err:
+        print >>sys.stderr, err.msg
+        print >>sys.stderr, "for help use --help"
+        return 2
+
+if __name__ == "__main__":
+    sys.exit(main())
