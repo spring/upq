@@ -1,0 +1,69 @@
+TOC
+---
+- What is this?
+- Licensing
+- Files
+- Installation and configuration
+- Creating new jobs
+- Bugs
+
+
+WHAT IS THIS
+------------
+blah blub
+
+LICENSING
+---------
+At his moment all code is covered by the GPLv3, see file COPYING.
+
+Future additions of Jobs and Tasks may be done by other developers and my have
+different licensing. Please look at the top of each file for an author and
+license note.
+
+
+INSTALLATION AND CONFIGURATION
+------------------------------
+
+
+CREATING NEW JOBS
+-----------------
+
+
+FILES
+-----
+COPYING                 GNU General Public License Version 3
+dbqueue.py              Python Queue class with persistant state in DB
+log.py                  logging
+module_loader.py        finds and loads job and task modules
+notify.py               admin notification system
+parseconfig.py          parse upq.cfg
+upq.cfg                 [ini]-style configuration file
+upq-cli.py              cmd line client for testing purposes
+upqdb.py                DB tool class, all DB code is in this file
+upq.py                  main(), invoke this with "$ ./upq.py"
+upqqueuemngr.py         queue management
+upqserver.py            socket server & request handler code
+upq.sql                 SQL table
+jobs/                   UpqJob modules reside inside this directory, deployment
+                            location is configurable in upq.cfg
+    archive_file.py     move old versions of maps/mods into archive dir, not yet
+                            implemented (nyi)
+    list_queue.py       list jobs in the queue(s)
+    new_file.py         do something with a new map/mod, nyi
+    upqjob.py           Job classes derive from this
+    verify_local_file.py  check if on-disk files hashes match those stored in DB
+    verify_remote_file.py check integrity of a file on a mirror
+tasks/                  UpqTask modules reside inside this directory, deployment
+                            location is configurable in upq.cfg
+    extract_metadata.py extract metadata from map/mod, nyi
+    hash.py             hash a on-disk file
+    list_queue_t.py     list jobs in the queue(s)
+    mirror_upload.py    upload a file to mirror(s)
+    move_file_to_archive.py move old versions of maps/mods into archive dir, nyi
+    remote_md5.py       retrieve MD5 of a file for a mirror, nyi
+    upqtask.py          Task classes derive from this
+
+
+BUGS
+----
+none - obviously!
