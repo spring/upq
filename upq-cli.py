@@ -13,7 +13,6 @@ def send_cmd(txts):
         sock.send(txt+"\n")
         print >>sys.stderr, "Sent    : '%s'"%txt
         response = sock.recv(1024)
-        sock.close()
         print >>sys.stderr, "Received: '%s'" % response
     sock.close()
 
