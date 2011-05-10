@@ -20,13 +20,15 @@ import module_loader
 logger = log.getLogger("upq")
 
 #
-# Protocoll:
+# Protocol:
 #
 # "new_file <absolut path>" -> "ACK <jobid> <new_file>" / "REJ <error msg>"
 # "archive_file <absolut path>" -> "ACK <jobid> <archive_file>" / "REJ <error msg>"
-# "verify_file <absolut path>" -> "ACK <jobid> <verify_file>" / "REJ <error msg>"
+# "verify_local_file <fid>" -> "ACK <jobid> <filename>" / "REJ <error msg>"
+# "verify_remote_file <fmfid>" -> "ACK <jobid> <filename>" / "REJ <error msg>"
+# "verify_remote_file <fmid> <fmid>" -> "ACK <jobid> <filename>" / "REJ <error msg>"
 # "list_queue" -> ACK <jobid> <a human readable list of running jobs>
-# <unknown> -> ERR "unknown command"
+# <unknown> -> "ERR unknown command"
 #
 
 

@@ -11,6 +11,10 @@
 # on-disk file with the stored hash in the DB
 # 
 
+#
+# call module with <fid>
+#
+
 import log
 import tasks.upqtask
 from jobs.upqjob import UpqJob
@@ -42,7 +46,7 @@ class Verify_local_file(UpqJob):
             return {'queued': False, 'jobid': -1, 'msg': msg}
         
         self.enqueue_job()
-        return {'queued': True, 'jobid': self.jobid, 'msg': 'Job queued.'}
+        return {'queued': True, 'jobid': self.jobid, 'msg': self.filename}
     
     def run(self):
         # only task should be "hash"
