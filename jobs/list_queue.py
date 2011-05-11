@@ -11,13 +11,11 @@
 #
 
 import log
-#import tasks.upqtask
-from jobs.upqjob import UpqJob
+from upqjob import UpqJob
 
 class List_queue(UpqJob):
-    def check(self):        
-        # there is only list_queue_t, which will create a (str)list of queues
-        lq = self.tasks[0]("", 0, self.jobcfg, self.thread)
+    def check(self):
+        lq = self.tasks['list_queue_t']("", 0, self.jobcfg, self.thread)
         lq.run()
         
         # return queue list immediately as 'msg'

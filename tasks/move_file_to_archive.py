@@ -6,8 +6,8 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import tasks.upqtask
+import upqtask
 
-class Move_file_to_archive(tasks.upqtask.UpqTask):
+class Move_file_to_archive(upqtask.UpqTask):
     def run():
         pass

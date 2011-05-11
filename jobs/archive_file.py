@@ -8,7 +8,7 @@
 
 import log
 import upqtask
-import upqjob
+from upqjob import UpqJob
 
 class Archive_file(UpqJob):
     def check():

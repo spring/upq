@@ -6,7 +6,7 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import tasks.upqtask
+import upqtask
 
-class Mirror_upload(tasks.upqtask.UpqTask):
+class Mirror_upload(upqtask.UpqTask):
     pass

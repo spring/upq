@@ -10,17 +10,16 @@
 # List_queue_t: create a list of 
 #
 
-import tasks.upqtask
+import upqtask
 import upqqueuemngr
-import log
 
-class List_queue_t(tasks.upqtask.UpqTask):    
+class List_queue_t(upqtask.UpqTask):    
     def run(self):
         qmng = upqqueuemngr.UpqQueueMngr()
         
         msg = ""
-        log.getLogger().debug("qmng='%s'", qmng)
-        log.getLogger().debug("qmng.queues.iteritems()='%s'", qmng.queues.iteritems())
+        self.logger.debug("qmng='%s'", qmng)
+        self.logger.debug("qmng.queues.iteritems()='%s'", qmng.queues.iteritems())
         queues = qmng.queues.iteritems()
         
         for queue in queues:
@@ -28,9 +27,9 @@ class List_queue_t(tasks.upqtask.UpqTask):
             if queue[1].empty():
                 msg += "Queue is empty."
                 continue
-            log.getLogger().debug("queue[1].queue='%s'", queue[1].queue)
-            log.getLogger().debug("type(queue[1].queue)='%s'", type(queue[1].queue))
-            log.getLogger().debug("list(queue[1].queue)='%s'", list(queue[1].queue))
+            self.logger.debug("queue[1].queue='%s'", queue[1].queue)
+            self.logger.debug("type(queue[1].queue)='%s'", type(queue[1].queue))
+            self.logger.debug("list(queue[1].queue)='%s'", list(queue[1].queue))
             for job in queue[1].queue:
                 msg += "\n    - '%s' : '%s'"%(job.jobname, job.jobdata)
         else:

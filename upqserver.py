@@ -14,7 +14,7 @@ import threading
 import SocketServer
 
 import log
-from jobs.upqjob import UpqJob
+from upqjob import UpqJob
 import module_loader
 
 logger = log.getLogger("upq")

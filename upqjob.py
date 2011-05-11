@@ -15,7 +15,7 @@
 
 
 import log
-import tasks.upqtask
+import upqtask
 import module_loader
 import upqqueuemngr
 import notify
@@ -27,15 +27,15 @@ class UpqJob(object):
         self.jobdata = jobdata
         self.paths   = paths
         self.logger  = log.getLogger("upq")
-        self.tasks   = []
+        self.tasks   = {}
         self.jobid   = -1
         self.thread  = "Thread-new-UpqJob"
         self.result  = {'success': False, 'msg': 'Not implemented yet.'}
         
         # load task modules
         for taskname in self.jobcfg['tasks'].split():
-            self.tasks.append(module_loader.load_module(taskname,
-                                                        self.paths['tasks_dir']))
+            self.tasks[taskname] = module_loader.load_module(taskname,
+                                                        self.paths['tasks_dir'])
     
     def check(self):
         """
@@ -73,10 +73,10 @@ class UpqJob(object):
     def __setstate__(self, dict):
         # this is used to unpickle a job
         self.__dict__.update(dict)
-        self.tasks = []
+        self.tasks = {}
         for taskname in self.jobcfg['tasks'].split():
-            self.tasks.append(module_loader.load_module(taskname,
-                                                        self.paths['tasks_dir']))
+            self.tasks[taskname] = module_loader.load_module(taskname,
+                                                        self.paths['tasks_dir'])
         self.logger = log.getLogger("upq")
     
    

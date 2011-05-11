@@ -10,9 +10,7 @@
 # New_file: handle new files on springfile.com
 #
 
-import log
-import tasks.upqtask
-from jobs.upqjob import UpqJob
+from upqjob import UpqJob
 
 class New_file(UpqJob):
     """

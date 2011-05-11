@@ -12,10 +12,10 @@
 
 import hashlib
 
-import tasks.upqtask
+import upqtask
 import upqdb
 
-class Hash(tasks.upqtask.UpqTask):
+class Hash(upqtask.UpqTask):
     """
     class Hash must be initialized with either filepath or fileid!
     """
