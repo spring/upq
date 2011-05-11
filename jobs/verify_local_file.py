@@ -16,8 +16,8 @@
 #
 
 import log
-import tasks.upqtask
-from jobs.upqjob import UpqJob
+import upqtask
+from upqjob import UpqJob
 import upqdb
 
 class Verify_local_file(UpqJob):
@@ -49,8 +49,7 @@ class Verify_local_file(UpqJob):
         return {'queued': True, 'jobid': self.jobid, 'msg': self.filename}
     
     def run(self):
-        # only task should be "hash"
-        h = self.tasks[0]("", self.fileid, self.jobcfg, self.thread)
+        h = self.tasks['hash']("", self.fileid, self.jobcfg, self.thread)
         # compute hashes
         h.run()
         ondisk = h.get_result()
