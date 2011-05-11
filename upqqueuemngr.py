@@ -39,12 +39,13 @@ class UpqQueueMngr():
         while True:
             job = queue.get()
             job.thread = thread_id
-            self.logger.debug("starting job  '%d' ('%s') in thread '%s'",
+            self.logger.info("starting job  '%d' ('%s') in thread '%s'",
                               job.jobid, job.__module__, thread_id)
             job.run()
             job.notify()
-            self.logger.debug("finnished job '%d' ('%s') in thread '%s'",
-                              job.jobid, job.__module__, thread_id)
+            self.logger.info("finnished job '%d' ('%s') in thread '%s' with "\
+                             "result '%s'", job.jobid, job.__module__,
+                             thread_id, job.result)
             queue.task_done(job)
     
     def new_queue(self, job):

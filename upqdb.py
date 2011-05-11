@@ -241,19 +241,47 @@ class UpqThreadedDB():
         self.logger.debug("revived jobs='%s'", jobs)
         return jobs
     
-    def get_remote_hash_url(fmid):
+    def get_remote_hash_url(self, fmid):
         """
         Fetch URL of hash script for give file mirror
         
-        returns: URL to "deamon.php"
+        returns: (str) URL to "deamon.php"
         """
         
         cursor = self.get_cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute("SELECT url_prefix url_deamon FROM file_mirror WHERE "\
+        cursor.execute("SELECT url_prefix, url_deamon FROM file_mirror WHERE "\
                        +"fmid = %s", fmid)
         result = cursor.fetchone()
         cursor.close()
         if not result:
             return ""
         else:
-            return result[0]+"/"+result[1]
+            return result['url_prefix']+"/"+result['url_deamon']
+    
+    def get_remote_file_hash(self, fmfid=0, fmid=0, fid=0):
+        """
+        Fetch a row from table file_mirror_files (remote file hashes)
+        
+        Either fmfid or fid AND fmid must be set!
+        
+        returns: (dict) a row from file_mirror_files
+        """
+        cursor = self.get_cursor(MySQLdb.cursors.DictCursor)
+        if fmfid:
+            where = "fmfid = %s"%fmfid
+        elif fmid != 0 and fid != 0:
+            where = "fmid = %s AND fid = %s"%(fmid, fid)
+        else:
+            self.logger.debug("This func must be called with either fmfid!=0"\
+                              +" or fid!=0 AND fmid!=0.")
+            cursor.close()
+            return {}
+        cursor.execute("SELECT * FROM file_mirror_files WHERE %s"%where)
+        result = cursor.fetchone()
+        cursor.close()
+        if not result:
+            return {}
+        else:
+            return result
+    
+    
