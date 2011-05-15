@@ -12,6 +12,7 @@
 
 import threading
 import SocketServer
+import sys
 
 import log
 from upqjob import UpqJob
@@ -66,6 +67,7 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
                         self.response = "ACK %d %s"%(uj['jobid'], uj['msg'])
                     else:
                         self.response = "REJ %s"%(uj['msg'])
+                    del sys.modules[job]
                 else:
                     logger.debug("unknown job '%s'", job)
                     self.response = "ERR unknown command '%s'"%job
