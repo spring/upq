@@ -18,41 +18,41 @@ import dbqueue
 class UpqQueueMngr():
     # Borg design pattern (pythons cooler singleton)
     __shared_state = {}
-    
+
     # this dict holds a queue for each "job type" (job.__module__)
     queues = {}
-    
+
     thread_id = 100
-    
+
     def __init__(self):
         self.__dict__ = self.__shared_state
         self.logger = log.getLogger("upq")
-    
+
     def enqueue_job(self, job):
         # add job to its queue
         if self.queues.has_key(job.__module__):
             self.insert_into_queue(job)
         else:
             self.new_queue(job)
-    
+
     def worker(self, queue, thread_id):
         while True:
             job = queue.get()
             job.thread = thread_id
             self.logger.info("starting job  '%d' ('%s') in thread '%s'",
-                              job.jobid, job.__module__, thread_id)
+                      job.jobid, job.__module__, thread_id)
             job.run()
             job.notify()
             self.logger.info("finnished job '%d' ('%s') in thread '%s' with "\
-                             "result '%s'", job.jobid, job.__module__,
-                             thread_id, job.result)
+                     "result '%s'", job.jobid, job.__module__,
+                     thread_id, job.result)
             queue.task_done(job)
-    
+
     def new_queue(self, job):
         queue = dbqueue.DBQueue()
         self.queues[job.__module__] = queue
         self.logger.info("created new queue with %d threads for '%s'",
-                          job.jobcfg['concurrent'], job.__module__)
+              job.jobcfg['concurrent'], job.__module__)
         self.insert_into_queue(job)
         for i in range(job.jobcfg['concurrent']):
             self.thread_id += 1
@@ -61,9 +61,10 @@ class UpqQueueMngr():
             t.setDaemon(True)
             t.start()
             self.logger.debug("started thread '%s' / '%s' for queue '%s'",
-                              t.name, t.ident, job.__module__,)
-    
+                  t.name, t.ident, job.__module__,)
+
     def insert_into_queue(self, job):
         self.queues[job.__module__].put(job)
 
     
+

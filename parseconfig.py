@@ -88,9 +88,7 @@ class ParseConfig():
         self.logger.info("jobs='%s'", self.jobs)
         self.logger.info("tasks='%s'", self.tasks)
         
-        db_pw = self.db['password']
-        self.db['password'] = "secret"
         self.logger.info("db='%s'", self.db)
-        self.db['password'] = db_pw
         
         return self.paths, self.jobs, self.tasks, self.db
+

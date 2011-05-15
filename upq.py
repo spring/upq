@@ -31,11 +31,14 @@ import sys
 import os, os.path
 import threading
 import traceback
+import cPickle
 
+import module_loader
 import parseconfig
 import log
 import upqserver
 import upqdb
+
 
 
 class Upq():
@@ -44,7 +47,23 @@ class Upq():
     paths  = {}
     jobs   = {}
     tasks  = {}
-    
+    def revive_jobs(self):
+        """
+            Fetches all jobs from DB that are in state "new" or "running", and
+            recreates the objects from its pickled representation.
+
+            returns  : list of alive, unqueued jobs
+        """
+        results=upqdb.UpqDB().query("SELECT * FROM upqueue WHERE state = 'new' OR state = 'running'")
+        jobs = []
+        for res in results:
+            module_loader.load_module(res['jobname'], self.paths['jobs_dir'])
+            obj = cPickle.loads(res['pickle_blob'])
+            obj.jobid = res['jobid']
+            obj.thread = "Thread-revived-UpqJob"
+            jobs.append(obj)
+            self.logger.debug("revived jobs='%s'", jobs)
+        return jobs
     def __init__(self, paths, jobs, tasks):
         self.paths, self.jobs, self.tasks = paths, jobs, tasks
         self.logger = log.getLogger("upq")
@@ -60,7 +79,7 @@ class Upq():
         server = upqserver.UpqServer(self.paths['socket'], upqserver.UpqRequestHandler)
         self.logger.info("Server listening on '%s'.", server.server_address)
         server.set_jobs_tasks_paths(self.jobs, self.tasks, self.paths)
-    
+
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
         server_thread = threading.Thread(target=server.serve_forever)
@@ -68,21 +87,21 @@ class Upq():
         server_thread.setDaemon(True)
         server_thread.start()
         self.logger.debug("Server main thread is '%s'.", server_thread.getName())
-        
+
         # everything should be fine now, so let's revive unfinnished jobs
-        unfinnished_business = upqdb.UpqDB().getdb(server_thread.getName()).revive_jobs()
+        unfinnished_business = self.revive_jobs()
         self.logger.debug("unfinnished_business='%s'", unfinnished_business)
         self.logger.info("Starting %d unfinnished jobs found in DB.",
-                          len(unfinnished_business))
+                  len(unfinnished_business))
         for job in unfinnished_business:
             self.logger.info("Starting unfinnished job '%s' with jobid '%d'",
-                             job.jobname, job.jobid)
+                     job.jobname, job.jobid)
             job.enqueue_job()
         
         signal.signal(signal.SIGINT, self.signal_handler)
         self.logger.debug("Server waiting for SIGINT / Ctrl+C.")
         signal.pause()
-        
+
         self.logger.info("Good bye.")
         upqdb.UpqDB().getdb(server_thread.getName()).cleanup()
         server.shutdown()
@@ -99,15 +118,14 @@ def main(argv=None):
         try:
             opts, args = getopt.getopt(argv[1:], "h", ["help"])
         except getopt.error, msg:
-             raise Usage(msg)
-        
+            raise Usage(msg)
+
         try:
             # read ini file
-            paths, jobs, tasks, db = parseconfig.ParseConfig().readConfig()
+            paths, jobs, tasks, dbcfg = parseconfig.ParseConfig().readConfig()
             # setup and test DB
-            upqdb.UpqDB().set_connection(**db)
-            upqdb.UpqDB().paths = paths
-            db = upqdb.UpqDB().getdb("Thread-main")
+            db = upqdb.UpqDB()
+            db.connect(dbcfg['url'])
             db.version()
             # start server
             upq = Upq(paths, jobs, tasks)
@@ -115,10 +133,9 @@ def main(argv=None):
         except Exception, ex:
             print >>sys.stderr, "Could not initialize system, please see log."
             traceback.print_exc(file=sys.stderr)
-            if callable(getattr(db,"cleanup")):
-                db.cleanup()
+            db.cleanup()
             sys.exit(1)
-        
+
     except Usage, err:
         print >>sys.stderr, err.msg
         print >>sys.stderr, "for help use --help"

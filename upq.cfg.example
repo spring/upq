@@ -11,11 +11,7 @@ jobs_dir  = ./jobs
 tasks_dir = ./tasks
 
 [db]
-host = localhost
-user = springfiles
-password = xxxxxxxxxxxxxx
-db = springfiles
-
+url= mysql://user:server@hostname/dbname
 
 #
 #-upload new file
@@ -43,7 +39,7 @@ notify_success =
 enabled = true
 tasks = move_file_to_archive
 concurrent = 2
-notify_fail = mail daniel@admin-box.com
+notify_fail = mail user@example.org
 notify_success =
 
 [job verify_local_file]
@@ -51,7 +47,7 @@ notify_success =
 enabled = true
 tasks = hash
 concurrent = 2
-notify_fail = mail daniel@admin-box.com daniel2@admin-box.com 
+notify_fail = mail user1@example.org user2@example.org
 notify_success = syslog blablub
 
 [job verify_remote_file]

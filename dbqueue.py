@@ -14,27 +14,28 @@ from Queue import *
 
 import log
 import upqdb
+import cPickle
 
 class DBQueue(Queue, object):
     def get(self, block=True, timeout=None):
         item = super(DBQueue, self).get(block, timeout)
         # update job state in DB
-        updb = upqdb.UpqDB().getdb(item.thread)
-        updb.update_state(item, "running")
-        updb.set_time(item, "start_time")
+        query="UPDATE upqueue SET state = '%s', start_time=NOW() WHERE jobid = %d" % ("running", item.jobid)
+        upqdb.UpqDB().query(query)
         return item
-    
+
     def task_done(self, job):
         # update job state in DB
-        updb = upqdb.UpqDB().getdb(job.thread)
-        updb.set_time(job, "end_time")
-        updb.update_state(job, "done")
-        updb.set_result(job)
+        query="UPDATE upqueue SET state = '%s', end_time=NOW(), result_msg='%s' WHERE jobid = %d" % ("done", item.jobid, item.result_msg)
+        upqdb.UpqDB().query(query)
         super(DBQueue, self).task_done()
-    
+
     def put(self, item, block=True, timeout=None):
         ret = super(DBQueue, self).put(item, block, timeout)
         if item.jobid == -1:
             # add job to DB in state "new"
-            upqdb.UpqDB().getdb(item.thread).persist_job(item)
+            pickled = cPickle.dumps(item, -1)
+            ret=upqdb.UpqDB().insert("upqueue", {'jobname': item.jobname, 'state': 'new', 'pickle_blob': pickled})
+            return ret
         return ret
+
