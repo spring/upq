@@ -30,6 +30,7 @@ import signal
 import sys
 import os, os.path
 import threading
+import traceback
 
 import parseconfig
 import log
@@ -113,7 +114,7 @@ def main(argv=None):
             upq.start_server()
         except Exception, ex:
             print >>sys.stderr, "Could not initialize system, please see log."
-            print >>sys.stderr, "Exception: '%s'"%ex
+            traceback.print_exc(file=sys.stderr)
             if db.has_key("cleanup"):
                 db.cleanup()
             sys.exit(1)
