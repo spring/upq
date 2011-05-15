@@ -115,7 +115,7 @@ def main(argv=None):
         except Exception, ex:
             print >>sys.stderr, "Could not initialize system, please see log."
             traceback.print_exc(file=sys.stderr)
-            if db.has_key("cleanup"):
+            if callable(getattr(db,"cleanup")):
                 db.cleanup()
             sys.exit(1)
         
