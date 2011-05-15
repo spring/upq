@@ -114,7 +114,8 @@ def main(argv=None):
         except Exception, ex:
             print >>sys.stderr, "Could not initialize system, please see log."
             print >>sys.stderr, "Exception: '%s'"%ex
-            db.cleanup()
+            if db.has_key("cleanup"):
+                db.cleanup()
             sys.exit(1)
         
     except Usage, err:
