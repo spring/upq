@@ -75,12 +75,15 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
 
     def handle(self):
         logger.debug("new connection from '%s'", self.client_address)
+        response=""
+        err=""
         
         self.jobs, self.tasks, self.paths =  self.server.get_jobs_tasks_paths()
-        
         while True:
             self.data = self.rfile.readline().strip()
-            if not self.data: break
+            if not self.data:
+               err="ERR no data received"
+               break
             logger.info("received: '%s'", self.data)
             
             # parse first word to find job
@@ -92,33 +95,27 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
                         data=self.getParams(params[1])
                     else:
                         data={}
+                    logger.debug(data)
                     # such a job exists, load its module and start it
                     upqjob_class = module_loader.load_module(job,self.paths['jobs_dir'])
                     upqjob = upqjob_class(job, self.jobs[job], data , self.paths)
                     logger.debug(upqjob)
                     uj = upqjob.check()
                     if uj:
-                        self.response = "ACK %d %s"%(upqjob.jobid, upqjob.msg)
+                        response = "ACK %d %s"%(upqjob.jobid, upqjob.msg)
                     else:
-                        self.response = "ERR %s"%(upqjob.msg)
+                        response = "ERR %s"%(upqjob.msg)
                 else:
                     logger.debug("unknown job '%s'", job)
-                    self.response = "ERR unknown command '%s'"%job
+                    err = "ERR unknown command '%s'"%job
+                    break
             except IndexError:
-                self.response = "ERR error parsing '%s'"%self.data
+                err = "ERR error parsing '%s'"%self.data
+                break
             
-            self.wfile.write(self.response+'\n')
-            logger.info("sent: '%s'", self.response)
-        
+            self.wfile.write(response+'\n')
+            logger.info("sent: '%s'", response)
+        if len(err)>0:
+            self.wfile.write(err+'\n')
         logger.debug("end of transmission")
-    
-
-
-
-
-
-
-
-
-
 
