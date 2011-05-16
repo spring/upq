@@ -12,7 +12,7 @@ def send_cmd(txts):
     for txt in txts:
         sock.send(txt+"\n")
         print >>sys.stderr, "Sent    : '%s'"%txt
-        sock.settimeout(1.0)
+        sock.settimeout(30.0)
         try:
             while True:
                 response = sock.recv(1024)
