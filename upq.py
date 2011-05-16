@@ -31,7 +31,7 @@ import sys
 import os, os.path
 import threading
 import traceback
-import cPickle
+import json
 
 import module_loader
 import parseconfig
@@ -47,23 +47,6 @@ class Upq():
     paths  = {}
     jobs   = {}
     tasks  = {}
-    def revive_jobs(self):
-        """
-            Fetches all jobs from DB that are in state "new" or "running", and
-            recreates the objects from its pickled representation.
-
-            returns  : list of alive, unqueued jobs
-        """
-        results=upqdb.UpqDB().query("SELECT * FROM upqueue WHERE state = 'new' OR state = 'running'")
-        jobs = []
-        for res in results:
-            module_loader.load_module(res['jobname'], self.paths['jobs_dir'])
-            obj = cPickle.loads(res['pickle_blob'])
-            obj.jobid = res['jobid']
-            obj.thread = "Thread-revived-UpqJob"
-            jobs.append(obj)
-            self.logger.debug("revived jobs='%s'", jobs)
-        return jobs
     def __init__(self, paths, jobs, tasks):
         self.paths, self.jobs, self.tasks = paths, jobs, tasks
         self.logger = log.getLogger("upq")
@@ -89,13 +72,11 @@ class Upq():
         self.logger.debug("Server main thread is '%s'.", server_thread.getName())
 
         # everything should be fine now, so let's revive unfinnished jobs
-        unfinnished_business = self.revive_jobs()
+        unfinnished_business = server.revive_jobs()
         self.logger.debug("unfinnished_business='%s'", unfinnished_business)
-        self.logger.info("Starting %d unfinnished jobs found in DB.",
-                  len(unfinnished_business))
+        self.logger.info("Starting %d unfinnished jobs found in DB.", len(unfinnished_business))
         for job in unfinnished_business:
-            self.logger.info("Starting unfinnished job '%s' with jobid '%d'",
-                     job.jobname, job.jobid)
+            self.logger.info("Starting unfinnished job '%s' with jobid '%d'", job.jobname, job.jobid)
             job.enqueue_job()
         
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -103,7 +84,7 @@ class Upq():
         signal.pause()
 
         self.logger.info("Good bye.")
-        upqdb.UpqDB().getdb(server_thread.getName()).cleanup()
+        upqdb.UpqDB().cleanup()
         server.shutdown()
 
 

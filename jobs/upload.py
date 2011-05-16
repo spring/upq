@@ -14,19 +14,27 @@ import ftplib
 
 class Upload(UpqJob):
     def check(self):
+	print self.jobdata
+        try:
+		self.filename=self.jobdata['filename']
+	except:
+		self.msg="invalid filename"
+		return False
         self.enqueue_job()
-        return {'queued': True, 'jobid': self.jobid, 'msg': "upload job"}
+        return True
 
     def run(self):
-        f=open(filename,"rb")
-        ftp = ftplib.FTP()
-#                db = upqdb.UpqDB()
-#                self.filename = db.query(self.fileid, 'filepath')
         try:
+            f=open(self.filename,"rb")
+            ftp = ftplib.FTP()
+            db = upqdb.UpqDB()
+            self.filename = db.query(self.fileid, 'filepath')
             ftp.connect('myserver.com',21)
             ftp.login('login','password')
             ftp.storbinary('STOR '+filename, f)
+            ftp.quit()
         finally:
             f.close()
-            ftp.quit()
-        self.result  = {'success': True, 'msg': 'upload ok' }
+            raise Exception
+        return True
+

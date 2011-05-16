@@ -26,38 +26,31 @@ class Verify_remote_file(upqjob.UpqJob):
         if len(self.jobdata) == 1:
             # should be fmfid
             try:
-                self.fmfid  = int(self.jobdata[0])
+                self.fmfid  = int(self.jobdata['fmfid'])
                 self.fileid = 0
                 self.fmid   = 0
             except ValueError:
-                msg = "Expected fmfid in jobdata[0], jobdata='%s'"%self.jobdata
-                self.logger.error(msg)
-                return {'queued': False, 'jobid': -1, 'msg': msg}
+                self.msg = "Expected fmfid in jobdata['fmfid'], jobdata='%s'"%self.jobdata
+                return False
         elif len(self.jobdata) == 2:
         # should be fid fmid
             try:
                 self.fmfid  = 0
-                self.fileid = int(self.jobdata[0])
-                self.fmid   = int(self.jobdata[1])
+                self.fileid = int(self.jobdata['fid'])
+                self.fmid   = int(self.jobdata['fmfid'])
             except ValueError:
-                msg = "Expected fid in jobdata[0] and fmid in jobdata[1], "\
-                      +"jobdata='%s'"%self.jobdata
-                self.logger.error(msg)
-                return {'queued': False, 'jobid': -1, 'msg': msg}
+                self.msg = "Expected fid in jobdata[0] and fmid in jobdata[1], "+"jobdata='%s'"%self.jobdata
+                return False
         else:
-            msg = "Expected 'fmfid' OR 'fid fmid' in jobdata ('%s')"%self.jobdata
-            self.logger.error(msg)
-            return {'queued': False, 'jobid': -1, 'msg': msg}
+            self.msg = "Expected 'fmfid' OR 'fid fmid' in jobdata ('%s')"%self.jobdata
+            return False
         
         # get files hash from DB
         db = upqdb.UpqDB().getdb(self.thread)
-        self.hash_in_db = db.get_remote_file_hash(self.fmfid,
-                                                  self.fmid,
-                                                  self.fileid)
+        self.hash_in_db = db.get_remote_file_hash(self.fmfid, self.fmid, self.fileid)
         if not self.hash_in_db:
-            msg = "File with fmfid='%s', fmid='%s', fileid='%s' not found in DB."%(self.fmfid, self.fmid, self.fileid)
-            self.logger.error(msg)
-            return {'queued': False, 'jobid': -1, 'msg': msg}
+            self.msg = "File with fmfid='%s', fmid='%s', fileid='%s' not found in DB."%(self.fmfid, self.fmid, self.fileid)
+            return False
         
         # set missing info from db
         if not self.fmfid:  self.fmfid = self.hash_in_db['fmfid']
@@ -65,20 +58,19 @@ class Verify_remote_file(upqjob.UpqJob):
         if not self.fileid: self.fileid = self.hash_in_db['fid']
         
         self.enqueue_job()
-        return {'queued': True, 'jobid': self.jobid, 'msg': self.hash_in_db['path']}
+	self.msg=self.hash_in_db['path']
+        return True
     
     def run(self):
-        rmd5 = self.tasks['remote_md5'](self.hash_in_db['path'],
-                                        self.fileid,
-                                        self.jobcfg,
-                                        self.thread)
+        rmd5 = self.tasks['remote_md5'](self.hash_in_db['path'], self.fileid, self.jobcfg, self.thread)
         rmd5.set_fmid(self.fmid)
         rmd5.set_fmfid(self.fmfid)
         rmd5.run()
         
         if self.hash_in_db['md5'] == rmd5.result:
-            self.result  = {'success': True,
-                            'msg': 'Remote hash matches hash in DB.'}
+            self.msg = 'Remote hash matches hash in DB.'
+            return True
         else:
-            self.result  = {'success': False,
-                            'msg': 'Remote hash does NOT match hash in DB.'}
+            self.msg  = 'Remote hash does NOT match hash in DB.'
+            return False
+

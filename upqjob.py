@@ -19,33 +19,32 @@ import upqtask
 import module_loader
 import upqqueuemngr
 import notify
+import json
 
 class UpqJob(object):
     def __init__(self, jobname, jobcfg, jobdata, paths):
         self.jobname = jobname
         self.jobcfg  = jobcfg
         self.jobdata = jobdata
-        self.paths   = paths
         self.logger  = log.getLogger("upq")
         self.tasks   = {}
-        self.jobid   = -1
         self.thread  = "Thread-new-UpqJob"
-        self.result  = {'success': False, 'msg': 'Not implemented yet.'}
-
+        self.paths   = paths
+        self.jobid   = -1
+        self.msg     = ""
         # load task modules
         for taskname in self.jobcfg['tasks'].split():
             self.tasks[taskname] = module_loader.load_module(taskname,self.paths['tasks_dir'])
-
     def check(self):
         """
         Check if job is feasable and possibly queue it.
         Overwrite this method in your job class.
 
-        Returns {'queued': BOOL, 'jobid': INT, 'msg': STR}
+        Returns True + sets jobid
         """
         # check if file is readable (or similar)
-        # jobid = self.enqueue_job()
-        # return {'queued': True, 'jobid': self.jobid, 'msg': 'Not implemented yet.'}
+        # self.enqueue_job()
+        # return True when jobdata is fine to call run(), when returning False sets self.msg
         pass
 
     def run(self):
@@ -60,14 +59,7 @@ class UpqJob(object):
         """
         Put this job into the active queue
         """
-        upqqueuemngr.UpqQueueMngr().enqueue_job(self)
-
-    def __getstate__(self):
-        # this is used to pickle a job
-        odict = self.__dict__.copy()
-        del odict['tasks']
-        del odict['logger']
-        return odict
+        self.jobid=upqqueuemngr.UpqQueueMngr().enqueue_job(self)
 
     def __setstate__(self, dict):
         # this is used to unpickle a job
@@ -78,21 +70,18 @@ class UpqJob(object):
         self.logger = log.getLogger("upq")
 
 
-    def notify(self):
+    def notify(self, succeed):
         """
         Notify someone responsable about job result.
         """
 
-        if self.result['success']:
-            if self.jobcfg['notify_success']:
-                notify.Notify().success(self.jobname,
-                            self.jobcfg['notify_success'].split()[0],
-                            self.jobcfg['notify_success'].split()[1:],
-                            self.result['msg'])
+        if succeed:
+            if self.jobcfg.has_key('notify_success'):
+                notify.Notify().success(self.jobname, self.result['msg'])
         else:
-            if self.jobcfg['notify_fail']:
+            if self.jobcfg.has_key('notify_fail'):
                 notify.Notify().fail(self.jobname,
-                            self.jobcfg['notify_fail'].split()[0],
-                            self.jobcfg['notify_fail'].split()[1:],
                             self.result['msg'])
+    def __str__(self):
+	return "Job: "+self.jobname +"id:"+ str(self.jobid)+" "+json.dumps(self.jobdata) +" thread: "+self.thread
 

@@ -30,8 +30,8 @@ class UpqDB():
     def connect(self, databaseurl):
         self.cleanup()
         self.databaseurl = databaseurl
-        self.engine = create_engine(self.databaseurl, encoding="utf-8", echo=True)
-        self.logger.info("(%s) Opened DB connection.")
+        self.engine = create_engine(self.databaseurl, encoding="utf-8", echo=False)
+        self.logger.info("Opened DB connection.")
         self.meta=MetaData()
         """ TODO: use this?
         #Maybe this can be used later on...
@@ -52,13 +52,6 @@ class UpqDB():
     def query(self, query):
         self.logger.debug(query)
         return self.engine.execute(query)
-    def insert2(self, query):
-        s=Session(self.engine)
-        print query
-        s.execute(query)
-        res=s.scalar("SELECT LAST_INSERT_ID()")
-        s.close()
-        return res
     def insert(self, table, values):
         strkeys=""
         strvalues=""
@@ -69,6 +62,7 @@ class UpqDB():
         s.execute(query)
         result=s.scalar("SELECT LAST_INSERT_ID()")
         s.close()
+        self.logger.debug(str(query)+" id:"+str(result))
         return result
     def tbl_upqueue(self):
         return self.tbl_upqueue
@@ -100,8 +94,7 @@ class UpqDB():
 
         job     : UpqJob object
         """
-        result=self.query("UPDATE upqueue SET result = %(result)s, "\
-        +"result_msg = %(result_msg)s WHERE jobid = %(jobid)s",
+        result=self.query("UPDATE upqueue SET result = %(result)s, result_msg = %(result_msg)s WHERE jobid = %(jobid)s",
         {'result': int(job.result['success']),
         'result_msg': job.result['msg'],
         'jobid': job.jobid})

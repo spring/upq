@@ -21,7 +21,10 @@ class List_queue(UpqJob):
         # return queue list immediately as 'msg'
         # we return True for queued, so that callers don't parse/interpret
         # this as an error... don't know if that makes sense...
-        return {'queued': True, 'jobid': 0, 'msg': lq.get_result()}
+        self.msg=lq.get_result()
+        self.queued=True
+        self.jobid=0
+        return True
     
     def run(self):
         # This job does nothing in run(), because it returns its result

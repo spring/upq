@@ -24,29 +24,27 @@ class Verify_local_file(UpqJob):
     def check(self):
         # we need a fileid
         try:
-            self.fileid = int(self.jobdata[0])
+            self.fileid = int(self.jobdata['fid'])
         except ValueError:
-            msg = "Expected fid in jobdata[0], jobdata='%s'"%self.jobdata
-            self.logger.error(msg)
-            return {'queued': False, 'jobid': -1, 'msg': msg}
+            self.msg = "Expected fid in jobdata['fid'], jobdata='%s'"%self.jobdata
+            return False
         
         # check if file is readable
         # get filepath from DB
         db = upqdb.UpqDB().getdb("main")
         self.filename = db.get_from_files(self.fileid, 'filepath')
         if not self.filename:
-            msg = "File with fileid='%d' not found in DB."%self.fileid
-            self.logger.error(msg)
-            return {'queued': False, 'jobid': -1, 'msg': msg}
+            self.msg = "File with fileid='%d' not found in DB."%self.fileid
+            return False
         try:
             open(self.filename, "rb")
         except IOError, ex:
             msg = "File is not readable: '%s'"%ex
             self.logger.error(msg)
-            return {'queued': False, 'jobid': -1, 'msg': msg}
+            return False
         
         self.enqueue_job()
-        return {'queued': True, 'jobid': self.jobid, 'msg': self.filename}
+        return True
     
     def run(self):
         h = self.tasks['hash']("", self.fileid, self.jobcfg, self.thread)
@@ -62,15 +60,10 @@ class Verify_local_file(UpqJob):
         for hash in db_hashes.keys():
             if hash == "fid": continue
             if not db_hashes[hash] == ondisk[hash]:
-                self.result['success'] = False
-                self.result['msg'] = "Hash '%s' of fileid '%s' does not match."%(
-                    hash, self.fileid)
-                self.logger.info(self.result['msg'])
+                self.logger.info("Hash '%s' of fileid '%s' does not match."%(hash, self.fileid))
                 return False
         
         # all hashes must have matched
-        self.result['success'] = True
-        self.result['msg'] = "Hashes of fileid '%s' on-disk match those in DB."%(
-            self.fileid)
-        self.logger.info(self.result['msg'])
+        self.logger.info("Hashes of fileid '%s' on-disk match those in DB."%(self.fileid))
         return True
+

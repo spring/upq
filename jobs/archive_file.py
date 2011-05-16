@@ -15,7 +15,8 @@ class Archive_file(UpqJob):
         # check if file is readable (or similar)
         # register_to_queue()
         # return ACK/REJ + optional msg in dict(['queued'], ['jobid'], ['msg'])
-        return {'queued': False, 'jobid': 0, 'msg': 'Not implemented yet.'}
+        self.msg="Not implemented yet"
+        return False
     
     def run():
         # actual work

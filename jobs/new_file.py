@@ -26,24 +26,22 @@ class New_file(UpqJob):
     def check(self):
         # check if file is readable
         self.enqueue_job()
-        # return ACK/REJ + optional msg in dict(['queued'], ['jobid'], ['msg'])
-        return {'queued': True, 'jobid': self.jobid, 'msg': 'Not implemented yet.'}
-
-    def run(self):
         self.fileid = None
         self.filename = None
 
         # try to guess if we have a filename or a fileid
         self.logger.debug("self.jobdata='%s'", self.jobdata)
-        try:
-            self.fileid = int(self.jobdata[0])
-        except ValueError:
-            self.filename = self.jobdata[0]
+        self.fileid = int(self.jobdata['fid'])
+        self.filename = self.jobdata['filename']
+        # return ACK/REJ + optional msg in dict(['queued'], ['jobid'], ['msg'])
+        return True
 
+    def run(self):
         for task in self.tasks:
             t = task(self.filename, self.fileid, self.jobcfg, self.thread)
             t.run()
             self.logger.debug("tasks result is: '%s'", t.get_result())
         
-        self.result = {'success': False, 'msg': 'Not implemented yet.'}
+        self.msg='Not implemented yet.'
+        return False
 

@@ -17,6 +17,8 @@ import sys
 import log
 from upqjob import UpqJob
 import module_loader
+import upqdb
+import json
 
 logger = log.getLogger("upq")
 
@@ -39,8 +41,38 @@ class UpqServer(SocketServer.ThreadingMixIn, SocketServer.UnixStreamServer):
     
     def get_jobs_tasks_paths(self):
         return self.jobs, self.tasks, self.paths
+    def revive_jobs(self):
+        """
+            Fetches all jobs from DB that are in state "new" or "running", and
+            recreates the objects from its pickled representation.
+
+            returns  : list of alive, unqueued jobs
+        """
+        results=upqdb.UpqDB().query("SELECT * FROM upqueue WHERE state = 'new' OR state = 'running'")
+        jobs = []
+        for res in results:
+            modclass=module_loader.load_module(res['jobname'], self.paths['jobs_dir'])
+            obj=modclass(res['jobname'], self.jobs[res['jobname']], json.loads(res['pickle_blob']), self.paths)
+            obj.jobid = res['jobid']
+            obj.thread = "Thread-revived-UpqJob"
+            jobs.append(obj)
+            logger.debug("revived jobs='%s'", jobs)
+        return jobs
 
 class UpqRequestHandler(SocketServer.StreamRequestHandler):
+
+    """
+         extract params into dict from a string like this:
+         key1=value1 key2=value2
+    """
+    def getParams(self, str):
+	keyvals=str.split()
+	res={}
+	for k in keyvals:
+		tmp=k.split("=",1)
+		res[tmp[0]]=tmp[1]
+	return res
+
     def handle(self):
         logger.debug("new connection from '%s'", self.client_address)
         
@@ -53,21 +85,22 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
             
             # parse first word to find job
             try:
-                job = self.data.split()[0]
+                params=self.data.split(" ",1)
+                job=params[0]
                 if self.jobs.has_key(job):
-                    # such a job exists, load its module and start it
-                    upqjob_class = module_loader.load_module(job,
-                                                             self.paths['jobs_dir'])
-                    upqjob = upqjob_class(job,
-                                          self.jobs[job],
-                                          self.data.split()[1:],
-                                          self.paths)
-                    uj = upqjob.check()
-                    if uj['queued']:
-                        self.response = "ACK %d %s"%(uj['jobid'], uj['msg'])
+                    if len(params)>1:
+                        data=self.getParams(params[1])
                     else:
-                        self.response = "REJ %s"%(uj['msg'])
-                    del sys.modules[job]
+                        data={}
+                    # such a job exists, load its module and start it
+                    upqjob_class = module_loader.load_module(job,self.paths['jobs_dir'])
+                    upqjob = upqjob_class(job, self.jobs[job], data , self.paths)
+                    logger.debug(upqjob)
+                    uj = upqjob.check()
+                    if uj:
+                        self.response = "ACK %d %s"%(upqjob.jobid, upqjob.msg)
+                    else:
+                        self.response = "ERR %s"%(upqjob.msg)
                 else:
                     logger.debug("unknown job '%s'", job)
                     self.response = "ERR unknown command '%s'"%job
