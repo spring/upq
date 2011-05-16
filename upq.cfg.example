@@ -65,6 +65,16 @@ concurrent = 0
 notify_fail =
 notify_success =
 
+[job upload]
+enabled = true
+tasks = hash
+concurrent = 2
+
+[job test]
+enabled = true
+tasks = null_task
+concurrent = 2
+
 [task extract_metadata]
 
 [task hash]
@@ -79,3 +89,5 @@ format = %(jobid)s %(jobname)s %(starttime)s %(status)s
 sort = jobid
 
 [task move_file_to_archive]
+
+[task null_task]
