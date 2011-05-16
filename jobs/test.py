@@ -11,6 +11,7 @@
 
 from upqjob import UpqJob
 import ftplib
+import time
 
 class Test(UpqJob):
     def check(self):
@@ -19,6 +20,7 @@ class Test(UpqJob):
         return True
 
     def run(self):
+	time.sleep(60)
 	self.msg="Success run"
 	return True
 
