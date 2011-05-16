@@ -1,15 +1,16 @@
 Missing pieces:
+* add all needed jobs: http://springrts.com/phpbb/viewtopic.php?p=485903#p485903
 * Possibility to put a job "on hold" and schedule it to try (n times) again
   later without blocking a thread.
-* No useful job was written as I don't have access to springfiles.com I don't
-  even know the correct paths - just an example and some "templates/job ideas".
-* bugs :)
+	-> make a job, that sleeps for an amout of time + restarts
+* make more defined states for a job (for example: 0=new, 1=running, 3=retry, 4=schedule, ...)
+* reload job in python if code changed: http://pyunit.sourceforge.net/notes/reloading.html
+* unload job when none is running (to save memory)
 * reread ini-file on signal (USR1 or something)
-* atm notifications are configured for a class of jobs, but maybe it would be
-  better to set it up per-job when connecting to the socket
-* I'm not aware of most things that go on @sf.com, so probably a lot of
-  features are missing :)
+* add posibility to overwrite default job-settings with parameter
 * make upq.cfg system wide accessible through a singleton, automatically
   link UpqJobs.jobcfg and UpqTasks.config with their respective info
-* feel free to add here or use https://github.com/springfiles/upq/issues
+* make parser more stable
+
+feel free to add you're ideas to https://github.com/springfiles/upq/issues
 
