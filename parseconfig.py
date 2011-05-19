@@ -74,7 +74,6 @@ class ParseConfig():
             if not self.jobs[job].has_key("tasks"):
                 # task list must not be empty
                 msg="Found job '%s' without tasks, ignoring it.", job
-                self.logger.error(msg)
                 raise Exception(msg)
 
             if not reduce((lambda x, y: x and y),
@@ -82,7 +81,6 @@ class ParseConfig():
                 # each task must have a section in the cfg file, and thus be a
                 # key in tasks
                 msg="Found job '%s' with an unknown task, ignoring it.", job
-                self.logger.error("Found job '%s' with an unknown task, ignoring it.", job)
                 raise Exception(msg)
         
         
