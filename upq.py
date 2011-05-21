@@ -46,9 +46,8 @@ class Upq():
     logger = None
     paths  = {}
     jobs   = {}
-    tasks  = {}
-    def __init__(self, paths, jobs, tasks):
-        self.paths, self.jobs, self.tasks = paths, jobs, tasks
+    def __init__(self, paths, jobs):
+        self.paths, self.jobs = paths, jobs
         self.logger = log.getLogger("upq")
     
     def signal_handler(self, signal, frame):
@@ -61,7 +60,7 @@ class Upq():
         
         server = upqserver.UpqServer(self.paths['socket'], upqserver.UpqRequestHandler)
         self.logger.info("Server listening on '%s'.", server.server_address)
-        server.set_jobs_tasks_paths(self.jobs, self.tasks, self.paths)
+        server.set_jobs_tasks_paths(self.jobs, self.paths)
 
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
@@ -103,13 +102,13 @@ def main(argv=None):
 
         try:
             # read ini file
-            paths, jobs, tasks, dbcfg = parseconfig.ParseConfig().readConfig()
+            paths, jobs, dbcfg = parseconfig.ParseConfig().readConfig()
             # setup and test DB
             db = upqdb.UpqDB()
             db.connect(dbcfg['url'])
             db.version()
             # start server
-            upq = Upq(paths, jobs, tasks)
+            upq = Upq(paths, jobs)
             upq.start_server()
         except Exception, ex:
             print >>sys.stderr, "Could not initialize system, please see log."

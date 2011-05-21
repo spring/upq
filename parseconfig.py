@@ -18,7 +18,6 @@ class ParseConfig():
     logger = None
     paths  = {}
     jobs   = {}
-    tasks  = {}
     db     = {}
     config_log = "Log replay from config parsing:\n"
     
@@ -32,16 +31,18 @@ class ParseConfig():
         
         if not config.has_section("logging"):
             # make sure to have a working logging system
-            print >>sys.stderr, "No 'logging' section found in config file. " \
-                +"Initializing log system with defaults."
+            print >>sys.stderr, "No 'logging' section found in config file. Initializing log system with defaults."
             self.logger = log.init_logging(dict())
+        else:
+             log_cfg = config.items("logging")
+             self.logger = log.init_logging(dict(log_cfg))
+             self.logger.debug("===== Logging initialized =====")
+
         
         for section in config.sections():
             self.conf_log("found section '%s'"%section)
             if section == "logging":
-                log_cfg = config.items(section)
-                self.logger = log.init_logging(dict(log_cfg))
-                self.logger.debug("===== Logging initialized =====")
+                pass
             elif section == "paths":
                 self.paths = dict(config.items(section))
                 for path in self.paths.keys():
@@ -57,32 +58,14 @@ class ParseConfig():
                     self.jobs[section.split()[1]]['concurrent'] = int(self.jobs[section.split()[1]]['concurrent'])
                 else:
                     self.conf_log("   job '%s' is disabled"%section.split()[1])
-            elif section.startswith("task"):
-                self.tasks[section.split()[1]] = dict(config.items(section))
             else:
-                self.conf_log("Unknown section '%s' found in config file, ignoring.", section)
+                self.conf_log("Unknown section '%s' found in config file, ignoring."% (section))
         
         self.logger.info(self.config_log)
         
         self.logger.info("paths='%s'", self.paths)
         self.logger.info("jobs='%s'", self.jobs)
-        self.logger.info("tasks='%s'", self.tasks)
         self.logger.info("db='%s'", self.db)
 
-        # sanity check
-        for job in self.jobs.keys():
-            if not self.jobs[job].has_key("tasks"):
-                # task list must not be empty
-                msg="Found job '%s' without tasks, ignoring it.", job
-                raise Exception(msg)
-
-            if not reduce((lambda x, y: x and y),
-                map(self.tasks.has_key, self.jobs[job]['tasks'].split())):
-                # each task must have a section in the cfg file, and thus be a
-                # key in tasks
-                msg="Found job '%s' with an unknown task, ignoring it.", job
-                raise Exception(msg)
-        
-        
-        return self.paths, self.jobs, self.tasks, self.db
+        return self.paths, self.jobs, self.db
 
