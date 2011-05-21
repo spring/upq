@@ -15,8 +15,7 @@ import time
 
 class Test(UpqJob):
     def check(self):
-        time.sleep(10)
-	self.msg="Test job: "+str(self.jobid)+"data:"+str(self.jobdata)
+        self.msg="Test job: "+str(self.jobid)+"data:"+str(self.jobdata)
         self.enqueue_job()
         return True
 
