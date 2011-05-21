@@ -10,10 +10,10 @@
 # null task, does nothing
 #
 
-import upqtask
+import upqjob
 import upqqueuemngr
 
-class Null_task(upqtask.UpqTask):
+class Null_task(UpqJob):
     def run(self):
         self.msg=""
 	return True

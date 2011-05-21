@@ -40,7 +40,7 @@ class UpqJob(object):
         # check if file is readable (or similar)
         # self.enqueue_job()
         # return True when jobdata is fine to call run(), when returning False sets self.msg
-        pass
+        return True
 
     def run(self):
         """
@@ -48,7 +48,7 @@ class UpqJob(object):
         Overwrite this method in your job class.
         """
         # Save result in self.result.
-        pass
+        return True
 
     def enqueue_job(self):
         """

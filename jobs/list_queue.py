@@ -12,21 +12,30 @@
 
 import log
 from upqjob import UpqJob
+import upqqueuemngr
 
 class List_queue(UpqJob):
     def check(self):
-        lq = self.tasks['list_queue_t']("", 0, self.jobcfg, self.thread)
-        lq.run()
+        qmng = upqqueuemngr.UpqQueueMngr()
         
-        # return queue list immediately as 'msg'
-        # we return True for queued, so that callers don't parse/interpret
-        # this as an error... don't know if that makes sense...
-        self.msg=lq.get_result()
-        self.queued=True
-        self.jobid=0
+        msg = ""
+        self.logger.debug("qmng='%s'", qmng)
+        self.logger.debug("qmng.queues.iteritems()='%s'", qmng.queues.iteritems())
+        queues = qmng.queues.iteritems()
+
+        for queue in queues:
+            msg += "Queue '%s' contains %d jobs: "%(queue[0], queue[1].qsize())
+            if queue[1].empty():
+                msg += "Queue is empty."
+                continue
+            self.logger.debug("queue[1].queue='%s'", queue[1].queue)
+            self.logger.debug("type(queue[1].queue)='%s'", type(queue[1].queue))
+            self.logger.debug("list(queue[1].queue)='%s'", list(queue[1].queue))
+            for job in queue[1].queue:
+                msg += "\n    - '%s' : '%s'"%(job.jobname, job.jobdata)
+        else:
+            if not msg: msg = "No queues."
+
+        self.msg = msg
         return True
-    
-    def run(self):
-        # This job does nothing in run(), because it returns its result
-        # immediately in check() to the caller.
-        pass
+
