@@ -53,12 +53,12 @@ class Upq():
     
     def start_server(self):
         if os.path.exists(self.uc.paths['socket']):
-            self.logger.debug("File '%s' exists - removing it.", self.paths['socket'])
+            self.logger.debug("File '%s' exists - removing it.", self.uc.paths['socket'])
             os.remove(self.uc.paths['socket'])
         
         server = upqserver.UpqServer(self.uc.paths['socket'], upqserver.UpqRequestHandler)
         self.logger.info("Server listening on '%s'.", server.server_address)
-        server.set_jobs_tasks_paths(self.uc.jobs, self.uc.paths)
+        server.set_jobs_paths(self.uc.jobs, self.uc.paths)
 
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
