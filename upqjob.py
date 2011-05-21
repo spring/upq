@@ -15,7 +15,6 @@
 
 
 import log
-import upqtask
 import module_loader
 import upqqueuemngr
 import notify
@@ -27,14 +26,10 @@ class UpqJob(object):
         self.jobcfg  = jobcfg
         self.jobdata = jobdata
         self.logger  = log.getLogger("upq")
-        self.tasks   = {}
         self.thread  = "Thread-new-UpqJob"
         self.paths   = paths
         self.jobid   = -1
         self.msg     = ""
-        # load task modules
-        for taskname in self.jobcfg['tasks'].split():
-            self.tasks[taskname] = module_loader.load_module(taskname,self.paths['tasks_dir'])
     def check(self):
         """
         Check if job is feasable and possibly queue it.
@@ -45,7 +40,7 @@ class UpqJob(object):
         # check if file is readable (or similar)
         # self.enqueue_job()
         # return True when jobdata is fine to call run(), when returning False sets self.msg
-        pass
+        return True
 
     def run(self):
         """
@@ -53,7 +48,7 @@ class UpqJob(object):
         Overwrite this method in your job class.
         """
         # Save result in self.result.
-        pass
+        return True
 
     def enqueue_job(self):
         """
@@ -64,9 +59,6 @@ class UpqJob(object):
     def __setstate__(self, dict):
         # this is used to unpickle a job
         self.__dict__.update(dict)
-        self.tasks = {}
-        for taskname in self.jobcfg['tasks'].split():
-            self.tasks[taskname] = module_loader.load_module(taskname,self.paths['tasks_dir'])
         self.logger = log.getLogger("upq")
 
 

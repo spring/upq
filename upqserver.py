@@ -36,11 +36,11 @@ logger = log.getLogger("upq")
 
 
 class UpqServer(SocketServer.ThreadingMixIn, SocketServer.UnixStreamServer):
-    def set_jobs_tasks_paths(self, jobs, tasks, paths):
-        self.jobs, self.tasks, self.paths= jobs, tasks, paths
+    def set_jobs_paths(self, jobs, paths):
+        self.jobs, self.paths= jobs, paths
     
-    def get_jobs_tasks_paths(self):
-        return self.jobs, self.tasks, self.paths
+    def get_jobs_paths(self):
+        return self.jobs, self.paths
     def revive_jobs(self):
         """
             Fetches all jobs from DB that are in state "new" or "running", and
@@ -52,7 +52,7 @@ class UpqServer(SocketServer.ThreadingMixIn, SocketServer.UnixStreamServer):
         jobs = []
         for res in results:
             modclass=module_loader.load_module(res['jobname'], self.paths['jobs_dir'])
-            obj=modclass(res['jobname'], self.jobs[res['jobname']], json.loads(res['pickle_blob']), self.paths)
+            obj=modclass(res['jobname'], self.jobs[res['jobname']], json.loads(res['jobdata']), self.paths)
             obj.jobid = res['jobid']
             obj.thread = "Thread-revived-UpqJob"
             jobs.append(obj)
@@ -78,7 +78,7 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
         response=""
         err=""
         
-        self.jobs, self.tasks, self.paths =  self.server.get_jobs_tasks_paths()
+        self.jobs, self.paths =  self.server.get_jobs_paths()
         while True:
             self.data = self.rfile.readline().strip()
             if not self.data:

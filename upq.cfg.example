@@ -8,7 +8,6 @@ logfile = /tmp/upq.log
 # paths beginning with "./" are treated as relative to path of this cfg file
 socket    = /tmp/upq-incoming.sock
 jobs_dir  = ./jobs
-tasks_dir = ./tasks
 
 [db]
 url= mysql://user:password@hostname/dbname
@@ -27,8 +26,6 @@ url= mysql://user:password@hostname/dbname
 [job new_file]
 # needs filepath
 enabled = true
-#tasks = extract_metadata hash mirror_upload
-tasks = hash
 # number of max. concurrent executions of this job, 0 means the main server will
 # handle it syncroniously (connection blocking!)
 concurrent = 3
@@ -37,7 +34,6 @@ notify_success =
 
 [job archive_file]
 enabled = true
-tasks = move_file_to_archive
 concurrent = 2
 notify_fail = mail user@example.org
 notify_success =
@@ -45,7 +41,6 @@ notify_success =
 [job verify_local_file]
 # needs fid
 enabled = true
-tasks = hash
 concurrent = 2
 notify_fail = mail user1@example.org user2@example.org
 notify_success = syslog blablub
@@ -53,41 +48,50 @@ notify_success = syslog blablub
 [job verify_remote_file]
 # needs fmfid and fmid
 enabled = true
-tasks = remote_md5
 concurrent = 2
 notify_fail =
 notify_success =
 
 [job list_queue]
 enabled = true
-tasks = list_queue_t
 concurrent = 0
 notify_fail =
 notify_success =
 
 [job upload]
 enabled = true
-tasks = hash
 concurrent = 2
 
 [job test]
 enabled = true
-tasks = null_task
 concurrent = 2
 
-[task extract_metadata]
+[job extract_metadata]
+enabled = true
+concurrent = 2
 
-[task hash]
-block_size = 4096
+[job hash]
+enabled = true
+concurrent = 2
 
-[task mirror_upload]
+[job mirror_upload]
+enabled = true
+concurrent = 2
 
-[task remote_md5]
+[job remote_md5]
+enabled = true
+concurrent = 2
 
-[task list_queue_t]
+[job list_queue_t]
+enabled = true
+concurrent = 2
 format = %(jobid)s %(jobname)s %(starttime)s %(status)s
 sort = jobid
 
-[task move_file_to_archive]
+[job move_file_to_archive]
+enabled = true
+concurrent = 2
 
-[task null_task]
+[job null_task]
+enabled = true
+concurrent = 2

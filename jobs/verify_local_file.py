@@ -16,7 +16,6 @@
 #
 
 import log
-import upqtask
 from upqjob import UpqJob
 import upqdb
 

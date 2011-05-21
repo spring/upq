@@ -8,10 +8,9 @@
 
 import urllib
 
-import upqtask
 import upqdb
 
-class Remote_md5(upqtask.UpqTask):
+class Remote_md5(UpqJob):
     """
     Remote_md5: retreive md5 checksum calculated by PHP-script "deamon.php" from
     remote mirror server

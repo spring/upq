@@ -18,8 +18,8 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 CREATE TABLE IF NOT EXISTS `upqueue` (
   `jobid` int(11) NOT NULL AUTO_INCREMENT,
   `jobname` varchar(255) NOT NULL COMMENT 'job module name',
-  `state` varchar(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT 'new/running/done',
-  `pickle_blob` text NOT NULL COMMENT 'obj state saved with json',
+  `jobdata` text NOT NULL COMMENT 'params for job in json format',
+  `state` varchar(32) NOT NULL COMMENT 'new/running/done',
   `result` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'UpqJob.result[''success'']',
   `result_msg` varchar(255) NOT NULL DEFAULT 'New' COMMENT 'UpqJob.result[msg]',
   `ctime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'job create time',
