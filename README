@@ -1,6 +1,7 @@
 TOC
 ---
 - What is this?
+- Requirements
 - Licensing
 - Files
 - Installation and configuration
@@ -42,6 +43,13 @@ the "UpqJob" class. In section "[job my_command]" the "tasks" variable can be a
 space separated list of "UpqTask"s, that will be searched and loaded
 automatically. Search in [paths]->tasks_dir, module name "my_task.py", class
 name "My_task", derived from "UpqTask".
+
+
+REQUIREMENTS
+------------
+Python >= 2.6 (< 3.0)
+SQLAlchemy 0.6
+MySQL
 
 
 LICENSING
