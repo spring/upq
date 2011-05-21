@@ -12,8 +12,8 @@ import os, os.path
 
 import log
 
-
-class ParseConfig():
+class UpqConfig():
+    __shared_state = {}
     # don't use "logger" before readConfig() ran!
     logger = None
     paths  = {}
@@ -22,15 +22,17 @@ class ParseConfig():
     db     = {}
     config_log = "Log replay from config parsing:\n"
     
+    def __init__(self):
+        self.__dict__ = self.__shared_state
+    
     def conf_log(self, msg):
         self.config_log += msg+"\n"
-        #print >>sys.stderr, msg
     
     def readConfig(self):
         config = ConfigParser.RawConfigParser()
         config.read('upq.cfg')
         
-        if not config.has_section("logging"):
+        if not self.logger and not config.has_section("logging"):
             # make sure to have a working logging system
             print >>sys.stderr, "No 'logging' section found in config file. " \
                 +"Initializing log system with defaults."
@@ -84,7 +86,4 @@ class ParseConfig():
                 msg="Found job '%s' with an unknown task, ignoring it.", job
                 self.logger.error("Found job '%s' with an unknown task, ignoring it.", job)
                 raise Exception(msg)
-        
-        
-        return self.paths, self.jobs, self.tasks, self.db
 
