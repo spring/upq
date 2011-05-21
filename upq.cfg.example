@@ -11,7 +11,7 @@ jobs_dir  = ./jobs
 tasks_dir = ./tasks
 
 [db]
-url= mysql://user:server@hostname/dbname
+url= mysql://user:password@hostname/dbname
 
 #
 #-upload new file
