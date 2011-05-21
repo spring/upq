@@ -15,7 +15,7 @@ def send_cmd(txts):
         sock.settimeout(30.0)
         try:
             while True:
-                response = sock.recv(1024)
+                response = sock.recv()
                 if len(response)<=0:
 	            break
                 print >>sys.stderr, response
