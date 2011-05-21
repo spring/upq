@@ -60,7 +60,7 @@ class Upq():
         
         server = upqserver.UpqServer(self.paths['socket'], upqserver.UpqRequestHandler)
         self.logger.info("Server listening on '%s'.", server.server_address)
-        server.set_jobs_tasks_paths(self.jobs, self.paths)
+        server.set_jobs_paths(self.jobs, self.paths)
 
         # Start a thread with the server -- that thread will then start one
         # more thread for each request

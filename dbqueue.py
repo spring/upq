@@ -35,8 +35,8 @@ class DBQueue(Queue, object):
     def put(self, job, block=True, timeout=None):
         if job.jobid == -1:
             # add job to DB in state "new"
-            pickled = json.dumps(job.jobdata, -1)
-            ret=upqdb.UpqDB().insert("upqueue", {'jobname': job.jobname, 'state': 'new', 'pickle_blob': pickled})
+            jobdata = json.dumps(job.jobdata, -1)
+            ret=upqdb.UpqDB().insert("upqueue", {'jobname': job.jobname, 'state': 'new', 'jobdata': jobdata})
             job.jobid=ret #set jobid
         super(DBQueue, self).put(job, block, timeout)
         return job.jobid
