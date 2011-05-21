@@ -18,6 +18,9 @@
 import log
 from upqjob import UpqJob
 import upqdb
+import upqconfig
+import hashlib
+
 
 class Verify_local_file(UpqJob):
     def check(self):
@@ -30,39 +33,69 @@ class Verify_local_file(UpqJob):
         
         # check if file is readable
         # get filepath from DB
-        db = upqdb.UpqDB().getdb("main")
-        self.filename = db.get_from_files(self.fileid, 'filepath')
+        query="SELECT filepath FROM files WHERE fid = %d" % self.fileid
+        res = upqdb.UpqDB().query(query)
+        self.filename = res.first()['filepath']
         if not self.filename:
             self.msg = "File with fileid='%d' not found in DB."%self.fileid
             return False
         try:
             open(self.filename, "rb")
         except IOError, ex:
-            msg = "File is not readable: '%s'"%ex
-            self.logger.error(msg)
+            self.msg = "File is not readable: '%s'"%ex
+            self.logger.error(self.msg)
             return False
         
         self.enqueue_job()
         return True
     
     def run(self):
-        h = self.tasks['hash']("", self.fileid, self.jobcfg, self.thread)
-        # compute hashes
-        h.run()
-        ondisk = h.get_result()
-        self.logger.debug("tasks result is: '%s'", ondisk)
+        ondisk = self.hash(self.filename)
         
         # compare with hashes stored in DB
-        db = upqdb.UpqDB().getdb(self.thread)
-        db_hashes = db.get_from_filehashes(self.fileid)
+        query="SELECT md5, sha1, sha256 FROM filehash WHERE fid = %d" % self.fileid
+        res = upqdb.UpqDB().query(query)
+        db_hashes = res.first()
         
         for hash in db_hashes.keys():
-            if hash == "fid": continue
             if not db_hashes[hash] == ondisk[hash]:
-                self.logger.info("Hash '%s' of fileid '%s' does not match."%(hash, self.fileid))
+                self.msg = "Hash %s of file (fid) %s (%d) does not match."%(hash, self.filename, self.fileid)
+                self.logger.info(self.msg)
                 return False
         
         # all hashes must have matched
-        self.logger.info("Hashes of fileid '%s' on-disk match those in DB."%(self.fileid))
+        self.msg = "Hashes of file (fid) %s (%d) on-disk match those in DB."%(self.filename, self.fileid)
+        self.logger.info(self.msg)
         return True
 
+    def hash(self, filename):
+        """
+        Calculate hashes (md5, sha1, sha256) of a given file
+        
+        filename is absolute path to file
+        
+        returns: {'md5': 'x', 'sha1': 'y', 'sha256': 'z'}
+        """
+        
+        logger = log.getLogger()
+        
+        md5 = hashlib.md5()
+        sha1 = hashlib.sha1()
+        sha256 = hashlib.sha256()
+        
+        try:
+            fd = open(filename, "rb", 4096)
+        except IOError, ex:
+            msg = "Unable to open the file for reading: '%s'."%ex
+            logger.error(msg)
+            raise Exception(msg)
+        while True:
+            data = fd.read(4096)
+            if not data: break
+            md5.update(data)
+            sha1.update(data)
+            sha256.update(data)
+        
+        fd.close()
+        
+        return {'md5': md5.hexdigest(), 'sha1': sha1.hexdigest(), 'sha256': sha256.hexdigest()}

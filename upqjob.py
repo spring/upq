@@ -30,6 +30,7 @@ class UpqJob(object):
         self.paths   = paths
         self.jobid   = -1
         self.msg     = ""
+    
     def check(self):
         """
         Check if job is feasable and possibly queue it.
@@ -64,16 +65,16 @@ class UpqJob(object):
 
     def notify(self, succeed):
         """
-        Notify someone responsable about job result.
+        Notify someone responsible about job result.
         """
 
         if succeed:
             if self.jobcfg.has_key('notify_success'):
-                notify.Notify().success(self.jobname, self.result['msg'])
+                notify.Notify().success(self.jobname, self.msg)
         else:
             if self.jobcfg.has_key('notify_fail'):
-                notify.Notify().fail(self.jobname,
-                            self.result['msg'])
+                notify.Notify().fail(self.jobname, self.msg)
+    
     def __str__(self):
 	return "Job: "+self.jobname +"id:"+ str(self.jobid)+" "+json.dumps(self.jobdata) +" thread: "+self.thread
 
