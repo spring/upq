@@ -12,13 +12,22 @@
 
 import hashlib
 
-import upqtask
+import upqjob
 import upqdb
 
-class Hash(upqtask.UpqTask):
+class Hash(upqjob.UpqJob):
     """
-    class Hash must be initialized with either filepath or fileid!
+    Calculate hashes (md5, sha1, sha256) of a given file
+    
+    self.jobdata['filename'] must be set in __init__ to absolute path to file
+    that should be hashed
+    
+    hashes get stored in: self.result['md5'] self.result['sha1'] and
+    self.result['sha256']
     """
+    def check(self):
+        self.enqueue_job()
+    
     def run(self):
         self.logger.debug("lets go")
         
