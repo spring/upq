@@ -13,6 +13,7 @@
 # the first letter upper case!
 #
 
+import threading
 
 import log
 import module_loader
@@ -32,6 +33,8 @@ class UpqJob(object):
         self.paths   = uc.paths
         self.jobid   = -1
         self.msg     = ""
+        self.result  = None
+        self.finished= threading.Event()
     
     def check(self):
         """
@@ -78,5 +81,5 @@ class UpqJob(object):
                 notify.Notify().fail(self.jobname, self.msg)
     
     def __str__(self):
-	return "Job: "+self.jobname +"id:"+ str(self.jobid)+" "+json.dumps(self.jobdata) +" thread: "+self.thread
+        return "Job: "+self.jobname +"id:"+ str(self.jobid)+" "+json.dumps(self.jobdata) +" thread: "+self.thread
 
