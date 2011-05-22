@@ -13,16 +13,18 @@
 import imp
 import sys
 
-def load_module(name, path):
+import upqconfig
+
+def load_module(name):
     """
-    Returns the class in the module "name" located in "path".py
+    Returns the class in the module "name" located in jobs_dir
     """
     try:
         return sys.modules[name].__getattribute__(name[0].upper()+name[1:])
     except KeyError:
         pass
     
-    fp, pathname, description = imp.find_module(name, [path,])
+    fp, pathname, description = imp.find_module(name, [upqconfig.UpqConfig().paths['jobs_dir'],])
     
     try:
         module = imp.load_module(name, fp, pathname, description)

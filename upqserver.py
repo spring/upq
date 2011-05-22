@@ -13,12 +13,14 @@
 import threading
 import SocketServer
 import sys
+import json
 
 import log
 from upqjob import UpqJob
 import module_loader
 import upqdb
-import json
+import upqconfig
+
 
 logger = log.getLogger("upq")
 
@@ -36,11 +38,6 @@ logger = log.getLogger("upq")
 
 
 class UpqServer(SocketServer.ThreadingMixIn, SocketServer.UnixStreamServer):
-    def set_jobs_paths(self, jobs, paths):
-        self.jobs, self.paths= jobs, paths
-    
-    def get_jobs_paths(self):
-        return self.jobs, self.paths
     def revive_jobs(self):
         """
             Fetches all jobs from DB that are in state "new" or "running", and
@@ -51,54 +48,56 @@ class UpqServer(SocketServer.ThreadingMixIn, SocketServer.UnixStreamServer):
         results=upqdb.UpqDB().query("SELECT * FROM upqueue WHERE state = 'new' OR state = 'running'")
         jobs = []
         for res in results:
-            modclass=module_loader.load_module(res['jobname'], self.paths['jobs_dir'])
-            obj=modclass(res['jobname'], self.jobs[res['jobname']], json.loads(res['jobdata']), self.paths)
+            modclass=module_loader.load_module(res['jobname'])
+            obj=modclass(res['jobname'], json.loads(res['jobdata']))
             obj.jobid = res['jobid']
             obj.thread = "Thread-revived-UpqJob"
             jobs.append(obj)
-            logger.debug("revived jobs='%s'", jobs)
+        logger.debug("revived jobs='%s'", jobs)
         return jobs
 
 class UpqRequestHandler(SocketServer.StreamRequestHandler):
-
+    
     """
          extract params into dict from a string like this:
          key1=value1 key2=value2
     """
     def getParams(self, str):
-	keyvals=str.split()
-	res={}
-	for k in keyvals:
-		tmp=k.split("=",1)
-		res[tmp[0]]=tmp[1]
-	return res
-
+        keyvals = str.split()
+        res = {}
+        for k in keyvals:
+            tmp = k.split("=", 1)
+            res[tmp[0]] = tmp[1]
+        return res
+    
     def handle(self):
         logger.debug("new connection from '%s'", self.client_address)
         response=""
         err=""
+        uc = upqconfig.UpqConfig()
+        jobs = uc.jobs
+        paths = uc.paths
         
-        self.jobs, self.paths =  self.server.get_jobs_paths()
         while True:
             self.data = self.rfile.readline().strip()
             if not self.data:
-               err="ERR no data received"
-               break
+                err="ERR no data received"
+                break
             logger.info("received: '%s'", self.data)
             
             # parse first word to find job
             try:
                 params=self.data.split(" ",1)
-                job=params[0]
-                if self.jobs.has_key(job):
+                jobname=params[0]
+                if jobs.has_key(jobname):
                     if len(params)>1:
                         data=self.getParams(params[1])
                     else:
                         data={}
                     logger.debug(data)
                     # such a job exists, load its module and start it
-                    upqjob_class = module_loader.load_module(job,self.paths['jobs_dir'])
-                    upqjob = upqjob_class(job, self.jobs[job], data , self.paths)
+                    upqjob_class = module_loader.load_module(jobname)
+                    upqjob = upqjob_class(jobname, data)
                     logger.debug(upqjob)
                     uj = upqjob.check()
                     if uj:
@@ -106,8 +105,8 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
                     else:
                         response = "ERR %s"%(upqjob.msg)
                 else:
-                    logger.debug("unknown job '%s'", job)
-                    err = "ERR unknown command '%s'"%job
+                    logger.debug("unknown job '%s'", jobname)
+                    err = "ERR unknown command '%s'"%jobname
                     break
             except IndexError:
                 err = "ERR error parsing '%s'"%self.data

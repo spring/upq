@@ -19,15 +19,17 @@ import module_loader
 import upqqueuemngr
 import notify
 import json
+import upqconfig
 
 class UpqJob(object):
-    def __init__(self, jobname, jobcfg, jobdata, paths):
+    def __init__(self, jobname, jobdata):
         self.jobname = jobname
-        self.jobcfg  = jobcfg
+        uc = upqconfig.UpqConfig()
+        self.jobcfg  = uc.jobs[jobname]
         self.jobdata = jobdata
         self.logger  = log.getLogger("upq")
         self.thread  = "Thread-new-UpqJob"
-        self.paths   = paths
+        self.paths   = uc.paths
         self.jobid   = -1
         self.msg     = ""
     
