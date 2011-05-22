@@ -22,15 +22,20 @@ import log
 import upqconfig
 
 class Notify():
+    def __init__(self):
+        self.uc = upqconfig.UpqConfig()
+    
     def success(self, jobname, msg):
-        notify_success = upqconfig.UpqConfig().jobs[jobname]['notify_success'].split()
-        f = operator.methodcaller(notify_success[0], True, jobname, notify_success[1:], msg)
-        f(self)
+        if self.uc.jobs[jobname].has_key('notify_success') and self.uc.jobs[jobname]['notify_success']:
+            notify_success = self.uc.jobs[jobname]['notify_success'].split()
+            f = operator.methodcaller(notify_success[0], True, jobname, notify_success[1:], msg)
+            f(self)
     
     def fail(self, jobname,  msg):
-        notify_fail = upqconfig.UpqConfig().jobs[jobname]['notify_fail'].split()
-        f = operator.methodcaller(notify_fail[0], False, jobname, notify_fail[1:], msg)
-        f(self)
+        if self.uc.jobs[jobname].has_key('notify_fail') and self.uc.jobs[jobname]['notify_fail']:
+            notify_fail = self.uc.jobs[jobname]['notify_fail'].split()
+            f = operator.methodcaller(notify_fail[0], False, jobname, notify_fail[1:], msg)
+            f(self)
     
     def mail(self, success, jobname, recipient, msg):
         mail = MIMEText(msg, "plain")
