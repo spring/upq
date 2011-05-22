@@ -16,58 +16,45 @@
 #
 
 import upqjob
-import tasks.remote_md5
+import jobs.get_remote_md5
 import upqdb
 
 class Verify_remote_file(upqjob.UpqJob):
+    
+    where = ""
+
     def check(self):
-        # find file in DB -> OK
+        # set fmfid OR fid and fmid -> OK
         
-        if len(self.jobdata) == 1:
-            # should be fmfid
-            try:
-                self.fmfid  = int(self.jobdata['fmfid'])
-                self.fileid = 0
-                self.fmid   = 0
-            except ValueError:
-                self.msg = "Expected fmfid in jobdata['fmfid'], jobdata='%s'"%self.jobdata
-                return False
-        elif len(self.jobdata) == 2:
-        # should be fid fmid
-            try:
-                self.fmfid  = 0
-                self.fileid = int(self.jobdata['fid'])
-                self.fmid   = int(self.jobdata['fmfid'])
-            except ValueError:
-                self.msg = "Expected fid in jobdata[0] and fmid in jobdata[1], "+"jobdata='%s'"%self.jobdata
-                return False
+        if self.jobdata.has_key('fmfid'):
+            self.where = "fmfid = %s"%self.jobdata['fmfid']
+        elif self.jobdata.has_key('fid') and self.jobdata.has_key('fmid'):
+            self.where = "fmid = %s AND fid = %s"%(self.jobdata['fmid'], self.jobdata['fid'])
         else:
-            self.msg = "Expected 'fmfid' OR 'fid fmid' in jobdata ('%s')"%self.jobdata
+            self.msg = "This module must be used with either fmfid!=0 or fid!=0 AND fmid!=0"
+            self.logger.error(self.msg)
             return False
-        
-        # get files hash from DB
-        db = upqdb.UpqDB().getdb(self.thread)
-        self.hash_in_db = db.get_remote_file_hash(self.fmfid, self.fmid, self.fileid)
-        if not self.hash_in_db:
-            self.msg = "File with fmfid='%s', fmid='%s', fileid='%s' not found in DB."%(self.fmfid, self.fmid, self.fileid)
-            return False
-        
-        # set missing info from db
-        if not self.fmfid:  self.fmfid = self.hash_in_db['fmfid']
-        if not self.fmid:   self.fmid = self.hash_in_db['fmid']
-        if not self.fileid: self.fileid = self.hash_in_db['fid']
         
         self.enqueue_job()
-	self.msg=self.hash_in_db['path']
         return True
     
-    def run(self):
-        rmd5 = self.tasks['remote_md5'](self.hash_in_db['path'], self.fileid, self.jobcfg, self.thread)
-        rmd5.set_fmid(self.fmid)
-        rmd5.set_fmfid(self.fmfid)
-        rmd5.run()
+    def run(self):    
+        # get files hash from DB
+        result = upqdb.UpqDB().query("SELECT * FROM file_mirror_files WHERE %s"%self.where)
+        res = result.first()
         
-        if self.hash_in_db['md5'] == rmd5.result:
+        if not res:
+            self.msg = "File with jobdata='%s' not found in DB."%(self.jobdata)
+            self.logger.debug(self.msg)
+            return False
+        
+        grmd5 = jobs.get_remote_md5.Get_remote_md5("get_remote_md5", self.jobdata)
+        grmd5.set_fid(res['fid'])
+        grmd5.set_fmid(res['fmid'])
+        grmd5.set_fmfid(res['fmfid'])
+        grmd5.check()
+        grmd5.finished.wait()
+        if res['md5'] == grmd5.result:
             self.msg = 'Remote hash matches hash in DB.'
             return True
         else:
