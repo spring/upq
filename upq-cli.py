@@ -16,7 +16,7 @@ def send_cmd(txts):
         while True:
             res += sock.recv(1)
             if res.endswith("\n"):
-                print >>sys.stderr, res
+                print >>sys.stderr, res,
                 break
     sock.close()
 
