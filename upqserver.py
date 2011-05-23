@@ -51,8 +51,9 @@ class UpqServer(SocketServer.ThreadingMixIn, SocketServer.UnixStreamServer):
         results=upqdb.UpqDB().query("SELECT * FROM upqueue WHERE state = 'new' OR state = 'running'")
         jobs = []
         for res in results:
-            modclass=module_loader.load_module(res['jobname'], self.paths['jobs_dir'])
-            obj=modclass(res['jobname'], self.jobs[res['jobname']], json.loads(res['jobdata']), self.paths)
+            job=res['jobname']
+            modclass=module_loader.load_module(job, self.paths['jobs_dir'])
+            obj=modclass(job, self.jobs[job], json.loads(res['jobdata']), self.paths)
             obj.jobid = res['jobid']
             obj.thread = "Thread-revived-UpqJob"
             jobs.append(obj)

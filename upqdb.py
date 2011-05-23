@@ -15,6 +15,13 @@ import module_loader
 from sqlalchemy import create_engine, Table, Column, Integer, String,DateTime,PickleType, MetaData, ForeignKey, Sequence
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import insert
+from sqlalchemy.exc import IntegrityError
+
+class UpqDBIntegrityError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
 
 class UpqDB():
     __shared_state = {}
@@ -52,6 +59,9 @@ class UpqDB():
     def query(self, query):
         self.logger.debug(query)
         return self.engine.execute(query)
+    """
+		insert values into tables, returns last insert id if primary key is autoincrement
+    """
     def insert(self, table, values):
         strkeys=""
         strvalues=""
@@ -59,10 +69,14 @@ class UpqDB():
             self.tables['table']=Table(table, self.meta, autoload=True)
         query=self.tables['table'].insert(values)
         s=Session(self.engine)
-        s.execute(query)
-        result=s.scalar("SELECT LAST_INSERT_ID()")
-        s.close()
-        self.logger.debug(str(query)+" id:"+str(result))
+        try:
+			s.execute(query)
+        except IntegrityError as e:
+			raise UpqDBIntegrityError("Integrity Error" + e.statement)
+        finally:
+            result=s.scalar("SELECT LAST_INSERT_ID()")
+            s.close()
+            self.logger.debug(str(query)+" id:"+str(result))
         return result
     def tbl_upqueue(self):
         return self.tbl_upqueue
@@ -115,26 +129,5 @@ class UpqDB():
         else:
             return result['url_prefix']+"/"+result['url_deamon']
 
-    def get_remote_file_hash(self, fmfid=0, fmid=0, fid=0):
-        """
-        Fetch a row from table file_mirror_files (remote file hashes)
 
-        Either fmfid or fid AND fmid must be set!
-
-        returns: (dict) a row from file_mirror_files
-        """
-        if fmfid:
-            where = "fmfid = %s"%fmfid
-        elif fmid != 0 and fid != 0:
-            where = "fmid = %s AND fid = %s"%(fmid, fid)
-        else:
-            self.logger.debug("This func must be called with either fmfid!=0 or fid!=0 AND fmid!=0.")
-            return {}
-        result=self.query("SELECT * FROM file_mirror_files WHERE %s"%where)
-        result = cursor.fetchone()
-        cursor.close()
-        if not result:
-            return {}
-        else:
-            return result
 

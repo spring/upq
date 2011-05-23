@@ -22,12 +22,12 @@ import json
 
 class UpqJob(object):
     def __init__(self, jobname, jobcfg, jobdata, paths):
-        self.jobname = jobname
-        self.jobcfg  = jobcfg
-        self.jobdata = jobdata
+        self.jobname = jobname #name of the job
+        self.jobcfg  = jobcfg #config for job (concurrent threads, ...)
+        self.jobdata = jobdata #data for job (file id, path, ...)
         self.logger  = log.getLogger("upq")
         self.thread  = "Thread-new-UpqJob"
-        self.paths   = paths
+        self.paths   = paths #paths for job
         self.jobid   = -1
         self.msg     = ""
     def check(self):
@@ -69,11 +69,14 @@ class UpqJob(object):
 
         if succeed:
             if self.jobcfg.has_key('notify_success'):
-                notify.Notify().success(self.jobname, self.result['msg'])
+				#TODO run job
+                #notify.Notify().success(self.jobname, self.msg)
+                pass
         else:
             if self.jobcfg.has_key('notify_fail'):
-                notify.Notify().fail(self.jobname,
-                            self.result['msg'])
+				#TODO run job
+                #notify.Notify().fail(self.jobname, self.msg)
+                pass
     def __str__(self):
 	return "Job: "+self.jobname +"id:"+ str(self.jobid)+" "+json.dumps(self.jobdata) +" thread: "+self.thread
 

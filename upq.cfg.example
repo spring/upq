@@ -32,6 +32,14 @@ concurrent = 3
 notify_fail =
 notify_success =
 
+[job hash]
+enabled = true
+concurrent = 1
+notify_fail =
+notify_success =
+#this can be accessed through self.jobcfg['path'] inside a job
+path = /tmp/
+
 [job archive_file]
 enabled = true
 concurrent = 2
