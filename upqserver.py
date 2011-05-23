@@ -83,7 +83,7 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
         while True:
             self.data = self.rfile.readline().strip()
             if not self.data:
-                err="ERR no data received"
+                err="no data received"
                 break
             logger.info("received: '%s'", self.data)
             
@@ -105,18 +105,17 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
                     if uj:
                         response = "ACK %d %s"%(upqjob.jobid, upqjob.msg)
                     else:
-                        response = "ERR %s"%(upqjob.msg)
+                        response = "%s"%(upqjob.msg)
                 else:
-                    logger.debug("unknown job '%s'", jobname)
-                    err = "ERR unknown command '%s'"%jobname
+                    err = "unknown command '%s'"%jobname
                     break
             except IndexError:
-                err = "ERR error parsing '%s'"%self.data
+                err = "error parsing '%s'"%self.data
                 break
-            
             self.wfile.write(response+'\n')
             logger.info("sent: '%s'", response)
         if len(err)>0:
-            self.wfile.write(err+'\n')
+            self.wfile.write("ERR "+err+'\n')
+            logger.debug("error while handling job '%s' %s", jobname, err)
         logger.debug("end of transmission")
 
