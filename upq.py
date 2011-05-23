@@ -57,6 +57,7 @@ class Upq():
             os.remove(self.uc.paths['socket'])
         
         server = upqserver.UpqServer(self.uc.paths['socket'], upqserver.UpqRequestHandler)
+        os.chmod(self.uc.paths['socket'], int(self.uc.paths['socket_chmod'],8))
         self.logger.info("Server listening on '%s'.", server.server_address)
 
         # Start a thread with the server -- that thread will then start one

@@ -7,6 +7,7 @@ logfile = /tmp/upq.log
 [paths]
 # paths beginning with "./" are treated as relative to path of this cfg file
 socket    = /tmp/upq-incoming.sock
+socket_chmod = 660
 jobs_dir  = ./jobs
 
 [db]
