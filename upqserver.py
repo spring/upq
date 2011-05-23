@@ -83,7 +83,6 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
         while True:
             self.data = self.rfile.readline().strip()
             if not self.data:
-                err="no data received"
                 break
             logger.info("received: '%s'", self.data)
             
