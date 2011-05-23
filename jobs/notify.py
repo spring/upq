@@ -17,22 +17,25 @@ import syslog
 import operator
 import quopri
 import email
-
 import log
+from upqjob import UpqJob
 
-class Notify():
+class Notify(UpqJob):
+	def run(self):
+		#TODO
+		pass
     def success(self, jobname, method, recipient, msg):
         f = operator.methodcaller(method, True, jobname, recipient, msg)
         f(self)
-    
+
     def fail(self, jobname, method, recipient, msg):
         f = operator.methodcaller(method, False, jobname, recipient, msg)
         f(self)
-    
+
     def mail(self, success, jobname, recipient, msg):
         mail = MIMEText(msg, "plain")
         mail.set_charset(email.charset.Charset('utf-8'))
-        
+
         if success:
             mail['Subject'] = "success "+jobname
         else:
@@ -42,15 +45,15 @@ class Notify():
         for r in recipient[1:]:
             recipients = recipients+", "+r
         mail['To'] = recipients
-        
+
         server = smtplib.SMTP("localhost")
         server.sendmail(mail['from'], recipient, mail.as_string())
         server.quit()
-    
+
     def syslog(self, success, jobname, recipient, msg):
         """
         Log message "SUCCESS/FAIL msg" to syslog.
-        
+
         TODO: use "recipient" as log facility?
         """
         log.getLogger().debug("syslogging")
@@ -58,5 +61,5 @@ class Notify():
             msg = "SUCCESS "+jobname+" "+msg
         else:
             msg = "FAIL    "+jobname+" "+msg
-        
+
         syslog.syslog(msg)
