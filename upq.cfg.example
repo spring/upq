@@ -100,6 +100,10 @@ sort = jobid
 enabled = true
 concurrent = 2
 
-[job null_task]
+[job extract_metadata]
 enabled = true
 concurrent = 2
+unitsync=/usr/lib/spring/libunitsync.so
+outputpath=/var/www/springfiles/sites/default/files/springdata
+datadir=/var/www/springfiles/sites/default/files/springdata
+
