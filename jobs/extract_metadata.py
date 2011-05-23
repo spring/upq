@@ -29,8 +29,36 @@ from xml.dom import minidom
 
 class Extract_metadata(UpqJob):
 	def run(self):
-		#TODO
-		main()
+		unitsync=self.jobcfg['unitsync']
+		outputpath=self.jobcfg['outputpath']
+		datadir=self.jobcfg['datadir']
+
+		outputpath = os.path.abspath(outputpath)
+		os.environ["SPRING_DATADIR"]=outputpath
+		usync = unitsyncpkg.Unitsync(unitsync)
+
+		usync.Init(True,1)
+		mapcount = usync.GetMapCount()
+		gamescount = usync.GetPrimaryModCount()
+		createdict(usync,gamescount, mapcount)
+		for i in range(0, mapcount):
+			maparchivecount = usync.GetMapArchiveCount(usync.GetMapName(i)) # initialization for GetMapArchiveName()
+			filename = os.path.basename(usync.GetMapArchiveName(0))
+			archivepath=usync.GetArchivePath(filename)+filename
+			print "["+str(i) +"/"+ str(mapcount)+ "] extracting data from "+filename
+			springname = usync.GetMapName(i)
+			dumpmap(usync, springname, outputpath, filename,i)
+			writeMapXmlData(usync, springname, i, outputpath +"/" +filename+".metadata.xml",maparchivecount, archivepath)
+			create_torrent(archivepath, outputpath +"/" +filename+".torrent")
+		for i in range (0, gamescount):
+			springname=usync.GetPrimaryModName(i)
+			filename=usync.GetPrimaryModArchive(i)
+			archivepath=usync.GetArchivePath(filename)+filename
+			print "["+str(i) +"/"+ str(gamescount)+ "] extracting data from "+filename
+			gamearchivecount=usync.GetPrimaryModArchiveCount(i) # initialization for GetPrimaryModArchiveList()
+			writeGameXmlData(usync, springname, i, outputpath + "/" + filename + ".metadata.xml", gamearchivecount, archivepath)
+			create_torrent(archivepath, outputpath +"/" +filename+".torrent")
+		print "Parsed "+ str(gamescount) + " games, " + str(mapcount) + " maps"
 
 	#calls extract metadata script
 	#if no category set, use category from metadata, move + rename file there
@@ -247,52 +275,3 @@ class Extract_metadata(UpqJob):
 		f.close()
 		shutil.move(tmp,output)
 		print "[created] " +output +" ok"
-
-	def main():
-		try:
-			opts, args = getopt.getopt(sys.argv[1:], "ho:u:d:t", ["help", "output=", "unitsync=", "datadir="])
-		except getopt.GetoptError, err:
-			print str(err)
-			usage()
-			sys.exit(2)
-		unitsync="/usr/lib/spring/libunitsync.so"
-		outputpath="../../../default/files/springdata"
-		datadir=outputpath
-		for o, a in opts:
-			if o in("-u", "--unitsync"):
-				unitsync=a
-			elif o in ("-o", "--output"):
-				outputpath=a
-			elif o in ("-d", "--datadir"):
-				datadir=a
-			elif o in ("-t", "--test"):
-				test(unitsync)
-			elif o in ("-h","-?","--help"):
-				usage()
-				sys.exit()
-		outputpath = os.path.abspath(outputpath)
-		os.environ["SPRING_DATADIR"]=outputpath
-		usync = unitsyncpkg.Unitsync(unitsync)
-
-		usync.Init(True,1)
-		mapcount = usync.GetMapCount()
-		gamescount = usync.GetPrimaryModCount()
-		createdict(usync,gamescount, mapcount)
-		for i in range(0, mapcount):
-			maparchivecount = usync.GetMapArchiveCount(usync.GetMapName(i)) # initialization for GetMapArchiveName()
-			filename = os.path.basename(usync.GetMapArchiveName(0))
-			archivepath=usync.GetArchivePath(filename)+filename
-			print "["+str(i) +"/"+ str(mapcount)+ "] extracting data from "+filename
-			springname = usync.GetMapName(i)
-			dumpmap(usync, springname, outputpath, filename,i)
-			writeMapXmlData(usync, springname, i, outputpath +"/" +filename+".metadata.xml",maparchivecount, archivepath)
-			create_torrent(archivepath, outputpath +"/" +filename+".torrent")
-		for i in range (0, gamescount):
-			springname=usync.GetPrimaryModName(i)
-			filename=usync.GetPrimaryModArchive(i)
-			archivepath=usync.GetArchivePath(filename)+filename
-			print "["+str(i) +"/"+ str(gamescount)+ "] extracting data from "+filename
-			gamearchivecount=usync.GetPrimaryModArchiveCount(i) # initialization for GetPrimaryModArchiveList()
-			writeGameXmlData(usync, springname, i, outputpath + "/" + filename + ".metadata.xml", gamearchivecount, archivepath)
-			create_torrent(archivepath, outputpath +"/" +filename+".torrent")
-		print "Parsed "+ str(gamescount) + " games, " + str(mapcount) + " maps"
