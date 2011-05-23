@@ -18,7 +18,6 @@ import threading
 import log
 import module_loader
 import upqqueuemngr
-import notify
 import json
 import upqconfig
 
