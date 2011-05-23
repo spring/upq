@@ -7,7 +7,9 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #
-# upload_file
+# called with fid, uploads fid to one mirror
+# calls notify services
+#
 
 from upqjob import UpqJob
 import ftplib

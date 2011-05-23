@@ -11,44 +11,34 @@ import urllib
 import upqdb
 
 class Remote_md5(UpqJob):
+    def check(self):
+		"""
+
+		"""
+		for file in self.jobdata['fmfid'] do:
+			res = upqdb.UpqDB().query("SELECT * FROM file_mirror_files as f LEFT JOIN file_mirror as m ON f.fmid=m.fmid WHERE f.fmfid=%s" % file)
+
+		return True
     """
     Remote_md5: retreive md5 checksum calculated by PHP-script "deamon.php" from
     remote mirror server
     
     either "fmfid" or "fid AND fmid" or "filename AND fmid" must be set 
     
-    fmfid can be set with set_fmfid()
-    fmid can be set with set_fmid()
-    fid can be set as "fileid" when calling __init__(filename, fileid, config, thread)
-    filename can be set when calling __init__(filename, fileid, config, thread)
-    
     run() sets result=(str)<retrieved md5 hash>
     """
-    fmid  = 0
-    fmfid = 0
-    
-    def set_fmid(self, fmid):
-        self.fmid = fmid
-    
-    def set_fmfid(self, fmfid):
-        self.fmfid = fmfid
-    
+
     def run(self):
-        
-        db = upqdb.UpqDB().getdb(self.thread)
-        
+
         # get http connection params from DB and construct URL
-        self.hash_in_db = db.get_remote_file_hash(self.fmfid,
-                                                  self.fmid,
-                                                  self.fileid)
+        self.hash_in_db = db.get_remote_file_hash(self.fmfid, self.fmid, self.fileid)
         script_url = db.get_remote_hash_url(self.hash_in_db['fmid'])
         params     = urllib.urlencode({'p': self.hash_in_db['path']})
         hash_url   = script_url+"?%s"%params
-        
+
         # retrieve md5 hash from deamon.php on remote mirror server
         hash_file = urllib.urlopen(hash_url)
         hash = hash_file.read()
-        self.logger.debug("received md5 hash for fid='%s' on fmid='%s' is '%s'",
-                     self.fileid, self.fmid, hash)
-        
+        self.logger.debug("received md5 hash for fid='%s' on fmid='%s' is '%s'", self.fileid, self.fmid, hash)
+
         self.result = hash
