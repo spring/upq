@@ -12,8 +12,8 @@ import os, os.path
 
 import log
 
-
-class ParseConfig():
+class UpqConfig():
+    __shared_state = {}
     # don't use "logger" before readConfig() ran!
     logger = None
     paths  = {}
@@ -21,16 +21,18 @@ class ParseConfig():
     db     = {}
     config_log = "Log replay from config parsing:\n"
     config = None
-    
+
+    def __init__(self):
+        self.__dict__ = self.__shared_state
+
     def conf_log(self, msg):
         self.config_log += msg+"\n"
-        #print >>sys.stderr, msg
-    
+
     def readConfig(self):
         self.config = ConfigParser.RawConfigParser(allow_no_value=True)
         self.config.read('upq.cfg')
-        
-        if not self.config.has_section("logging"):
+
+        if not self.logger and not self.config.has_section("logging"):
             # make sure to have a working logging system
             print >>sys.stderr, "No 'logging' section found in config file. Initializing log system with defaults."
             self.logger = log.init_logging(dict())
@@ -39,7 +41,7 @@ class ParseConfig():
              self.logger = log.init_logging(dict(log_cfg))
              self.logger.debug("===== Logging initialized =====")
 
-        
+
         for section in self.config.sections():
             self.conf_log("found section '%s'"%section)
             if section == "logging":
@@ -70,12 +72,10 @@ class ParseConfig():
 
             else:
                 self.conf_log("Unknown section '%s' found in config file, ignoring."% (section))
-        
+
         self.logger.info(self.config_log)
-        
+
         self.logger.info("paths='%s'", self.paths)
         self.logger.info("jobs='%s'", self.jobs)
         self.logger.info("db='%s'", self.db)
-
-        return self.paths, self.jobs, self.db
 

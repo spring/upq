@@ -27,7 +27,6 @@ class Hash(UpqJob):
 			self.msg="Integry check failed, more than 1 file to hash in result"
 			return False
 		for res in results:
-			print res
 			if len(res['md5'])>0: #md5 already present, don't hash again
 				self.msg="MD5 already present: " + res['md5']
 				return False

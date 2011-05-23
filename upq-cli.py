@@ -15,6 +15,8 @@ def send_cmd(txts):
         sock.settimeout(30.0)
         try:
             while True:
+                #TODO: read as many responses as requests send
+                # and close connection then
                 response = sock.recv(1024)
                 if len(response)<=0:
 	            break

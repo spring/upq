@@ -18,19 +18,27 @@ import operator
 import quopri
 import email
 import log
+import upqconfig
 from upqjob import UpqJob
 
 class Notify(UpqJob):
-	def run(self):
-		#TODO
-		pass
-    def success(self, jobname, method, recipient, msg):
-        f = operator.methodcaller(method, True, jobname, recipient, msg)
-        f(self)
+    def run(self):
+        #TODO
+        pass
+    def __init__(self):
+        self.uc = upqconfig.UpqConfig()
 
-    def fail(self, jobname, method, recipient, msg):
-        f = operator.methodcaller(method, False, jobname, recipient, msg)
-        f(self)
+    def success(self, jobname, msg):
+        if self.uc.jobs[jobname].has_key('notify_success') and self.uc.jobs[jobname]['notify_success']:
+            notify_success = self.uc.jobs[jobname]['notify_success'].split()
+            f = operator.methodcaller(notify_success[0], True, jobname, notify_success[1:], msg)
+            f(self)
+
+    def fail(self, jobname,  msg):
+        if self.uc.jobs[jobname].has_key('notify_fail') and self.uc.jobs[jobname]['notify_fail']:
+            notify_fail = self.uc.jobs[jobname]['notify_fail'].split()
+            f = operator.methodcaller(notify_fail[0], False, jobname, notify_fail[1:], msg)
+            f(self)
 
     def mail(self, success, jobname, recipient, msg):
         mail = MIMEText(msg, "plain")

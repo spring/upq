@@ -1,6 +1,7 @@
 TOC
 ---
 - What is this?
+- Requirements
 - Licensing
 - Files
 - Installation and configuration
@@ -17,15 +18,10 @@ Atm this project is hosted at https://github.com/springfiles/upq
 Jobs are written as modules that can be run with arguments through a command on
 a UNIX/NET socket. Each module defines a "Job"-type. A queue is automatically
 created for each Job-type. A per-Job-type configurable amount of worker threads
-consume from each queue. The standard python Queue was extended to make Jobs
-persistent in a MySQL DB to withstand (upq) server crash/restart. After the
-server starts it looks in the DB to see if any jobs have not finished, and
-restarts them.
-
-* Tasks
-To promote easy code sharing, Jobs can have sub"Task"s that do most of their
-work. Task modules are automatically loaded (but not initialized), when a Job is
-created. Tasks are optional.
+consume from each queue. Jobs run in their own thread. The standard Python Queue
+was extended to make Jobs persistent in a MySQL DB to withstand (upq) server
+crash/restart. After the server starts it looks in the DB to see if any jobs
+have not finished, and restarts them.
 
 * Notifications
 There is a basic notification system that atm can send emails and log to syslog
@@ -42,6 +38,13 @@ the "UpqJob" class. In section "[job my_command]" the "tasks" variable can be a
 space separated list of "UpqTask"s, that will be searched and loaded
 automatically. Search in [paths]->tasks_dir, module name "my_task.py", class
 name "My_task", derived from "UpqTask".
+
+
+REQUIREMENTS
+------------
+Python >= 2.6 (< 3.0)
+SQLAlchemy 0.6
+MySQL
 
 
 LICENSING
@@ -81,18 +84,16 @@ To create a new job do:
 * Create a file job_name.py in the directory [paths]->jobs_dir.
 * job_name.py must contain a "class Job_name(UpqJob)" deriving from UpqJob.
 * Create a section "[job job_name]" in upq.cfg. The section should define
-variables "enabled = <bool>", "tasks = <task list>", "concurrent = <int>",
+variables "enabled = <bool>", "concurrent = <int>",
 "notify_fail = [syslog xyz | mail <email address list>]",
 "notify_success = [syslog xyz | mail <email address list>]".
-* Optionally create UpqTask(s). Its similar to creating an UpqJob:
-  - file "a_task.py" in [paths]->tasks_dir
-  - a_task.py contains "class A_task(UpqTask)"
-  - section "[task a_task]" in upq.cfg, variables are optional and whatever you
-    like (making this more accessible is a TODO)
+* If you wish to call another UpqJob from within an UpqJob and use its
+<job>.result, use <job>.finished.wait() to block the calling UpqJob until
+<job>.run() finishes. (The queue worker thread will release the lock.)
 
 After restarting the server it is possible to start the new Job. Testing can be
 performed with "upq-cli.py" like this:
-$ ./upq-cli "verify_local_file 50" "new_file /var/www/nice_map.sd7"
+$ ./upq-cli "verify_local_file fid=50"
 
 
 FILES

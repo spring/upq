@@ -13,23 +13,29 @@
 # the first letter upper case!
 #
 
+import threading
 
 import log
 import module_loader
 import upqqueuemngr
 import notify
 import json
+import upqconfig
 
 class UpqJob(object):
-    def __init__(self, jobname, jobcfg, jobdata, paths):
-        self.jobname = jobname #name of the job
-        self.jobcfg  = jobcfg #config for job (concurrent threads, ...)
-        self.jobdata = jobdata #data for job (file id, path, ...)
+    def __init__(self, jobname, jobdata):
+        self.jobname = jobname
+        uc = upqconfig.UpqConfig()
+        self.jobcfg  = uc.jobs[jobname]
+        self.jobdata = jobdata
         self.logger  = log.getLogger("upq")
         self.thread  = "Thread-new-UpqJob"
-        self.paths   = paths #paths for job
+        self.paths   = uc.paths
         self.jobid   = -1
         self.msg     = ""
+        self.result  = None
+        self.finished= threading.Event()
+
     def check(self):
         """
         Check if job is feasable and possibly queue it.
@@ -78,5 +84,5 @@ class UpqJob(object):
                 #notify.Notify().fail(self.jobname, self.msg)
                 pass
     def __str__(self):
-	return "Job: "+self.jobname +"id:"+ str(self.jobid)+" "+json.dumps(self.jobdata) +" thread: "+self.thread
+        return "Job: "+self.jobname +"id:"+ str(self.jobid)+" "+json.dumps(self.jobdata) +" thread: "+self.thread
 

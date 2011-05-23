@@ -45,6 +45,7 @@ class UpqQueueMngr():
             job.notify(res)
             self.logger.info("finnished job '%d' ('%s') in thread '%s' with result '%s'", job.jobid, job.__module__, thread_id, res)
             queue.task_done(job)
+            job.finished.set()
 
     """ returns id of job """
     def new_queue(self, job):

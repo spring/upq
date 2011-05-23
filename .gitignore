@@ -1,2 +1,6 @@
 *.pyc
 */*.pyc
+upq.cfg
+.project
+.pydevproject
+.settings
