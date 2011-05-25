@@ -8,8 +8,6 @@ Missing pieces:
 * unload job when none is running (to save memory)
 * reread ini-file on signal (USR1 or something)
 * add posibility to overwrite default job-settings with parameter
-* make upq.cfg system wide accessible through a singleton, automatically
-  link UpqJobs.jobcfg and UpqTasks.config with their respective info
 * make parser more stable
 
 feel free to add you're ideas to https://github.com/springfiles/upq/issues
