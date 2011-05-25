@@ -16,48 +16,48 @@
 #
 
 import upqjob
-import jobs.get_remote_md5
 import upqdb
+import urllib
 
 class Verify_remote_file(upqjob.UpqJob):
 
     where = ""
 
     def check(self):
-        # set fmfid OR fid and fmid -> OK
-        
-        if self.jobdata.has_key('fmfid'):
-            self.where = "fmfid = %s"%self.jobdata['fmfid']
-        elif self.jobdata.has_key('fid') and self.jobdata.has_key('fmid'):
-            self.where = "fmid = %s AND fid = %s"%(self.jobdata['fmid'], self.jobdata['fid'])
-        else:
-            self.msg = "This module must be used with either fmfid!=0 or fid!=0 AND fmid!=0"
-            self.logger.error(self.msg)
-            return False
-        
+        # TODO: check if time last file checked is < 1 Year
         self.enqueue_job()
         return True
+
     
     def run(self):
         # get files hash from DB
-        result = upqdb.UpqDB().query("SELECT * FROM file_mirror_files WHERE %s"%self.where)
+        fid=int(self.jobdata['fmfid'])
+        result = upqdb.UpqDB().query("SELECT url_prefix, url_deamon, path, md5 FROM file_mirror_files AS f  LEFT JOIN file_mirror as m ON m.fmid=f.fmid WHERE fmfid=%d "%fid)
         res = result.first()
 
         if not res:
             self.msg = "File with jobdata='%s' not found in DB."%(self.jobdata)
             self.logger.debug(self.msg)
             return False
+
+        script_url = res['url_prefix']+"/"+res['url_deamon']
+        params     = urllib.urlencode({'p': res['path']})
+        hash_url   = script_url+"?%s"%params
+
+        # retrieve md5 hash from deamon.php on remote mirror server
+        self.logger.debug("retrieving '%s'", hash_url)
+        hash_file = urllib.urlopen(hash_url)
+        hash = hash_file.read()
+
+        self.msg = "received md5 hash for filename=%s on fmid=%s is %s" %(res['path'], fid, hash)
+        self.result = hash
+        self.logger.debug(self.msg)
+
         
-        grmd5 = jobs.get_remote_md5.Get_remote_md5("get_remote_md5", self.jobdata)
-        grmd5.set_fid(res['fid'])
-        grmd5.set_fmid(res['fmid'])
-        grmd5.set_fmfid(res['fmfid'])
-        grmd5.check()
-        grmd5.finished.wait()
-        if res['md5'] == grmd5.result:
+        if res['md5'] == hash:
             self.msg = 'Remote hash matches hash in DB.'
             return True
         else:
+			#TODO: delete from db to allow re-upload
             self.msg  = 'Remote hash does NOT match hash in DB.'
             return False
-
