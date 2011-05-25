@@ -20,7 +20,7 @@ class Test(UpqJob):
         return True
 
     def run(self):
-        time.sleep(60)
+        time.sleep(10)
         self.msg="Success run"
         return True
 
