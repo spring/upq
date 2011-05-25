@@ -21,7 +21,7 @@ class Hash(UpqJob):
 		requirements to run hash:
 			file is in db + file has to exist
 	"""
-	#TODO: recheck md5 if last check of md5 is older than one year (time taken from config)
+	#TODO: allow recheck hash if last check of hash is older than one year (time taken from config)
 	def check(self):
 		results = UpqDB().query("SELECT filepath,md5 FROM files as f LEFT JOIN filehash as h ON f.fid=h.fid WHERE f.fid=%d "% int(self.jobdata['fid']))
 		if results.rowcount>1:
@@ -38,6 +38,22 @@ class Hash(UpqJob):
 			return True
 		self.msg="File not found"
 		return False
+
+	def run(self):
+		"""
+			class Hash must be initialized with fileid!
+		"""
+		results = UpqDB().query("SELECT * FROM files f LEFT JOIN filehash h ON f.fid=h.fid WHERE f.fid=%d  "% int(self.jobdata['fid']))
+		for res in results:
+			file = self.jobcfg['path'] + res['filepath']
+			md5, sha1, sha256 = hash(file)
+
+			try:
+				UpqDB().insert("filehash", { "fid": self.jobdata['fid'], "md5": md5, "sha1": sha1, "sha256": sha256 })
+			except UpqDBIntegrityError:
+				self.msg="Hash already exists in db, not updating"
+				return True
+		return True
 
     def hash(self, filename):
         """
@@ -57,7 +73,7 @@ class Hash(UpqJob):
         try:
             fd = open(filename, "rb", 4096)
         except IOError, ex:
-            msg = "Unable to open the file for reading: '%s'."%ex
+            msg = "Unable to open '%s' for reading: '%s'." % (filename, ex)
             logger.error(msg)
             raise Exception(msg)
         while True:
@@ -71,19 +87,4 @@ class Hash(UpqJob):
 
         return {'md5': md5.hexdigest(), 'sha1': sha1.hexdigest(), 'sha256': sha256.hexdigest()}
 
-	def run(self):
-		"""
-			class Hash must be initialized with fileid!
-		"""
-		results = UpqDB().query("SELECT * FROM files f LEFT JOIN filehash h ON f.fid=h.fid WHERE f.fid=%d  "% int(self.jobdata['fid']))
-		for res in results:
-			file = self.jobcfg['path'] + res['filepath']
-			md5, sha1, sha256 = hash(file)
-
-			try:
-				UpqDB().insert("filehash", { "fid": self.jobdata['fid'], "md5": md5, "sha1": sha1, "sha256": sha256 })
-			except UpqDBIntegrityError:
-				self.msg="Hash already exists in db, not updating"
-				return True
-		return True
     
