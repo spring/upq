@@ -49,7 +49,7 @@ class Extract_metadata(UpqJob):
 			maparchivecount = usync.GetMapArchiveCount(usync.GetMapName(i)) # initialization for GetMapArchiveName()
 			filename = os.path.basename(usync.GetMapArchiveName(0))
 			archivepath=usync.GetArchivePath(filename)+filename
-			print "["+str(i) +"/"+ str(mapcount)+ "] extracting data from "+filename
+			self.logger.debug("["+str(i) +"/"+ str(mapcount)+ "] extracting data from "+filename)
 			springname = usync.GetMapName(i)
 			self.dumpmap(usync, springname, outputpath, filename,i)
 			self.writeMapXmlData(usync, springname, i, outputpath +"/" +filename+".metadata.xml",maparchivecount, archivepath)
@@ -58,11 +58,11 @@ class Extract_metadata(UpqJob):
 			springname=usync.GetPrimaryModName(i)
 			filename=usync.GetPrimaryModArchive(i)
 			archivepath=usync.GetArchivePath(filename)+filename
-			print "["+str(i) +"/"+ str(gamescount)+ "] extracting data from "+filename
+			self.logger.debug("["+str(i) +"/"+ str(gamescount)+ "] extracting data from "+filename)
 			gamearchivecount=usync.GetPrimaryModArchiveCount(i) # initialization for GetPrimaryModArchiveList()
 			self.writeGameXmlData(usync, springname, i, outputpath + "/" + filename + ".metadata.xml", gamearchivecount, archivepath)
 			self.create_torrent(archivepath, outputpath +"/" +filename+".torrent")
-		print "Parsed "+ str(gamescount) + " games, " + str(mapcount) + " maps"
+		self.logger.debug( "Parsed "+ str(gamescount) + " games, " + str(mapcount) + " maps")
 
 	#calls extract metadata script
 	#if no category set, use category from metadata, move + rename file there
@@ -107,7 +107,7 @@ class Extract_metadata(UpqJob):
 
 	def writeMapXmlData(self, usync, smap, idx, filename,maparchivecount,archivename):
 		if os.path.isfile(filename):
-			print "[skip] " +filename + " already exists, skipping..."
+			self.logger.debug("[skip] " +filename + " already exists, skipping...")
 		else:
 			doc = minidom.Document()
 			archive = doc.createElement("Archive")
@@ -139,12 +139,12 @@ class Extract_metadata(UpqJob):
 			metadata.write(doc.toxml("utf-8"))
 			metadata.close()
 			shutil.move(tmp,filename)
-			print "[created] " +filename +" ok"
+			self.logger.debug("[created] " +filename +" ok")
 
 	# extracts minimap from given file
 	def createMapImage(self, usync, mapname, outfile, size):
 		if os.path.isfile(outfile):
-			print "[skip] " +outfile + " already exists, skipping..."
+			self.logger.debug("[skip] " +outfile + " already exists, skipping...")
 			return
 		data=ctypes.string_at(usync.GetMinimap(mapname, 0), 1024*1024*2)
 		im = Image.frombuffer("RGB", (1024, 1024), data, "raw", "BGR;16")
@@ -152,11 +152,11 @@ class Extract_metadata(UpqJob):
 		tmp=".tmp.jpg" # first create tmp file
 		im.save(tmp)
 		shutil.move(tmp,outfile) # rename to dest
-		print "[created] " +outfile +" ok"
+		self.logger.debug("[created] " +outfile +" ok")
 
 	def createMapInfoImage(self, usync, mapname, maptype, byteperpx, decoder,decoderparm, outfile, size):
 		if os.path.isfile(outfile):
-			print "[skip] " +outfile + " already exists, skipping..."
+			self.logger.debug("[skip] " +outfile + " already exists, skipping...")
 			return
 		width = ctypes.pointer(ctypes.c_int())
 		height = ctypes.pointer(ctypes.c_int())
@@ -173,7 +173,7 @@ class Extract_metadata(UpqJob):
 			tmp=".tmp.jpg"
 			im.save(tmp)
 			shutil.move(tmp,outfile)
-			print "[created] " +outfile +" ok"
+			self.logger.debug("[created] " +outfile +" ok")
 
 
 	def dumpmap(self, usync, springname, outpath, filename, idx):
@@ -181,9 +181,9 @@ class Extract_metadata(UpqJob):
 		heightmap = outpath + '/' + filename + ".heightmap" + ".jpg"
 		mapimage = outpath + '/' + filename + ".jpg"
 		if os.path.isfile(metalmap) and os.path.isfile(heightmap) and os.path.isfile(mapimage):
-			print "[skip] " +metalmap + " already exists, skipping..."
-			print "[skip] " +heightmap + " already exists, skipping..."
-			print "[skip] " +mapimage + " already exists, skipping..."
+			self.logger.debug("[skip] " +metalmap + " already exists, skipping...")
+			self.logger.debug("[skip] " +heightmap + " already exists, skipping...")
+			self.logger.debug("[skip] " +mapimage + " already exists, skipping...")
 		else:
 			mapwidth=float(usync.GetMapWidth(idx))
 			mapheight=float(usync.GetMapHeight(idx))
@@ -200,17 +200,16 @@ class Extract_metadata(UpqJob):
 		game.appendChild(depends)
 		for i in range (1, gamearchivecount): # get depends for file, idx=0 is filename itself
 			deps=os.path.basename(usync.GetPrimaryModArchiveList(i))
-			print deps
-			if not deps in springcontent and not deps.endswith(".sdp"): #FIXME: .sdp is returned wrong by unitsync
-				if deps in springnames:
-					depend=springnames[deps]
+			if not deps in self.springcontent and not deps.endswith(".sdp"): #FIXME: .sdp is returned wrong by unitsync
+				if deps in self.springnames:
+					depend=self.springnames[deps]
 				else:
 					depend=deps
 				self.getXmlData(doc, depends, "Depend", depend)
 
 	def writeGameXmlData(self, usync, springname, idx, filename,gamesarchivecount, archivename):
 		if os.path.isfile(filename):
-			print "[skip] " +filename + " already exists, skipping..."
+			self.logger.debug("[skip] " +filename + " already exists, skipping...")
 			return
 		doc = minidom.Document()
 		archive = doc.createElement("Archive")
@@ -230,15 +229,8 @@ class Extract_metadata(UpqJob):
 		f.write(doc.toxml("utf-8"))
 		f.close()
 		shutil.move(tmp,filename)
-		print "[created] " +filename +" ok"
+		self.logger.debug("[created] " +filename +" ok")
 
-
-	def usage():
-		print "--help \n\
-	--output <outputdir>\n\
-	--unitsync <libunitsync.so>\n\
-	--datadir <maps/gamesdir>\n\
-	"
 	springnames={}
 	def createdict(self,usync,gamescount, mapcount):
 		#create dict with springnames[filename]=springname
@@ -249,16 +241,16 @@ class Extract_metadata(UpqJob):
 		for i in range(0, mapcount):
 			maparchivecount = usync.GetMapArchiveCount(usync.GetMapName(i)) # initialization for GetMapArchiveName()
 			filename = os.path.basename(usync.GetMapArchiveName(0))
-			print "["+str(i) +"/"+ str(mapcount)+ "] extracting data from "+filename
+			self.logger.debug( "["+str(i) +"/"+ str(mapcount)+ "] extracting data from "+filename)
 			springname = usync.GetMapName(i)
 			self.springnames[filename]=springname
 
 	def create_torrent(self, filename, output):
 		if os.path.isdir(filename):
-			print "[skip] " +filename + "is a directory, can't create torrent"
+			self.logger.debug("[skip] " +filename + "is a directory, can't create torrent")
 			return
 		if os.path.isfile(output):
-			print "[skip] " +output + " already exists, skipping..."
+			self.logger.debug("[skip] " +output + " already exists, skipping...")
 			return
 		metalink._opts = { 'overwrite': False }
 		filesize=os.path.getsize(filename)
@@ -278,4 +270,4 @@ class Extract_metadata(UpqJob):
 		f.write(data)
 		f.close()
 		shutil.move(tmp,output)
-		print "[created] " +output +" ok"
+		self.logger.debug("[created] " +output +" ok")
