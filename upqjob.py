@@ -43,8 +43,8 @@ class UpqJob(object):
         Returns True + sets jobid
         """
         # check if file is readable (or similar)
-        # self.enqueue_job()
         # return True when jobdata is fine to call run(), when returning False sets self.msg
+        self.enqueue_job()
         return True
 
     def run(self):
