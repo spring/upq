@@ -71,17 +71,15 @@ class UpqJob(object):
         """
         Notify someone responsable about job result.
         """
-
+        job=None
         if succeed:
             if self.jobcfg.has_key('notify_success'):
-				#TODO run job
-                #notify.Notify().success(self.jobname, self.msg)
-                pass
+                job=upqqueuemngr.UpqQueueMngr().new_job(self.jobcfg['notify_success']+" msg:"+self.msg)
         else:
             if self.jobcfg.has_key('notify_fail'):
-				#TODO run job
-                #notify.Notify().fail(self.jobname, self.msg)
-                pass
+                job=upqqueuemngr.UpqQueueMngr().new_job(self.jobcfg['notify_fail']+" msg:"+self.msg)
+        if isinstance(job,UpqJob):
+            job.check()
     def __str__(self):
         return "Job: "+self.jobname +"id:"+ str(self.jobid)+" "+json.dumps(self.jobdata) +" thread: "+self.thread
 

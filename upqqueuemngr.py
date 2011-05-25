@@ -84,7 +84,10 @@ class UpqQueueMngr():
         res = {}
         for k in keyvals:
             tmp = k.split(":", 1)
-            res[tmp[0]] = tmp[1]
+            if len(tmp)>1:
+                res[tmp[0]] = tmp[1]
+            else:
+                res[tmp[0]] = ""
         return res
 
     """ creates a new job and initializes by command string"""
