@@ -43,7 +43,8 @@ class Hash(UpqJob):
 		"""
 			class Hash must be initialized with fileid!
 		"""
-		results = UpqDB().query("SELECT * FROM files f LEFT JOIN filehash h ON f.fid=h.fid WHERE f.fid=%d  "% int(self.jobdata['fid']))
+		fid=self.jobdata['fid']
+		results = UpqDB().query("SELECT * FROM files f LEFT JOIN filehash h ON f.fid=h.fid WHERE f.fid=%d  "% int(fid))
 		for res in results:
 			file = self.jobcfg['path'] + res['filepath']
 			md5, sha1, sha256 = hash(file)

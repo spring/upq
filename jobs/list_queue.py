@@ -32,7 +32,7 @@ class List_queue(UpqJob):
             self.logger.debug("type(queue[1].queue)='%s'", type(queue[1].queue))
             self.logger.debug("list(queue[1].queue)='%s'", list(queue[1].queue))
             for job in queue[1].queue:
-                msg += "\n    - '%s' : '%s'"%(job.jobname, job.jobdata)
+                msg += "'%s' : '%s'"%(job.jobname, job.jobdata)
         else:
             if not msg: msg = "No queues."
 

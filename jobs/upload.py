@@ -61,5 +61,4 @@ class Upload(UpqJob):
             except:
                 self.logger.error("Upload (%s) %s failed " % (host, srcfilename));
                 return False
-            return True
         return True
