@@ -13,16 +13,11 @@ jobs_dir  = ./jobs
 [db]
 url= mysql://user:password@hostname/dbname
 
-#
-#-upload new file
-#-reupload failed uploads
-#-move files into an archive-folder on mirrors (or delete it, if mirror has no archive)
-#-re-upload damaged/missing files
-#-verify files
-#-extract metadata
-#-notify other services/websites about new files
-#-import files already on mirrors (would mean a script that notifies about a new file)
-#
+[job hash]
+enabled = true
+concurrent = 2
+#this can be accessed through self.jobcfg['path'] inside a job
+path = /var/www/springfiles/
 
 [job new_file]
 # needs filepath
@@ -32,14 +27,6 @@ enabled = true
 concurrent = 3
 notify_fail =
 notify_success =
-
-[job hash]
-enabled = true
-concurrent = 1
-notify_fail =
-notify_success =
-#this can be accessed through self.jobcfg['path'] inside a job
-path = /tmp/
 
 [job archive_file]
 enabled = true
@@ -70,24 +57,15 @@ notify_success =
 [job upload]
 enabled = true
 concurrent = 2
+path = /var/www/springfiles/
+#path that is excluded for uploaded structure
+prefix = sites/default/files/
 
 [job test]
 enabled = true
 concurrent = 2
 
-[job extract_metadata]
-enabled = true
-concurrent = 2
-
-[job hash]
-enabled = true
-concurrent = 2
-
-[job mirror_upload]
-enabled = true
-concurrent = 2
-
-[job get_remote_md5]
+[job remote_md5]
 enabled = true
 concurrent = 2
 
