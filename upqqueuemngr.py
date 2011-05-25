@@ -83,7 +83,7 @@ class UpqQueueMngr():
         keyvals = str.split()
         res = {}
         for k in keyvals:
-            tmp = k.split("=", 1)
+            tmp = k.split(":", 1)
             res[tmp[0]] = tmp[1]
         return res
 
@@ -91,13 +91,14 @@ class UpqQueueMngr():
     def new_job(self, data):
         uc = upqconfig.UpqConfig()
         jobs = uc.jobs
+        jobname=""
         # parse first word to find job
         try:
             params=data.split(" ",1)
             jobname=params[0]
             if jobs.has_key(jobname):
                 if len(params)>1:
-                    data=getParams(params[1])
+                    data=self.getParams(params[1])
                 else:
                     data={}
                 # such a job exists, load its module and start it
@@ -105,7 +106,7 @@ class UpqQueueMngr():
                 upqjob = upqjob_class(jobname, data)
                 self.logger.debug(upqjob)
                 return upqjob
-        except IndexError:
-            self.logger("error parsing '%s'"%self.data)
-            return None
+        except Exception, e:
+            self.logger.error("couldn't load module '%s': %s" % (jobname, traceback.format_exc(100)))
+        return None
 
