@@ -12,7 +12,7 @@
 # 
 
 #
-# call this module with argument "<fmfid>" OR "<fid> <fmid>"
+# call this module with argument "<fmfid>"
 #
 
 import upqjob
