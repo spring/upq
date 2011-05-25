@@ -17,9 +17,10 @@ import json
 
 import log
 from upqjob import UpqJob
-import module_loader
 import upqdb
 import upqconfig
+import module_loader
+from upqqueuemngr import UpqQueueMngr
 
 
 logger = log.getLogger("upq")
@@ -60,18 +61,6 @@ class UpqServer(SocketServer.ThreadingMixIn, SocketServer.UnixStreamServer):
 
 class UpqRequestHandler(SocketServer.StreamRequestHandler):
 
-    """
-         extract params into dict from a string like this:
-         key1=value1 key2=value2
-    """
-    def getParams(self, str):
-        keyvals = str.split()
-        res = {}
-        for k in keyvals:
-            tmp = k.split("=", 1)
-            res[tmp[0]] = tmp[1]
-        return res
-
     def handle(self):
         logger.debug("new connection from '%s'", self.client_address)
         response=""
@@ -85,36 +74,16 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
             if not self.data:
                 break
             logger.info("received: '%s'", self.data)
-            
-            # parse first word to find job
-            try:
-                params=self.data.split(" ",1)
-                jobname=params[0]
-                if jobs.has_key(jobname):
-                    if len(params)>1:
-                        data=self.getParams(params[1])
-                    else:
-                        data={}
-                    logger.debug(data)
-                    # such a job exists, load its module and start it
-                    upqjob_class = module_loader.load_module(jobname)
-                    upqjob = upqjob_class(jobname, data)
-                    logger.debug(upqjob)
-                    uj = upqjob.check()
-                    if uj:
-                        response = "ACK %d %s"%(upqjob.jobid, upqjob.msg)
-                    else:
-                        response = "%s"%(upqjob.msg)
+            uj=UpqQueueMngr().new_job(self.data)
+            if isinstance(uj,UpqJob):
+                if uj.check():
+                    self.wfile.write("ACK " + uj.msg + "\n");
                 else:
-                    err = "unknown command '%s'"%jobname
-                    break
-            except IndexError:
-                err = "error parsing '%s'"%self.data
+                    self.wfile.write("ERR " + uj.msg + "\n");
+            else:
+                msg="Unknown command: %s"% self.data
+                logger.debug(msg)
+                self.wfile.write("ERR "+msg+'\n')
                 break
-            self.wfile.write(response+'\n')
-            logger.info("sent: '%s'", response)
-        if len(err)>0:
-            self.wfile.write("ERR "+err+'\n')
-            logger.debug("error while handling job '%s' %s", jobname, err)
+            logger.info("sent: '%s'", uj.msg)
         logger.debug("end of transmission")
-

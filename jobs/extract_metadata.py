@@ -33,6 +33,7 @@ class Extract_metadata(UpqJob):
 	#TODO: make it possible to hash only a single file
 	#this could be done by creating an empty directory + symlink the file there
 	def run(self):
+		fid=self.jobdata['fid'] #TODO use this
 		unitsync=self.jobcfg['unitsync']
 		outputpath=self.jobcfg['outputpath']
 		datadir=self.jobcfg['datadir']

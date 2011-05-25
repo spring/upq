@@ -14,6 +14,9 @@ from threading import Thread
 
 import log
 import dbqueue
+import upqconfig
+import module_loader
+import traceback
 
 class UpqQueueMngr():
     # Borg design pattern (pythons cooler singleton)
@@ -41,9 +44,14 @@ class UpqQueueMngr():
             job = queue.get()
             job.thread = thread_id
             self.logger.info("starting job '%d' ('%s') in thread '%s'", job.jobid, job.__module__, thread_id)
-            res=job.run()
-            job.notify(res)
-            self.logger.info("finnished job '%d' ('%s') in thread '%s' with result '%s'", job.jobid, job.__module__, thread_id, res)
+            res=""
+            try:
+                res=job.run()
+                job.notify(res)
+            except Exception, e:
+                job.msg="Error in job %s %s %s" % (job.__module__, str(e), traceback.format_exc(100))
+
+            self.logger.info("finnished job '%d' ('%s') in thread '%s' with result '%s'", job.jobid, job.__module__, thread_id, job.msg)
             queue.task_done(job)
             job.finished.set()
 
@@ -65,4 +73,37 @@ class UpqQueueMngr():
     """ returns id of job """
     def insert_into_queue(self, job):
         return self.queues[job.__module__].put(job)
+    """
+         extract params into dict from a string like this:
+         key1=value1 key2=value2
+    """
+    def getParams(self, str):
+        keyvals = str.split()
+        res = {}
+        for k in keyvals:
+            tmp = k.split("=", 1)
+            res[tmp[0]] = tmp[1]
+        return res
+
+    """ creates a new job and initializes by command string"""
+    def new_job(self, data):
+        uc = upqconfig.UpqConfig()
+        jobs = uc.jobs
+        # parse first word to find job
+        try:
+            params=data.split(" ",1)
+            jobname=params[0]
+            if jobs.has_key(jobname):
+                if len(params)>1:
+                    data=getParams(params[1])
+                else:
+                    data={}
+                # such a job exists, load its module and start it
+                upqjob_class = module_loader.load_module(jobname)
+                upqjob = upqjob_class(jobname, data)
+                self.logger.debug(upqjob)
+                return upqjob
+        except IndexError:
+            self.logger("error parsing '%s'"%self.data)
+            return None
 
