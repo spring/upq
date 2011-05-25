@@ -61,11 +61,19 @@ class UpqJob(object):
         """
         self.jobid=upqqueuemngr.UpqQueueMngr().enqueue_job(self)
 
+    def enqueue_newjob(self, data):
+        """
+        Add a new job into queue, data is the data string, for example:
+            notify mail:user@server.com,user1@server.com syslog
+        """
+        job=upqqueuemngr.UpqQueueMngr().new_job(data)
+        if isinstance(job,UpqJob):
+            job.check()
+
     def __setstate__(self, dict):
         # this is used to unpickle a job
         self.__dict__.update(dict)
         self.logger = log.getLogger("upq")
-
 
     def notify(self, succeed):
         """
@@ -74,12 +82,10 @@ class UpqJob(object):
         job=None
         if succeed:
             if self.jobcfg.has_key('notify_success'):
-                job=upqqueuemngr.UpqQueueMngr().new_job(self.jobcfg['notify_success']+" msg:"+self.msg)
+                self.enqueue_newjob(self.jobcfg['notify_success']+" msg:"+self.msg)
         else:
             if self.jobcfg.has_key('notify_fail'):
-                job=upqqueuemngr.UpqQueueMngr().new_job(self.jobcfg['notify_fail']+" msg:"+self.msg)
-        if isinstance(job,UpqJob):
-            job.check()
+                self.enqueue_newjob(self.jobcfg['notify_fail']+" msg:"+self.msg)
     def __str__(self):
         return "Job: "+self.jobname +"id:"+ str(self.jobid)+" "+json.dumps(self.jobdata) +" thread: "+self.thread
 
