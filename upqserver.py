@@ -73,7 +73,7 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
             self.data = self.rfile.readline().strip()
             if not self.data:
                 break
-            logger.info("received: '%s'", self.data)
+            logger.debug("received: '%s'", self.data)
             uj=UpqQueueMngr().new_job(self.data)
             if isinstance(uj,UpqJob):
                 if uj.check():
@@ -85,5 +85,5 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
                 logger.debug(msg)
                 self.wfile.write("ERR "+msg+'\n')
                 break
-            logger.info("sent: '%s'", uj.msg)
+            logger.debug("sent: '%s'", uj.msg)
         logger.debug("end of transmission")

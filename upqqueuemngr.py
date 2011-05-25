@@ -35,9 +35,11 @@ class UpqQueueMngr():
     def enqueue_job(self, job):
         # add job to its queue
         if self.queues.has_key(job.__module__):
-            return self.insert_into_queue(job)
+            jobid=self.insert_into_queue(job)
         else:
-            return self.new_queue(job)
+            jobid=self.new_queue(job)
+        self.logger.info("added job %s with jobid %s to queue", job.__module__, jobid)
+        return jobid
 
     def worker(self, queue, thread_id):
         while True:
