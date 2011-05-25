@@ -18,8 +18,9 @@ import os.path
 
 class Upload(UpqJob):
     def check(self):
-        self.enqueue_job()
-        return True
+		#TODO: check if file is already marked in db as uploaded
+		self.enqueue_job()
+		return True
 
     def run(self):
 		results = UpqDB().query("SELECT filepath FROM files where fid=%d "% int(self.jobdata['fid']))
