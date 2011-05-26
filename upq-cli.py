@@ -23,7 +23,7 @@ def send_cmd(txts, socket_path):
     sock.close()
 
 def main(argv=None):
-    config = ConfigParser.RawConfigParser(allow_no_value=True)
+    config = ConfigParser.RawConfigParser()
     config.read('upq.cfg')
     socket_path=config.get("paths","socket")
     if argv is None:
