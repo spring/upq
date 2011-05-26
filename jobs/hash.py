@@ -45,7 +45,7 @@ class Hash(UpqJob):
 		"""
 			class Hash must be initialized with fileid!
 		"""
-		fid = self.jobdata['fid']
+		fid = int(self.jobdata['fid'])
 		results = UpqDB().query("SELECT * FROM files f LEFT JOIN filehash h ON f.fid=h.fid WHERE f.fid=%d  " % int(fid))
 		for res in results:
 			file = self.jobcfg['path'] + res['filepath']
@@ -56,6 +56,7 @@ class Hash(UpqJob):
 			except UpqDBIntegrityError:
 				self.msg = "Hash already exists in db, not updating"
 				return True
+		self.enqueue_newjob("extract_metadata",{"fid": fid})
 		return True
 
 	def hash(self, filename):

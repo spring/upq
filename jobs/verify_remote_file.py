@@ -55,6 +55,7 @@ class Verify_remote_file(upqjob.UpqJob):
 
         
         if res['md5'] == hash:
+			#TODO add notify job here
             self.msg = 'Remote hash matches hash in DB.'
             return True
         else:

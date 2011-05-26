@@ -14,21 +14,17 @@
 from upqjob import UpqJob
 
 class New_file(UpqJob):
-    """
-    filepath must be set
-    """
+	"""
+	filepath must be set
+	"""
 
-    def check(self):
-        # check if file is readable
-        self.enqueue_job()
+	def check(self):
+		if not 'fid' in self.jobdata:
+			return False
+		self.jobdata['fid']=int(self.jobdata['fid'])
+		self.enqueue_job()
+		return True
 
-        # try to guess if we have a filename or a fileid
-        self.logger.debug("self.jobdata='%s'", self.jobdata)
-        self.fileid = int(self.jobdata['fid'])
-        self.filename = self.jobdata['filename']
-        return True
-
-    def run(self):
-
-        return False
-
+	def run(self):
+		self.enqueue_newjob("hash", self.jobdata)
+		return False
