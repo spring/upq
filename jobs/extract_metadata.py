@@ -64,7 +64,7 @@ class Extract_metadata(UpqJob):
 			self.writeGameXmlData(usync, springname, i, outputpath + "/" + filename + ".metadata.xml", gamearchivecount, archivepath)
 			self.create_torrent(archivepath, outputpath +"/" +filename+".torrent")
 		self.logger.debug( "Parsed "+ str(gamescount) + " games, " + str(mapcount) + " maps")
-		self.new_job("upload", {"fid": fid})
+		self.enqueue_newjob("upload", {"fid": fid})
 		return True
 	#calls extract metadata script
 	#if no category set, use category from metadata, move + rename file there
