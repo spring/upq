@@ -22,6 +22,6 @@ class Test(UpqJob):
     def run(self):
         time.sleep(1)
         self.enqueue_newjob("test", {})
-        self.msg="Success run"
+        self.msg="(%s,%d) Job successfully run" % (self.jobname,self.jobid)
         return True
 
