@@ -27,4 +27,4 @@ class New_file(UpqJob):
 
 	def run(self):
 		self.enqueue_newjob("hash", self.jobdata)
-		return False
+		return True

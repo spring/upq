@@ -73,9 +73,9 @@ class UpqConfig():
             else:
                 self.conf_log("Unknown section '%s' found in config file, ignoring."% (section))
 
-        self.logger.info(self.config_log)
+        self.logger.debug(self.config_log)
 
-        self.logger.info("paths='%s'", self.paths)
-        self.logger.info("jobs='%s'", self.jobs)
-        self.logger.info("db='%s'", self.db)
+        self.logger.debug("paths='%s'", self.paths)
+        self.logger.debug("jobs='%s'", self.jobs)
+        self.logger.debug("db='%s'", self.db)
 

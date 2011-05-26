@@ -38,14 +38,14 @@ class UpqQueueMngr():
             jobid=self.insert_into_queue(job)
         else:
             jobid=self.new_queue(job)
-        self.logger.info("added job %s with jobid %s to queue", job.__module__, jobid)
+        self.logger.info("added job %s with jobid %s to queue", job.jobname, jobid)
         return jobid
 
     def worker(self, queue, thread_id):
         while True:
             job = queue.get()
             job.thread = thread_id
-            self.logger.info("starting job '%d' ('%s') in thread '%s'", job.jobid, job.__module__, thread_id)
+            self.logger.info("starting job '%d' ('%s') in thread '%s'", job.jobid, job.jobname, thread_id)
             res=""
             try:
                 res=job.run()
@@ -53,7 +53,7 @@ class UpqQueueMngr():
             except Exception, e:
                 job.msg="Error in job %s %s %s" % (job.__module__, str(e), traceback.format_exc(100))
 
-            self.logger.info("finnished job '%d' ('%s') in thread '%s' with result '%s'", job.jobid, job.__module__, thread_id, job.msg)
+            self.logger.info("finnished job '%d' ('%s') in thread '%s' with result '%s'", job.jobid, job.jobname, thread_id, str(res)+job.msg)
             queue.task_done(job)
             job.finished.set()
 
@@ -120,6 +120,8 @@ class UpqQueueMngr():
                 upqjob = upqjob_class(jobname, params)
                 self.logger.debug(upqjob)
                 return upqjob
+            else:
+                self.logger.error("Job not found: '%s' %s"%(jobname, params))
         except Exception, e:
             self.logger.error("couldn't load module '%s': %s" % (jobname, traceback.format_exc(100)))
         return None

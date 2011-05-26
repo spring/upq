@@ -65,7 +65,7 @@ class UpqJob(object):
         Add a new job into queue, data a dict, for example:
             { "mail": "user@server.com",user1@server.com", "syslog" }
         """
-        job=upqqueuemngr.UpqQueueMngr().new_job(jobname, params)
+        job=UpqQueueMngr().new_job(jobname, params)
         if isinstance(job,UpqJob):
             job.check()
 
@@ -91,5 +91,5 @@ class UpqJob(object):
             if isinstance(job, UpqJob):
                 UpqQueueMngr().enqueue_job(job)
     def __str__(self):
-        return "Job: "+self.jobname +"id:"+ str(self.jobid)+" "+json.dumps(self.jobdata) +" thread: "+self.thread
+        return "Job: "+self.jobname +" id:"+ str(self.jobid)+" "+json.dumps(self.jobdata) +" thread: "+self.thread
 
