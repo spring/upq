@@ -17,7 +17,7 @@ import threading
 
 import log
 import module_loader
-import upqqueuemngr
+from upqqueuemngr import UpqQueueMngr
 import json
 import upqconfig
 
@@ -59,14 +59,14 @@ class UpqJob(object):
         """
         Put this job into the active queue
         """
-        self.jobid=upqqueuemngr.UpqQueueMngr().enqueue_job(self)
+        self.jobid=UpqQueueMngr().enqueue_job(self)
 
-    def enqueue_newjob(self, data):
+    def enqueue_newjob(self, jobname, params):
         """
-        Add a new job into queue, data is the data string, for example:
-            notify mail:user@server.com,user1@server.com syslog
+        Add a new job into queue, data a dict, for example:
+            { "mail": "user@server.com",user1@server.com", "syslog" }
         """
-        job=upqqueuemngr.UpqQueueMngr().new_job(data)
+        job=upqqueuemngr.UpqQueueMngr().new_job(jobname, params)
         if isinstance(job,UpqJob):
             job.check()
 
@@ -80,12 +80,17 @@ class UpqJob(object):
         Notify someone responsable about job result.
         """
         job=None
+        jobstr=""
         if succeed:
             if self.jobcfg.has_key('notify_success'):
-                self.enqueue_newjob(self.jobcfg['notify_success']+" msg:"+self.msg)
+                jobstr=self.jobcfg['notify_success']+" msg:"+self.msg+"success:True"
         else:
             if self.jobcfg.has_key('notify_fail'):
-                self.enqueue_newjob(self.jobcfg['notify_fail']+" msg:"+self.msg)
+                jobstr=self.jobcfg['notify_success']+" msg:"+self.msg+"success:False"
+        if len(jobstr)>0:
+            job=UpqQueueMngr().new_job_by_string(jobstr)
+            if isinstance(job, UpqJob):
+                UpqQueueMngr().enqueue_job(job)
     def __str__(self):
         return "Job: "+self.jobname +"id:"+ str(self.jobid)+" "+json.dumps(self.jobdata) +" thread: "+self.thread
 

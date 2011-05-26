@@ -74,7 +74,7 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
             if not self.data:
                 break
             logger.debug("received: '%s'", self.data)
-            uj=UpqQueueMngr().new_job(self.data)
+            uj=UpqQueueMngr().new_job_by_string(self.data)
             if isinstance(uj,UpqJob):
                 if uj.check():
                     self.wfile.write("ACK " + uj.msg + "\n");

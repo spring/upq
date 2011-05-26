@@ -90,23 +90,34 @@ class UpqQueueMngr():
                 res[tmp[0]] = ""
         return res
 
-    """ creates a new job and initializes by command string"""
-    def new_job(self, data):
+    def new_job_by_string(self, jobcmd):
+        """
+            creates a new job and initializes by command string
+            better use new_job if possible as it doesn't need to parse the string
+            for example jobcmd="notify mail:user@server1,user@server2 syslog"
+        """
+        params=jobcmd.split(" ",1)
+        jobname=params[0]
+        if len(params)>1:
+            data=self.getParams(params[1])
+        else:
+            data={}
+        return self.new_job(jobname, data)
+
+    def new_job(self, jobname, params):
+        """
+            creates a new job and initializes by command array
+            for example
+                jobname=notify
+                params={ "syslog": "", "mail": "user@server1,user@server2" }
+        """
+        # parse first word to find job
         uc = upqconfig.UpqConfig()
         jobs = uc.jobs
-        jobname=""
-        # parse first word to find job
         try:
-            params=data.split(" ",1)
-            jobname=params[0]
             if jobs.has_key(jobname):
-                if len(params)>1:
-                    data=self.getParams(params[1])
-                else:
-                    data={}
-                # such a job exists, load its module and start it
                 upqjob_class = module_loader.load_module(jobname)
-                upqjob = upqjob_class(jobname, data)
+                upqjob = upqjob_class(jobname, params)
                 self.logger.debug(upqjob)
                 return upqjob
         except Exception, e:
