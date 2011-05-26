@@ -29,7 +29,7 @@ class UpqConfig():
         self.config_log += msg+"\n"
 
     def readConfig(self):
-        self.config = ConfigParser.RawConfigParser(allow_no_value=True)
+        self.config = ConfigParser.RawConfigParser()
         self.config.read('upq.cfg')
 
         if not self.logger and not self.config.has_section("logging"):
