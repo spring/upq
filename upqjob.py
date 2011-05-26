@@ -21,6 +21,7 @@ from upqqueuemngr import UpqQueueMngr
 import json
 import upqconfig
 
+
 class UpqJob(object):
     def __init__(self, jobname, jobdata):
         self.jobname = jobname
@@ -66,8 +67,7 @@ class UpqJob(object):
             { "mail": "user@server.com",user1@server.com", "syslog" }
         """
         job=UpqQueueMngr().new_job(jobname, params)
-        if isinstance(job,UpqJob):
-            job.check()
+        UpqQueueMngr().enqueue_job(job)
 
     def __setstate__(self, dict):
         # this is used to unpickle a job

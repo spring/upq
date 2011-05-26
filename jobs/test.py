@@ -20,7 +20,8 @@ class Test(UpqJob):
         return True
 
     def run(self):
-        time.sleep(10)
+        time.sleep(1)
+        self.enqueue_newjob("test", {})
         self.msg="Success run"
         return True
 

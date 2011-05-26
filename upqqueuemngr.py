@@ -38,14 +38,14 @@ class UpqQueueMngr():
             jobid=self.insert_into_queue(job)
         else:
             jobid=self.new_queue(job)
-        self.logger.info("added job %s with jobid %s to queue", job.jobname, jobid)
+        self.logger.info("(%s:%d) added to queue", job.jobname, jobid)
         return jobid
 
     def worker(self, queue, thread_id):
         while True:
             job = queue.get()
             job.thread = thread_id
-            self.logger.info("starting job '%d' ('%s') in thread '%s'", job.jobid, job.jobname, thread_id)
+            self.logger.info("(%s:%d,%s) starting: %s", job.jobname,job.jobid, thread_id, job.jobdata)
             res=""
             try:
                 res=job.run()
@@ -53,7 +53,7 @@ class UpqQueueMngr():
             except Exception, e:
                 job.msg="Error in job %s %s %s" % (job.__module__, str(e), traceback.format_exc(100))
 
-            self.logger.info("finnished job '%d' ('%s') in thread '%s' with result '%s'", job.jobid, job.jobname, thread_id, str(res)+job.msg)
+            self.logger.info("(%s:%d,%s) finished: %s, %s", job.jobname, job.jobid, thread_id, str(res),job.msg)
             queue.task_done(job)
             job.finished.set()
 
@@ -61,7 +61,7 @@ class UpqQueueMngr():
     def new_queue(self, job):
         queue = dbqueue.DBQueue()
         self.queues[job.__module__] = queue
-        self.logger.info("created new queue with %d threads for '%s'", job.jobcfg['concurrent'], job.__module__)
+        self.logger.info("(%s) created new queue with %d threads", job.__module__,job.jobcfg['concurrent'])
         res=self.insert_into_queue(job)
         for i in range(job.jobcfg['concurrent']):
             self.thread_id += 1
@@ -69,7 +69,7 @@ class UpqQueueMngr():
             t = Thread(target=self.worker, name=tname, args=(queue, tname))
             t.setDaemon(True)
             t.start()
-            self.logger.debug("started thread '%s' / '%s' for queue '%s'", t.name, t.ident, job.__module__,)
+            self.logger.debug("(%s,%s) started %s'", job.__module__, t.name, t.ident)
         return res
 
     """ returns id of job """
@@ -111,6 +111,8 @@ class UpqQueueMngr():
                 jobname=notify
                 params={ "syslog": "", "mail": "user@server1,user@server2" }
         """
+        if len(jobname)<=0: #FIXME: remove this: there is a problem when this is called from a job-thread
+			return None
         # parse first word to find job
         uc = upqconfig.UpqConfig()
         jobs = uc.jobs
@@ -121,8 +123,8 @@ class UpqQueueMngr():
                 self.logger.debug(upqjob)
                 return upqjob
             else:
-                self.logger.error("Job not found: '%s' %s"%(jobname, params))
+                self.logger.error("(%s) job not found: %s"%(jobname, params))
         except Exception, e:
-            self.logger.error("couldn't load module '%s': %s" % (jobname, traceback.format_exc(100)))
+            self.logger.error("(%s) couldn't load module: %s" % (jobname, traceback.format_exc(100)))
         return None
 
