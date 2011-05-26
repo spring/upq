@@ -25,11 +25,10 @@ class UpqJob(object):
     def __init__(self, jobname, jobdata):
         self.jobname = jobname
         uc = upqconfig.UpqConfig()
-        self.jobcfg  = uc.jobs[jobname]
-        self.jobdata = jobdata
+        self.jobcfg  = uc.jobs[jobname] #settings from config-fule
+        self.jobdata = jobdata #runtime parameters, these are stored into database and restored on re-run
         self.logger  = log.getLogger("upq")
         self.thread  = "Thread-new-UpqJob"
-        self.paths   = uc.paths
         self.jobid   = -1
         self.msg     = ""
         self.result  = None
