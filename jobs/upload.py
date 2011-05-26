@@ -68,7 +68,7 @@ GROUP by m.fmid"% fid)
                 ftp.set_pasv(passive) #set passive mode
                 self.logger.debug("cd into "+cwddir)
                 ftp.cwd(cwddir)
-		dstdir=os.path.dirname(dstfilename)
+                dstdir=os.path.dirname(dstfilename)
                 try:
                     self.logger.debug("cd into "+dstdir)
                     ftp.cwd(dstdir)
