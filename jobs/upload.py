@@ -14,6 +14,7 @@ from upqjob import UpqJob
 import ftplib
 from upqdb import UpqDB
 import os.path
+import socket
 
 class Upload(UpqJob):
     def check(self):
@@ -58,6 +59,8 @@ GROUP by m.fmid"% fid)
                 f=open(srcfilename,"rb")
 #springfiles has only python 2.6.4 installed no tls avaiable there :-(
 #                ftp = ftplib.FTP_TLS()
+                #set global timeout
+                socket.setdefaulttimeout(30)
                 ftp = ftplib.FTP()
                 self.logger.debug("connecting to "+host)
                 ftp.connect(host,port)
@@ -81,7 +84,7 @@ GROUP by m.fmid"% fid)
                 ftp.storbinary('STOR '+os.path.basename(dstfilename), f)
                 ftp.quit()
                 f.close()
-                id=UpqDB().insert("file_mirror_files", {"fmid":res['fmid'],"fid":fid, "path":dstfilename, "size":filesize, "active":1, "changed":"now()"})
+                id=UpqDB().insert("file_mirror_files", {"fmid":res['fmid'],"fid":fid, "path":dstfilename, "size":filesize, "active":1, "changed":UpqDB().now()})
                 self.logger.debug("inserted into db as %d", id)
             except ftplib.all_errors, e:
                 self.logger.error("Ftp-Error (%s) %s failed %s" % (host, srcfilename,e))

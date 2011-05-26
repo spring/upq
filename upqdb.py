@@ -16,6 +16,7 @@ from sqlalchemy import create_engine, Table, Column, Integer, String,DateTime,Pi
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import insert
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql import func
 
 class UpqDBIntegrityError(Exception):
     def __init__(self, value):
@@ -86,4 +87,6 @@ class UpqDB():
             self.logger.info("(%s) Closed MySQL connection.", self.thread)
         except:
             pass
+    def now(self):
+        return func.now()
 
