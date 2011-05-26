@@ -19,6 +19,8 @@ class Upload(UpqJob):
     def check(self):
          #TODO: check if file is already marked in db as uploaded
          #TODO: test + test +test + improve this!
+         #TODO: create a job for each ftp-mirror here
+         #TODO: create a cron-job or something similar, that creates upload jobs, when a new mirror is added (like a validation for all files/mirrors)
          self.enqueue_job()
          return True
 
