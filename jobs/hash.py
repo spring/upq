@@ -55,7 +55,6 @@ class Hash(UpqJob):
 				UpqDB().insert("filehash", { "fid": self.jobdata['fid'], "md5": hashes['md5'], "sha1": hashes['sha1'], "sha256": hashes['sha256'] })
 			except UpqDBIntegrityError:
 				self.msg = "Hash already exists in db, not updating"
-				return True
 		self.enqueue_newjob("extract_metadata",{"fid": fid})
 		return True
 
