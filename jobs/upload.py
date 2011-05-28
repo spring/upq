@@ -86,7 +86,7 @@ GROUP by m.fmid"% fid)
                 f.close()
                 id=UpqDB().insert("file_mirror_files", {"fmid":res['fmid'],"fid":fid, "path":dstfilename, "size":filesize, "active":1, "changed":UpqDB().now()})
                 self.logger.debug("inserted into db as %d", id)
-                self.enqueue_newjob("verify_remote_file", {"fmfid": res['fmfid']})
+                self.enqueue_newjob("verify_remote_file", {"fmfid": id})
             except ftplib.all_errors, e:
                 self.logger.error("Ftp-Error (%s) %s failed %s" % (host, srcfilename,e))
             except Exception, e:
