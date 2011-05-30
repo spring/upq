@@ -34,6 +34,10 @@ from xml.dom import minidom
 
 class Extract_metadata(UpqJob):
 
+	"""
+		setup temporary directory.
+		creates <tempdir>/games and symlinks archive file into that directory
+	"""
 	def setupdir(self,fid):
 		temppath=tempfile.mkdtemp(dir=self.jobcfg['temppath'])
 		results=UpqDB().query("SELECT * FROM files WHERE fid=%d" % fid)
@@ -46,6 +50,9 @@ class Extract_metadata(UpqJob):
 		self.logger.debug("symlinking %s %s" % (srcfile,self.tmpfile))
 		os.symlink(srcfile,self.tmpfile)
 		return temppath
+	"""
+		cleans up temporary directory, removes also files created by unitsync
+	"""
 	def cleandir(self, temppath):
 		try:
 			os.remove(self.tmpfile)
@@ -149,18 +156,18 @@ class Extract_metadata(UpqJob):
 			self.getXmlData(doc, archive, "Name", mapname)
 			self.getXmlData(doc, archive, "Author", usync.GetMapAuthor(idx))
 			self.getXmlData(doc, archive, "Description", usync.GetMapDescription(idx))
-			self.getXmlData(doc, archive, "Gravity", str(usync.GetMapGravity(idx)))
-			self.getXmlData(doc, archive, "MaxWind", str(usync.GetMapWindMax(idx)))
-			self.getXmlData(doc, archive, "MinWind", str(usync.GetMapWindMin(idx)))
-			self.getXmlData(doc, archive, "TidalStrength", str(usync.GetMapTidalStrength(idx)))
+			self.getXmlData(doc, archive, "Gravity", usync.GetMapGravity(idx))
+			self.getXmlData(doc, archive, "MaxWind", usync.GetMapWindMax(idx))
+			self.getXmlData(doc, archive, "MinWind", usync.GetMapWindMin(idx))
+			self.getXmlData(doc, archive, "TidalStrength", usync.GetMapTidalStrength(idx))
 
-			self.getXmlData(doc, archive, "Height", str(usync.GetMapHeight(idx)))
-			self.getXmlData(doc, archive, "Width", str(usync.GetMapWidth(idx)))
+			self.getXmlData(doc, archive, "Height", usync.GetMapHeight(idx))
+			self.getXmlData(doc, archive, "Width", usync.GetMapWidth(idx))
 
-			self.getXmlData(doc, archive, "Gravity", str(usync.GetMapGravity(idx)))
-			self.getXmlData(doc, archive, "FileName", str(usync.GetMapFileName(idx)))
-			self.getXmlData(doc, archive, "MapMinHeight", str(usync.GetMapMinHeight(mapname)))
-			self.getXmlData(doc, archive, "MapMaxHeight", str(usync.GetMapMaxHeight(mapname)))
+			self.getXmlData(doc, archive, "Gravity", usync.GetMapGravity(idx))
+			self.getXmlData(doc, archive, "FileName", usync.GetMapFileName(idx))
+			self.getXmlData(doc, archive, "MapMinHeight", usync.GetMapMinHeight(mapname))
+			self.getXmlData(doc, archive, "MapMaxHeight", usync.GetMapMaxHeight(mapname))
 
 			self.getMapResources(usync, doc, idx,archive, maparchivecount)
 
