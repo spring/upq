@@ -273,7 +273,9 @@ class Extract_metadata(UpqJob):
 		archive = doc.createElement("Archive")
 		doc.appendChild(archive)
 		version=usync.GetPrimaryModVersion(idx)
-		if springname.endswith(version) : # Hack to get version independant string
+		if version==springname:
+			version=""
+		elif springname.endswith(version) : # Hack to get version independant string
 			springname=springname[:len(springname)-len(version)]
 			if springname.endswith(" ") : #remove space at end (added through unitsync hack)
 				springname=springname[:len(springname)-1]
