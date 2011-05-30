@@ -22,18 +22,12 @@
 # main()
 #
 
-import sys
-import getopt
-import ConfigParser
-import socket
+from optparse import OptionParser
 import signal
-import sys
-import os, os.path
+import sys, os, os.path
 import threading
 import traceback
-import json
 
-import module_loader
 import upqconfig
 import log
 import upqserver
@@ -92,32 +86,33 @@ class Usage(Exception):
 def main(argv=None):
     if argv is None:
         argv = sys.argv
+
+    usage = "usage: %prog -c CONFIGFILE [options]"
+    parser = OptionParser(usage)
+    parser.add_option("-c", "--config", dest="configfile",
+                      help="path to config file CONFIGFILE")
+    parser.add_option("-l", "--logfile", dest="logfile",
+                      help="path to logfile LOGFILE")
+    (options, argv) = parser.parse_args()
+    if not options.configfile:
+        parser.print_help()
+        parser.error("Please supply the path to the configuration file.")
+
     try:
-        try:
-            opts, args = getopt.getopt(argv[1:], "h", ["help"])
-        except getopt.error, msg:
-            raise Usage(msg)
-
-        try:
-            # read ini file
-            uc = upqconfig.UpqConfig()
-            uc.readConfig()
-            # setup and test DB
-            db = upqdb.UpqDB()
-            db.connect(uc.db['url'])
-            db.version()
-            # start server
-            Upq().start_server()
-        except Exception, ex:
-            print >>sys.stderr, "Could not initialize system, please see log."
-            traceback.print_exc(file=sys.stderr)
-            db.cleanup()
-            sys.exit(1)
-
-    except Usage, err:
-        print >>sys.stderr, err.msg
-        print >>sys.stderr, "for help use --help"
-        return 2
+        # read ini file
+        uc = upqconfig.UpqConfig()
+        uc.readConfig(options)
+        # setup and test DB
+        db = upqdb.UpqDB()
+        db.connect(uc.db['url'])
+        db.version()
+        # start server
+        Upq().start_server()
+    except Exception:
+        print >>sys.stderr, "Could not initialize system, please see log."
+        traceback.print_exc(file=sys.stderr)
+        db.cleanup()
+        sys.exit(1)
 
 if __name__ == "__main__":
     sys.exit(main())

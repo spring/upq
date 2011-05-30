@@ -28,19 +28,27 @@ class UpqConfig():
     def conf_log(self, msg):
         self.config_log += msg+"\n"
 
-    def readConfig(self):
+    def readConfig(self, argv_options):
+        if not os.access(argv_options.configfile, os.R_OK):
+            print >> sys.stderr, "Cannot read config file \"%s\"."%argv_options.configfile
+            sys.exit(1)
         self.config = ConfigParser.RawConfigParser()
-        self.config.read('upq.cfg')
+        self.config.read(argv_options.configfile)
 
         if not self.logger and not self.config.has_section("logging"):
             # make sure to have a working logging system
             print >>sys.stderr, "No 'logging' section found in config file. Initializing log system with defaults."
-            self.logger = log.init_logging(dict())
+            if argv_options.logfile:
+                loginit = {'logfile': argv_options.logfile}
+            else:
+                loginit = {}
+            self.logger = log.init_logging(loginit)
         else:
-            log_cfg = self.config.items("logging")
-            self.logger = log.init_logging(dict(log_cfg))
+            log_cfg = dict(self.config.items("logging"))
+            if argv_options.logfile:
+                log_cfg['logfile'] = argv_options.logfile
+            self.logger = log.init_logging(log_cfg)
             self.logger.debug("===== Logging initialized =====")
-
 
         for section in self.config.sections():
 
