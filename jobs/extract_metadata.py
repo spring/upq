@@ -86,6 +86,8 @@ class Extract_metadata(UpqJob):
 		for i in range(0, mapcount):
 			maparchivecount = usync.GetMapArchiveCount(usync.GetMapName(i)) # initialization for GetMapArchiveName()
 			filename = os.path.basename(usync.GetMapArchiveName(0))
+			usync.RemoveAllArchives()
+			usync.AddAllArchives(filename)
 			archivepath=usync.GetArchivePath(filename)+filename
 			self.logger.debug("["+str(i) +"/"+ str(mapcount)+ "] extracting data from "+filename)
 			springname = usync.GetMapName(i)
@@ -95,6 +97,8 @@ class Extract_metadata(UpqJob):
 		for i in range (0, gamescount):
 			springname=usync.GetPrimaryModName(i)
 			filename=usync.GetPrimaryModArchive(i)
+			usync.RemoveAllArchives()
+			usync.AddAllArchives(filename)
 			archivepath=usync.GetArchivePath(filename)+filename
 			self.logger.debug("["+str(i) +"/"+ str(gamescount)+ "] extracting data from "+filename)
 			gamearchivecount=usync.GetPrimaryModArchiveCount(i) # initialization for GetPrimaryModArchiveList()
@@ -170,6 +174,7 @@ class Extract_metadata(UpqJob):
 			self.getXmlData(doc, archive, "MapMaxHeight", usync.GetMapMaxHeight(mapname))
 
 			self.getMapResources(usync, doc, idx,archive, maparchivecount)
+			self.getUnits(usync, doc, archive)
 
 			self.getMapPositions(usync,doc,idx,archive)
 			self.getMapDepends(usync,doc,idx,archive,maparchivecount)
@@ -246,6 +251,19 @@ class Extract_metadata(UpqJob):
 				else:
 					depend=deps
 				self.getXmlData(doc, depends, "Depend", depend)
+	def getUnits(self, usync, doc, archive):
+		units = doc.createElement("Units")
+		archive.appendChild(units)
+		while usync.ProcessUnits()>0:
+			err=usync.GetNextError()
+			if err:
+				self.logger.error("Error processing units: %s" % (err));
+		count=usync.GetUnitCount()
+		for i in range(0, count):
+			unit = doc.createElement("Unit")
+			units.appendChild(unit)
+			self.getXmlData(doc, unit, "UnitName", usync.GetUnitName(i))
+			self.getXmlData(doc, unit, "FullUnitName", usync.GetFullUnitName(i))
 
 	def writeGameXmlData(self, usync, springname, idx, filename,gamesarchivecount, archivename):
 		if os.path.isfile(filename):
@@ -264,6 +282,7 @@ class Extract_metadata(UpqJob):
 		self.getXmlData(doc, archive, "Description", usync.GetPrimaryModDescription(idx))
 		self.getXmlData(doc, archive, "Version", version)
 		self.getGameDepends(usync, idx, gamesarchivecount, doc, archive)
+		self.getUnits(usync, doc, archive)
 		tmp=".tmp.xml"
 		f=open(tmp, 'w')
 		f.write(doc.toxml("utf-8"))
