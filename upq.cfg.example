@@ -75,6 +75,7 @@ concurrent = 2
 unitsync=/usr/lib/spring/libunitsync.so
 outputpath=/var/www/springfiles/sites/default/files/springdata
 datadir=/var/www/springfiles/sites/default/files/springdata
+temppath=/tmp
 
 [job notify]
 enabled = true
