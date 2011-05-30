@@ -71,9 +71,9 @@ class UpqDB():
         query=self.tables['table'].insert(values)
         s=Session(self.engine)
         try:
-			s.execute(query)
+            s.execute(query)
         except IntegrityError as e:
-			raise UpqDBIntegrityError("Integrity Error" + e.statement)
+            raise UpqDBIntegrityError("Integrity Error" + e.statement)
         finally:
             result=s.scalar("SELECT LAST_INSERT_ID()")
             s.close()

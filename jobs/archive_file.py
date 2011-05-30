@@ -7,17 +7,16 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import log
-import upqtask
 from upqjob import UpqJob
 
 class Archive_file(UpqJob):
-    def check():
+    def check(self):
         # check if file is readable (or similar)
         # register_to_queue()
         # return ACK/REJ + optional msg in dict(['queued'], ['jobid'], ['msg'])
         self.msg="Not implemented yet"
         return False
     
-    def run():
+    def run(self):
         # actual work
         pass

@@ -112,7 +112,7 @@ class UpqQueueMngr():
                 params={ "syslog": "", "mail": "user@server1,user@server2" }
         """
         if len(jobname)<=0: #FIXME: remove this: there is a problem when this is called from a job-thread
-			return None
+            return None
         # parse first word to find job
         uc = upqconfig.UpqConfig()
         jobs = uc.jobs

@@ -6,8 +6,8 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import upqjob
+from upqjob import UpqJob
 
 class Move_file_to_archive(UpqJob):
-    def run():
+    def run(self):
         pass

@@ -37,12 +37,13 @@ class UpqConfig():
             print >>sys.stderr, "No 'logging' section found in config file. Initializing log system with defaults."
             self.logger = log.init_logging(dict())
         else:
-             log_cfg = self.config.items("logging")
-             self.logger = log.init_logging(dict(log_cfg))
-             self.logger.debug("===== Logging initialized =====")
+            log_cfg = self.config.items("logging")
+            self.logger = log.init_logging(dict(log_cfg))
+            self.logger.debug("===== Logging initialized =====")
 
 
         for section in self.config.sections():
+
             self.conf_log("found section '%s'"%section)
             if section == "logging":
                 pass
@@ -57,15 +58,15 @@ class UpqConfig():
             elif section.startswith("job"):
                 job=section.split()[1]
                 if self.config.getboolean(section, "enabled"):
-					self.jobs[job]={} #initialize default values
-					self.jobs[job]['concurrent']=1
-					self.jobs[job]['notify_fail']=""
-					self.jobs[job]['notify_success']=""
-					for name, value in self.config.items(section):
-						if name=="concurrent":
-							self.jobs[job]['concurrent'] = self.config.getint(section, "concurrent")
-						else:
-							self.jobs[job][name]=value
+                    self.jobs[job]={} #initialize default values
+                    self.jobs[job]['concurrent']=1
+                    self.jobs[job]['notify_fail']=""
+                    self.jobs[job]['notify_success']=""
+                    for name, value in self.config.items(section):
+                        if name=="concurrent":
+                            self.jobs[job]['concurrent'] = self.config.getint(section, "concurrent")
+                        else:
+                            self.jobs[job][name]=value
 
                 else:
                     self.conf_log("   job '%s' is disabled" % job )
