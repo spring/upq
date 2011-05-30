@@ -10,6 +10,7 @@
 #calls upload
 
 from upqjob import UpqJob
+from upqdb import UpqDB
 
 import sys
 import os
@@ -18,8 +19,10 @@ import Image
 import shutil
 import getopt
 import base64
+import tempfile
 
 import sys
+import os
 sys.path.append('jobs')
 from unitsync import unitsync as unitsyncpkg
 sys.path.remove('jobs')
@@ -30,16 +33,43 @@ sys.path.remove('jobs/metalink')
 from xml.dom import minidom
 
 class Extract_metadata(UpqJob):
-	#TODO: make it possible to hash only a single file
-	#this could be done by creating an empty directory + symlink the file there
+
+	def setupdir(self,fid):
+		temppath=tempfile.mkdtemp(dir=self.jobcfg['temppath'])
+		results=UpqDB().query("SELECT * FROM files WHERE fid=%d" % fid)
+		res=results.first()
+		filename=os.path.basename(res['filepath'])
+		archivetmp=os.path.join(temppath, "games")
+		os.mkdir(archivetmp)
+		srcfile=os.path.join(self.jobcfg['datadir'], res['filepath'])
+		self.tmpfile=os.path.join(archivetmp, filename)
+		self.logger.debug("symlinking %s %s" % (srcfile,self.tmpfile))
+		os.symlink(srcfile,self.tmpfile)
+		return temppath
+	def cleandir(self, temppath):
+		try:
+			os.remove(self.tmpfile)
+			os.rmdir(os.path.join(temppath,"games"))
+			os.remove(os.path.join(temppath,"cache","ArchiveCacheV9.lua"))
+			os.remove(os.path.join(temppath,"cache","CACHEDIR.TAG"))
+			os.rmdir(os.path.join(temppath,"cache"))
+			os.remove(os.path.join(temppath,"unitsync.log"))
+			os.rmdir(temppath)
+		except:
+			dirList=os.listdir(temppath)
+			files=""
+			for fname in dirList:
+				files+=fname
+			self.logger.warn("Didn't clean temp directory %s: %s" % (temppath, files));
+
 	def run(self):
-		fid=int(self.jobdata['fid']) #TODO use this
+		fid=int(self.jobdata['fid'])
 		unitsync=self.jobcfg['unitsync']
 		outputpath=self.jobcfg['outputpath']
-		datadir=self.jobcfg['datadir']
+		datadir=self.setupdir(fid)
 
 		outputpath = os.path.abspath(outputpath)
-		os.environ["SPRING_DATADIR"]=outputpath
+		os.environ["SPRING_DATADIR"]=datadir
 		usync = unitsyncpkg.Unitsync(unitsync)
 
 		usync.Init(True,1)
@@ -65,6 +95,7 @@ class Extract_metadata(UpqJob):
 			self.create_torrent(archivepath, outputpath +"/" +filename+".torrent")
 		self.logger.debug( "Parsed "+ str(gamescount) + " games, " + str(mapcount) + " maps")
 		self.enqueue_newjob("upload", {"fid": fid})
+		self.cleandir(datadir)
 		return True
 	#calls extract metadata script
 	#if no category set, use category from metadata, move + rename file there
