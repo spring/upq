@@ -175,6 +175,7 @@ class Extract_metadata(UpqJob):
 
 			self.getMapResources(usync, doc, idx,archive, maparchivecount)
 			self.getUnits(usync, doc, archive)
+			self.getFiles(usync, self.tmpfile, doc, archive)
 
 			self.getMapPositions(usync,doc,idx,archive)
 			self.getMapDepends(usync,doc,idx,archive,maparchivecount)
@@ -264,6 +265,22 @@ class Extract_metadata(UpqJob):
 			units.appendChild(unit)
 			self.getXmlData(doc, unit, "UnitName", usync.GetUnitName(i))
 			self.getXmlData(doc, unit, "FullUnitName", usync.GetFullUnitName(i))
+	def getFiles(self, usync, filename, doc, archive):
+		files=doc.createElement("Files")
+		archive.appendChild(files)
+		h=usync.OpenArchive(filename)
+		i=0
+		while True:
+			file = doc.createElement("File")
+			files.appendChild(file)
+			name=ctypes.create_string_buffer(1024)
+			size=ctypes.c_int(1024)
+			res=usync.FindFilesArchive(h, i, name, ctypes.byref(size))
+			if res==0:
+				break
+			self.getXmlData(doc, file, "Filename", str(name.value))
+			self.getXmlData(doc, file, "Size", str(size.value))
+			i+=1
 
 	def writeGameXmlData(self, usync, springname, idx, filename,gamesarchivecount, archivename):
 		if os.path.isfile(filename):
@@ -285,6 +302,7 @@ class Extract_metadata(UpqJob):
 		self.getXmlData(doc, archive, "Version", version)
 		self.getGameDepends(usync, idx, gamesarchivecount, doc, archive)
 		self.getUnits(usync, doc, archive)
+		self.getFiles(usync, self.tmpfile, doc, archive)
 		tmp=".tmp.xml"
 		f=open(tmp, 'w')
 		f.write(doc.toxml("utf-8"))
