@@ -14,6 +14,7 @@ import threading
 import SocketServer
 import sys
 import json
+import signal
 
 import log
 from upqjob import UpqJob
@@ -24,18 +25,6 @@ from upqqueuemngr import UpqQueueMngr
 
 
 logger = log.getLogger("upq")
-
-#
-# Protocol:
-#
-# "new_file <absolut path>" -> "ACK <jobid> <new_file>" / "REJ <error msg>"
-# "archive_file <absolut path>" -> "ACK <jobid> <archive_file>" / "REJ <error msg>"
-# "verify_local_file <fid>" -> "ACK <jobid> <filename>" / "REJ <error msg>"
-# "verify_remote_file <fmfid>" -> "ACK <jobid> <filename>" / "REJ <error msg>"
-# "verify_remote_file <fmid> <fmid>" -> "ACK <jobid> <filename>" / "REJ <error msg>"
-# "list_queue" -> ACK <jobid> <a human readable list of running jobs>
-# <unknown> -> "ERR unknown command"
-#
 
 
 class UpqServer(SocketServer.ThreadingMixIn, SocketServer.UnixStreamServer):

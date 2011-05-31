@@ -27,6 +27,8 @@ import signal
 import sys, os, os.path
 import threading
 import traceback
+import daemon
+import lockfile
 
 import upqconfig
 import log
@@ -41,9 +43,6 @@ class Upq():
     def __init__(self):
         self.uc = upqconfig.UpqConfig()
         self.logger = log.getLogger("upq")
-    
-    def signal_handler(self, signal, frame):
-        self.logger.debug("SIGINT / Ctrl+C received.")
     
     def start_server(self):
         if os.path.exists(self.uc.paths['socket']):
@@ -70,13 +69,7 @@ class Upq():
             self.logger.info("Starting unfinnished job '%s' with jobid '%d'", job.jobname, job.jobid)
             job.enqueue_job()
         
-        signal.signal(signal.SIGINT, self.signal_handler)
-        self.logger.debug("Server waiting for SIGINT / Ctrl+C.")
-        signal.pause()
-
-        self.logger.info("Good bye.")
-        upqdb.UpqDB().cleanup()
-        server.shutdown()
+        return server
 
 
 class Usage(Exception):
@@ -87,10 +80,25 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
 
+    server = None
+
+    # SIGINT signal handler
+    def program_cleanup(sig_num, frame):
+        logger = log.getLogger("upq")
+        logger.info("Shutting down socket server...")
+        server.shutdown()
+        logger.info("Disconnecting from DB...")
+        upqdb.UpqDB().cleanup()
+        log.getLogger("upq").info("Good bye.")
+        sys.exit(0)
+
     usage = "usage: %prog -c CONFIGFILE [options]"
     parser = OptionParser(usage)
     parser.add_option("-c", "--config", dest="configfile",
                       help="path to config file CONFIGFILE")
+#TODO: use this to en/disable daemonization
+#    parser.add_option("-d", "--daemonize",
+#                      help="detach from terminal etc")
     parser.add_option("-l", "--logfile", dest="logfile",
                       help="path to logfile LOGFILE")
     (options, argv) = parser.parse_args()
@@ -98,20 +106,61 @@ def main(argv=None):
         parser.print_help()
         parser.error("Please supply the path to the configuration file.")
 
+    # convert relative to absolute paths
+    options.configfile = os.path.abspath(options.configfile)
+    if options.logfile: options.logfile = os.path.abspath(options.logfile)
+
     try:
         # read ini file
-        uc = upqconfig.UpqConfig()
-        uc.readConfig(options)
-        # setup and test DB
-        db = upqdb.UpqDB()
-        db.connect(uc.db['url'])
-        db.version()
-        # start server
-        Upq().start_server()
+        uc = upqconfig.UpqConfig(options)
+        uc.readConfig()
+
+        # daemonize
+        context = daemon.DaemonContext(**uc.daemon)
+        context.stdout = sys.stderr
+        context.stderr = sys.stderr
+        if uc.daemon['pidfile']:
+            #TODO: why doesn't this produce a pidfile?
+            if os.path.exists(uc.daemon['pidfile']):
+                os.remove(uc.daemon['pidfile'])
+            context.pidfile = lockfile.FileLock(uc.daemon['pidfile'])
+
+        upq = Upq()
+        with context:
+            # initialize logging
+            logger = log.init_logging(uc.logging)
+            logger.info("Starting logging...")
+            logger.debug(uc.config_log)
+            # setup and test DB
+            logger.info("Connecting to DB...")
+            db = upqdb.UpqDB()
+            db.connect(uc.db['url'])
+            db.version()
+            # start server
+            logger.info("Starting socket server...")
+            server = upq.start_server()
+
+        # ignore all signals
+        for sig in dir(signal):
+            if sig.startswith("SIG"):
+                try:
+                    signal.signal(signal.__getattribute__(sig), signal.SIG_IGN)
+                except:
+                    # some signals cannot be ignored or are unknown on diff platforms
+                    pass
+        # except SIGINT and SIGTERM
+        signal.signal(signal.SIGINT, program_cleanup)
+        signal.signal(signal.SIGTERM, program_cleanup)
+
+        log.getLogger("upq").info("Server running until receiving SIGTERM or SIGINT / Ctrl+C.")
+        signal.pause()
+
     except Exception:
-        print >>sys.stderr, "Could not initialize system, please see log."
         traceback.print_exc(file=sys.stderr)
-        db.cleanup()
+        try:
+            db.cleanup()
+        except:
+            pass
         sys.exit(1)
 
 if __name__ == "__main__":

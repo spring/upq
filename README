@@ -45,7 +45,7 @@ REQUIREMENTS
 Python >= 2.6 (< 3.0)
 SQLAlchemy 0.6
 MySQL
-
+python-daemon (http://pypi.python.org/pypi/python-daemon)
 
 LICENSING
 ---------
