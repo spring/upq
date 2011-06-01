@@ -18,11 +18,27 @@ import socket
 
 class Upload(UpqJob):
     def check(self):
+        #TODO: merge these TODOS, this can be done simpler, i feel it (at least move stuff into cron) :)
         #TODO: check if file is already marked in db as uploaded
         #TODO: reupload files with invalid md5
         #TODO: test + test +test + improve this!
         #TODO: create a job for each ftp-mirror here
         #TODO: create a cron-job or something similar, that creates upload jobs, when a new mirror is added (like a validation for all files/mirrors)
+        #TODO: check files with the same path (or use path from files?)
+        #TODO: always spawn upload job for all mirrors + recheck md5
+
+        fid=int(self.jobdata['fid'])
+        #search for files which have a different md5 as local one + mark inactive
+        results=UpqDB().query("""SELECT m.fmfid as fid FROM files as f \
+LEFT JOIN file_mirror_files as m ON f.fid=m.fid \
+LEFT JOIN filehash as h ON f.fid=h.fid \
+WHERE f.fid=%d \
+AND h.md5!=m.md5 \
+AND CHAR_LENGTH(h.md5)>0""" % (fid))
+        for res in results:
+        #hash has changed, mark file as inactive
+            UpqDB().query("UPDATE file_mirror_files SET active=0 WHERE fmfid=%d AND md5<>'%s' AND CHAR_LENGTH(md5)>0" % (res['fmfid'], res['md5']))
+            self.logger.warning("Invalid md5 detected : %d %s" %(res['fmfid'], res['md5']) )
         self.enqueue_job()
         return True
 
