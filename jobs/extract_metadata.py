@@ -11,6 +11,7 @@
 
 from upqjob import UpqJob
 from upqdb import UpqDB
+from upqconfig import UpqConfig
 
 import sys
 import os
@@ -21,14 +22,13 @@ import getopt
 import base64
 import tempfile
 
-import sys
-import os
-sys.path.append('jobs')
-from unitsync import unitsync as unitsyncpkg
-sys.path.remove('jobs')
-sys.path.append('jobs/metalink')
+unitsyncpath=os.path.join(UpqConfig().paths['jobs_dir'],'unitsync')
+metalinkpath=os.path.join(UpqConfig().paths['jobs_dir'],'metalink')
+sys.path.append(unitsyncpath)
+sys.path.append(metalinkpath)
+
+import unitsync
 import metalink
-sys.path.remove('jobs/metalink')
 
 from xml.dom import minidom
 
@@ -62,22 +62,22 @@ class Extract_metadata(UpqJob):
 			os.rmdir(os.path.join(temppath,"cache"))
 			os.remove(os.path.join(temppath,"unitsync.log"))
 			os.rmdir(temppath)
-		except:
+		except Exception, e:
 			dirList=os.listdir(temppath)
 			files=""
 			for fname in dirList:
 				files+=fname
-			self.logger.warn("Didn't clean temp directory %s: %s" % (temppath, files));
+			self.logger.warn("Didn't clean temp directory %s: %s %s" % (temppath, files, e));
 
 	def run(self):
 		fid=int(self.jobdata['fid'])
-		unitsync=self.jobcfg['unitsync']
+		libunitsync=self.jobcfg['unitsync']
 		outputpath=self.jobcfg['outputpath']
 		datadir=self.setupdir(fid)
 
 		outputpath = os.path.abspath(outputpath)
 		os.environ["SPRING_DATADIR"]=datadir
-		usync = unitsyncpkg.Unitsync(unitsync)
+		usync = unitsync.Unitsync(libunitsync)
 
 		usync.Init(True,1)
 		mapcount = usync.GetMapCount()

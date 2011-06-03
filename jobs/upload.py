@@ -12,7 +12,7 @@
 
 from upqjob import UpqJob
 import ftplib
-from upqdb import UpqDB
+from upqdb import UpqDB,UpqDBIntegrityError
 import os.path
 import socket
 
@@ -101,7 +101,11 @@ GROUP by m.fmid"% fid)
                 ftp.storbinary('STOR '+os.path.basename(dstfilename), f)
                 ftp.quit()
                 f.close()
-                id=UpqDB().insert("file_mirror_files", {"fmid":res['fmid'],"fid":fid, "path":dstfilename, "size":filesize, "active":1, "changed":UpqDB().now()})
+                try:
+                    id=UpqDB().insert("file_mirror_files", {"fmid":res['fmid'],"fid":fid, "path":dstfilename, "size":filesize, "active":1, "changed":UpqDB().now()})
+                except  UpqDBIntegrityError:
+                    UpqDB().query("DELETE FROM file_mirror_files WHERE path='%s' AND fmid=%d"%(dstfilename, res['fmid']))
+                    id=UpqDB().insert("file_mirror_files", {"fmid":res['fmid'],"fid":fid, "path":dstfilename, "size":filesize, "active":1, "changed":UpqDB().now()})
                 self.logger.debug("inserted into db as %d", id)
                 self.enqueue_newjob("verify_remote_file", {"fmfid": id})
             except ftplib.all_errors, e:

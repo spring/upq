@@ -19,7 +19,6 @@ import signal
 import log
 from upqjob import UpqJob
 import upqdb
-import upqconfig
 import module_loader
 from upqqueuemngr import UpqQueueMngr
 
@@ -37,7 +36,6 @@ class UpqServer(SocketServer.ThreadingMixIn, SocketServer.UnixStreamServer):
         """
         results=upqdb.UpqDB().query("SELECT * FROM upqueue WHERE state = 'new' OR state = 'running'")
         jobs = []
-        uc = upqconfig.UpqConfig()
         for res in results:
             job=res['jobname']
             modclass=module_loader.load_module(job)
@@ -54,9 +52,6 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
         logger.debug("new connection from '%s'", self.client_address)
         response=""
         err=""
-        uc = upqconfig.UpqConfig()
-        jobs = uc.jobs
-        paths = uc.paths
         
         while True:
             self.data = self.rfile.readline().strip()
