@@ -104,6 +104,7 @@ GROUP by m.fmid"% fid)
                 try:
                     id=UpqDB().insert("file_mirror_files", {"fmid":res['fmid'],"fid":fid, "path":dstfilename, "size":filesize, "active":1, "changed":UpqDB().now()})
                 except  UpqDBIntegrityError:
+                    #TODO: archive file that gets overwritten/deleted
                     UpqDB().query("DELETE FROM file_mirror_files WHERE path='%s' AND fmid=%d"%(dstfilename, res['fmid']))
                     id=UpqDB().insert("file_mirror_files", {"fmid":res['fmid'],"fid":fid, "path":dstfilename, "size":filesize, "active":1, "changed":UpqDB().now()})
                 self.logger.debug("inserted into db as %d", id)
