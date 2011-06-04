@@ -50,12 +50,13 @@ class Verify_remote_file(upqjob.UpqJob):
         if not res:
             self.msg = "File md5 with jobdata='%s' not found in DB."%(self.jobdata)
             self.logger.debug(self.msg)
-        return False
+            return False
         md5 = res['md5']
         # retrieve md5 hash from deamon.php on remote mirror server
         self.logger.debug("retrieving '%s'", hash_url)
         hash_file = urllib.urlopen(hash_url)
         hash = hash_file.read()
+        hash_file.close()
 
         self.msg = "received md5 hash for filename=%s on fmfid=%s is %s" %(file_path, fmfid, hash)
         self.result = hash
@@ -68,8 +69,12 @@ class Verify_remote_file(upqjob.UpqJob):
             self.msg = 'Remote hash matches hash in DB.'
             return True
         else:
-            #TODO: delete from db to allow re-upload
-            upqdb.UpqDB().query("UPDATE file_mirror_files SET md5='%s', active=0 WHERE fmfid=%d " %(hash, fmfid))
-            self.msg  = 'Remote hash does NOT match hash in DB.'
+            if len(hash)==32:
+                #TODO: delete from db to allow re-upload
+                query="UPDATE file_mirror_files SET md5='%s', active=0 WHERE fmfid=%s " %(hash, fmfid)
+                upqdb.UpqDB().query(query)
+                self.msg  = 'Remote hash does NOT match hash in DB.'
+            else:
+                self.msg = 'error retrieving hash from ' + hash_url
             return False
 
