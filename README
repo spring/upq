@@ -6,7 +6,7 @@ TOC
 - Files
 - Installation and configuration
 - Creating new jobs
-- Bugs
+- Bug / Feature requests
 
 
 WHAT IS THIS
@@ -34,11 +34,9 @@ section "[job my_command]" in upq.cfg it will search and load a module called
 "my_command.py". It searches in the path configured in upq.cfg in section
 [paths] variable "jobs_dir". In the file "my_command.py" it expects to find a
 class "My_command" (first letter of module name upper case) that is derived from
-the "UpqJob" class. In section "[job my_command]" the "tasks" variable can be a
-space separated list of "UpqTask"s, that will be searched and loaded
-automatically. Search in [paths]->tasks_dir, module name "my_task.py", class
-name "My_task", derived from "UpqTask".
-
+the "UpqJob" class. 
+In section "[job my_command]" all variables are availe through
+self.jobcfg['variablename'] inside a job.
 
 REQUIREMENTS
 ------------
@@ -93,7 +91,7 @@ variables "enabled = <bool>", "concurrent = <int>",
 
 After restarting the server it is possible to start the new Job. Testing can be
 performed with "upq-cli.py" like this:
-$ ./upq-cli "verify_local_file fid=50"
+$ ./upq-cli "verify_local_file fid:50"
 
 
 FILES
@@ -120,17 +118,16 @@ jobs/                   UpqJob modules reside inside this directory, deployment
     upqjob.py           Job classes derive from this
     verify_local_file.py  check if on-disk files hashes match those stored in DB
     verify_remote_file.py check integrity of a file on a mirror
-tasks/                  UpqTask modules reside inside this directory, deployment
-                            location is configurable in upq.cfg
     extract_metadata.py extract metadata from map/mod, nyi
     hash.py             hash a on-disk file
     list_queue_t.py     list jobs in the queue(s)
     mirror_upload.py    upload a file to mirror(s)
     move_file_to_archive.py move old versions of maps/mods into archive dir, nyi
     remote_md5.py       retrieve MD5 of a file for a mirror, nyi
-    upqtask.py          Task classes derive from this
 
 
-BUGS
-----
-none - obviously!
+BUG / FEATURE REQUESTS
+----------------------
+
+Please report to https://github.com/springfiles/upq/issues
+
