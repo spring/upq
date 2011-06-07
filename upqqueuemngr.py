@@ -17,6 +17,7 @@ import dbqueue
 import upqconfig
 import module_loader
 import traceback
+from threading import RLock
 
 class UpqQueueMngr():
     # Borg design pattern (pythons cooler singleton)
@@ -24,6 +25,7 @@ class UpqQueueMngr():
 
     # this dict holds a queue for each "job type" (job.__module__)
     queues = {}
+    qlock = RLock()
 
     thread_id = 100
 
@@ -34,10 +36,12 @@ class UpqQueueMngr():
     """ returns id of job """
     def enqueue_job(self, job):
         # add job to its queue
+        self.qlock.acquire()
         if self.queues.has_key(job.__module__):
             jobid=self.insert_into_queue(job)
         else:
             jobid=self.new_queue(job)
+        self.qlock.release()
         self.logger.info("(%s:%d) added to queue", job.jobname, jobid)
         return jobid
 
@@ -60,7 +64,9 @@ class UpqQueueMngr():
     """ returns id of job """
     def new_queue(self, job):
         queue = dbqueue.DBQueue()
+        self.qlock.acquire()
         self.queues[job.__module__] = queue
+        self.qlock.release()
         self.logger.info("(%s) created new queue with %d threads", job.__module__,job.jobcfg['concurrent'])
         res=self.insert_into_queue(job)
         for i in range(job.jobcfg['concurrent']):
@@ -74,7 +80,10 @@ class UpqQueueMngr():
 
     """ returns id of job """
     def insert_into_queue(self, job):
-        return self.queues[job.__module__].put(job)
+        self.qlock.acquire()
+        ret = self.queues[job.__module__].put(job)
+        self.qlock.release()
+        return ret
     """
          extract params into dict from a string like this:
          key1=value1 key2=value2
