@@ -10,7 +10,7 @@
 #calls upload
 
 from upqjob import UpqJob
-from upqdb import UpqDB
+from upqdb import UpqDB,UpqDBIntegrityError
 from upqconfig import UpqConfig
 
 import sys
@@ -71,10 +71,10 @@ class Extract_metadata(UpqJob):
 			self.logger.warn("Didn't clean temp directory %s: %s %s" % (temppath, files, e));
 
 	def run(self):
-		fid=int(self.jobdata['fid'])
+		self.fid=int(self.jobdata['fid'])
 		libunitsync=self.jobcfg['unitsync']
 		outputpath=self.jobcfg['outputpath']
-		datadir=self.setupdir(fid)
+		datadir=self.setupdir(self.fid)
 
 		outputpath = os.path.abspath(outputpath)
 		os.environ["SPRING_DATADIR"]=datadir
@@ -106,7 +106,7 @@ class Extract_metadata(UpqJob):
 			self.writeGameXmlData(usync, springname, i, outputpath + "/" + filename + ".metadata.xml.gz", gamearchivecount, archivepath)
 			self.create_torrent(archivepath, outputpath +"/" +filename+".torrent")
 		self.logger.debug( "Parsed "+ str(gamescount) + " games, " + str(mapcount) + " maps")
-		self.enqueue_newjob("upload", {"fid": fid})
+		self.enqueue_newjob("upload", {"fid": self.fid})
 		self.cleandir(datadir)
 		return True
 	#calls extract metadata script
@@ -127,9 +127,12 @@ class Extract_metadata(UpqJob):
 		startpositions = usync.GetMapPosCount(idx)
 		for i in range(0, startpositions):
 			startpos=doc.createElement("StartPos")
-			self.getXmlData(doc, startpos, "X", str(usync.GetMapPosX(idx, i)))
-			self.getXmlData(doc, startpos, "Z", str(usync.GetMapPosZ(idx, i)))
+			x=usync.GetMapPosX(idx, i)
+			z=usync.GetMapPosZ(idx, i)
+			self.getXmlData(doc, startpos, "X", x)
+			self.getXmlData(doc, startpos, "Z", z)
 			positions.appendChild(startpos)
+			UpqDB().insert("springdata_startpos", { "fid": self.fid, "id":i, "x": x, "z": z })
 		Map.appendChild(positions)
 
 	def getMapDepends(self, usync,doc,idx,Map,maparchivecount):
@@ -137,16 +140,23 @@ class Extract_metadata(UpqJob):
 			deps=os.path.basename(usync.GetMapArchiveName(j))
 			node = doc.createElement("Depends")
 			if not deps in self.springcontent:
-				self.getXmlData(doc, node, "Depend", str(deps))
+				self.getXmlData(doc, node, "Depend", deps)
+				res=UpqDB().query("SELECT fid FROM springdata_archives WHERE springname='%s'", deps)
+				row=res.first()
+				if not row:
+					id=0
+				else:
+					id=row['fid']
+				UpqDB().insert("springdata_depends", {"fid":self.fid, "depends_string": deps, "depends": id})
 		Map.appendChild(node)
 	def getMapResources(self, usync,doc,idx,Map, maparchivecount):
 		resources = doc.createElement("MapResources")
 		resourceCount=usync.GetMapResourceCount(idx)
 		for i in range (0, resourceCount):
 			resource=doc.createElement("Resource")
-			self.getXmlData(doc, resource, "Name", str(usync.GetMapResourceName(idx, i)))
-			self.getXmlData(doc, resource, "Max", str(usync.GetMapResourceMax(idx, i)))
-			self.getXmlData(doc, resource, "ExtractorRadius", str(usync.GetMapResourceExtractorRadius(idx, i)))
+			self.getXmlData(doc, resource, "Name", usync.GetMapResourceName(idx, i))
+			self.getXmlData(doc, resource, "Max", usync.GetMapResourceMax(idx, i))
+			self.getXmlData(doc, resource, "ExtractorRadius", usync.GetMapResourceExtractorRadius(idx, i))
 			resources.appendChild(resource)
 		Map.appendChild(resources)
 
@@ -180,6 +190,8 @@ class Extract_metadata(UpqJob):
 
 			self.getMapPositions(usync,doc,idx,archive)
 			self.getMapDepends(usync,doc,idx,archive,maparchivecount)
+			version=="" #TODO: add support
+			UpqDB().insert("springdata_archives", {"fid": self.fid, "name": mapname, "version": version, "cid": self.getCid("maps")})
 			doc.appendChild(archive)
 			self.writexml(doc,filename)
 
@@ -274,8 +286,8 @@ class Extract_metadata(UpqJob):
 			res=usync.FindFilesArchive(h, i, name, ctypes.byref(size))
 			if res==0:
 				break
-			self.getXmlData(doc, file, "Filename", str(name.value))
-			self.getXmlData(doc, file, "Size", str(size.value))
+			self.getXmlData(doc, file, "Filename", name.value)
+			self.getXmlData(doc, file, "Size", size.value)
 			i+=1
 	def writexml(self, xml, filename):
 		tmp=".tmp.xml.gz"
@@ -284,6 +296,15 @@ class Extract_metadata(UpqJob):
 		f.close()
 		shutil.move(tmp,filename)
 		self.logger.debug("[created] " +filename +" ok")
+	""" returns the category id specified by name"""
+	def getCid(self, name):
+		try:
+			cid=UpqDB().insert("springdata_categories", {"name": name})
+		except UpqDBIntegrityError:
+			res=UpqDB().query("SELECT cid from springdata_categories WHERE name='%s'" % name)
+			cid=res.first()['cid']
+		return cid
+
 
 	def writeGameXmlData(self, usync, springname, idx, filename,gamesarchivecount, archivename):
 		if os.path.isfile(filename):
@@ -303,6 +324,10 @@ class Extract_metadata(UpqJob):
 		self.getXmlData(doc, archive, "Name", springname)
 		self.getXmlData(doc, archive, "Description", usync.GetPrimaryModDescription(idx))
 		self.getXmlData(doc, archive, "Version", version)
+		try:
+			UpqDB().insert("springdata_archives", {"fid": self.fid, "name": springname, "version": version, "cid": self.getCid("games")})
+		except UpqDBIntegrityError:
+			pass
 		self.getGameDepends(usync, idx, gamesarchivecount, doc, archive)
 		self.getUnits(usync, doc, archive)
 		self.getFiles(usync, self.tmpfile, doc, archive)
