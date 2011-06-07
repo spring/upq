@@ -88,8 +88,8 @@ class UpqQueueMngr():
          extract params into dict from a string like this:
          key1=value1 key2=value2
     """
-    def getParams(self, str):
-        keyvals = str.split()
+    def getParams(self, stri):
+        keyvals = stri.split()
         res = {}
         for k in keyvals:
             tmp = k.split(":", 1)
@@ -120,8 +120,6 @@ class UpqQueueMngr():
                 jobname=notify
                 params={ "syslog": "", "mail": "user@server1,user@server2" }
         """
-        if len(jobname)<=0: #FIXME: remove this: there is a problem when this is called from a job-thread
-            return None
         # parse first word to find job
         uc = upqconfig.UpqConfig()
         jobs = uc.jobs
