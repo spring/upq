@@ -62,6 +62,7 @@ AND m.fmid not in ( \
 SELECT fmid FROM file_mirror_files WHERE fid=%d \
 ) \
 GROUP by m.fmid"% fid)
+        uploadcount=0
         for res in results:
             host=res['ftp_url']
             port=res['ftp_port']
@@ -114,4 +115,6 @@ GROUP by m.fmid"% fid)
             except Exception, e:
                 self.logger.error("Upload (%s) %s failed %s" % (host, srcfilename,e));
                 return False
+            uploadcount+=1
+        self.msg="Uploaded to %d mirrors." % (uploadcount)
         return True
