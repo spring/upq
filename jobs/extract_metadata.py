@@ -88,6 +88,7 @@ class Extract_metadata(UpqJob):
 			maparchivecount = usync.GetMapArchiveCount(usync.GetMapName(i)) # initialization for GetMapArchiveName()
 			filename = os.path.basename(usync.GetMapArchiveName(0))
 			usync.RemoveAllArchives()
+			usync.AddArchives(filename)
 			usync.AddAllArchives(filename)
 			archivepath=usync.GetArchivePath(filename)+filename
 			self.logger.debug("["+str(i) +"/"+ str(mapcount)+ "] extracting data from "+filename)
@@ -134,6 +135,17 @@ class Extract_metadata(UpqJob):
 			positions.appendChild(startpos)
 			UpqDB().insert("springdata_startpos", { "fid": self.fid, "id":i, "x": x, "z": z })
 		Map.appendChild(positions)
+	"""
+		inserts depends into database
+	"""
+	def insertDepends(self, deps):
+		res=UpqDB().query("SELECT fid FROM springdata_archives WHERE CONCAT(name,' ',version)='%s'" % ( deps))
+		row=res.first()
+		if not row:
+			id=0
+		else:
+			id=row['fid']
+		UpqDB().insert("springdata_depends", {"fid":self.fid, "depends_string": deps, "depends": id})
 
 	def getMapDepends(self, usync,doc,idx,Map,maparchivecount):
 		for j in range (1, maparchivecount): # get depends for file, idx=0 is filename itself
@@ -141,13 +153,7 @@ class Extract_metadata(UpqJob):
 			node = doc.createElement("Depends")
 			if not deps in self.springcontent:
 				self.getXmlData(doc, node, "Depend", deps)
-				res=UpqDB().query("SELECT fid FROM springdata_archives WHERE springname='%s'", deps)
-				row=res.first()
-				if not row:
-					id=0
-				else:
-					id=row['fid']
-				UpqDB().insert("springdata_depends", {"fid":self.fid, "depends_string": deps, "depends": id})
+				self.insertDepends(deps)
 		Map.appendChild(node)
 	def getMapResources(self, usync,doc,idx,Map, maparchivecount):
 		resources = doc.createElement("MapResources")
@@ -260,6 +266,8 @@ class Extract_metadata(UpqJob):
 				else:
 					depend=deps
 				self.getXmlData(doc, depends, "Depend", depend)
+				self.insertDepends(deps)
+
 	def getUnits(self, usync, doc, archive):
 		units = doc.createElement("Units")
 		archive.appendChild(units)
