@@ -44,7 +44,7 @@ concurrent = 2
 # needs fid
 enabled = true
 concurrent = 2
-notify_fail = notify mail:user1@example.org,user2@example.org syslog
+notify_fail = mail:user1@example.org,user2@example.org syslog
 
 [job verify_remote_file]
 # needs fmfid and fmid
@@ -61,7 +61,8 @@ prefix = sites/default/files/
 [job test]
 enabled = true
 concurrent = 100
-notify = notify syslog mail:user@server.com
+notify_success = syslog mail:test@example.org
+notify_fail = syslog mail:test@example.org
 
 [job remote_md5]
 enabled = true

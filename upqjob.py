@@ -76,20 +76,24 @@ class UpqJob(object):
 
     def notify(self, succeed):
         """
-        Notify someone responsable about job result.
+        Notify someone responsible about job result.
         """
-        job=None
-        jobstr=""
+        params = {}
         if succeed:
-            if self.jobcfg.has_key('notify_success'):
-                jobstr=self.jobcfg['notify_success']+" msg:"+self.msg+"success:True"
+            if self.jobcfg['notify_success']:
+                params = UpqQueueMngr().getParams(self.jobcfg['notify_success'])
+                params['msg'] = self.msg
+                params['success'] = True
         else:
-            if self.jobcfg.has_key('notify_fail'):
-                jobstr=self.jobcfg['notify_success']+" msg:"+self.msg+"success:False"
-        if len(jobstr)>0:
-            job=UpqQueueMngr().new_job_by_string(jobstr)
+            if self.jobcfg['notify_fail']:
+                params = UpqQueueMngr().getParams(self.jobcfg['notify_fail'])
+                params['msg'] = self.msg
+                params['success'] = False
+        if params:
+            job=UpqQueueMngr().new_job("notify", params)
             if isinstance(job, UpqJob):
                 UpqQueueMngr().enqueue_job(job)
+
     def __str__(self):
-        return "Job: "+self.jobname +" id:"+ str(self.jobid)+" "+json.dumps(self.jobdata) +" thread: "+self.thread
+        return "Job: "+self.jobname +" id:"+ str(self.jobid)+" jobdata:"+json.dumps(self.jobdata) +" thread: "+self.thread
 
