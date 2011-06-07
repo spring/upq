@@ -88,7 +88,7 @@ class Extract_metadata(UpqJob):
 			maparchivecount = usync.GetMapArchiveCount(usync.GetMapName(i)) # initialization for GetMapArchiveName()
 			filename = os.path.basename(usync.GetMapArchiveName(0))
 			usync.RemoveAllArchives()
-			usync.AddArchives(filename)
+			usync.AddArchive(filename)
 			usync.AddAllArchives(filename)
 			archivepath=usync.GetArchivePath(filename)+filename
 			self.logger.debug("["+str(i) +"/"+ str(mapcount)+ "] extracting data from "+filename)
@@ -133,7 +133,10 @@ class Extract_metadata(UpqJob):
 			self.getXmlData(doc, startpos, "X", x)
 			self.getXmlData(doc, startpos, "Z", z)
 			positions.appendChild(startpos)
-			UpqDB().insert("springdata_startpos", { "fid": self.fid, "id":i, "x": x, "z": z })
+			try:
+				UpqDB().insert("springdata_startpos", { "fid": self.fid, "id":i, "x": x, "z": z })
+			except UpqDBIntegrityError:
+				pass
 		Map.appendChild(positions)
 	"""
 		inserts depends into database
@@ -196,7 +199,7 @@ class Extract_metadata(UpqJob):
 
 			self.getMapPositions(usync,doc,idx,archive)
 			self.getMapDepends(usync,doc,idx,archive,maparchivecount)
-			version=="" #TODO: add support
+			version="" #TODO: add support
 			UpqDB().insert("springdata_archives", {"fid": self.fid, "name": mapname, "version": version, "cid": self.getCid("maps")})
 			doc.appendChild(archive)
 			self.writexml(doc,filename)
