@@ -10,16 +10,17 @@ def send_cmd(txts, socket_path):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     sock.connect(socket_path)
     print >>sys.stderr, "Connected to '%s'."%socket_path
-    for txt in txts:
-        sock.send(txt+"\n")
-        print >>sys.stderr, "Sent    : '%s'"%txt
-        res=""
-        while True:
-            sock.settimeout(10)
-            res += sock.recv(1)
-            if res.endswith("\n"):
-                print >>sys.stderr, res,
-                break
+    #for txt in txts:
+    txt = reduce(lambda x, y: x+" "+y, txts)
+    sock.send(txt+"\n")
+    print >>sys.stderr, "Sent    : '%s'"%txt
+    res=""
+    while True:
+        sock.settimeout(10)
+        res += sock.recv(1)
+        if res.endswith("\n"):
+            print >>sys.stderr, res,
+            break
     sock.close()
 
 def main(argv=None):
