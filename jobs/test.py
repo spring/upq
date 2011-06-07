@@ -12,6 +12,7 @@
 from upqjob import UpqJob
 import ftplib
 import time
+import copy
 
 class Test(UpqJob):
     def check(self):
@@ -21,7 +22,12 @@ class Test(UpqJob):
 
     def run(self):
         time.sleep(1)
-        self.enqueue_newjob("test", {})
+        self.jd = copy.deepcopy(self.jobdata)
+        try:
+            self.jd['child'] = self.jd['child']+"*"
+        except KeyError:
+            pass
+        self.enqueue_newjob("test", self.jd)
         self.msg="(%s,%d) Job successfully run" % (self.jobname,self.jobid)
         return True
 
