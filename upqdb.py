@@ -77,7 +77,7 @@ class UpqDB():
         finally:
             result=s.scalar("SELECT LAST_INSERT_ID()")
             s.close()
-            self.logger.debug(str(query)+" id:"+str(result))
+            self.logger.debug("%s (%s) id:%s", query, values, result)
         return result
     def tbl_upqueue(self):
         return self.tbl_upqueue
