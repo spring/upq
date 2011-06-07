@@ -380,4 +380,5 @@ class Extract_metadata(UpqJob):
 		f.write(data)
 		f.close()
 		shutil.move(tmp,output)
+		os.chmod(output, int("0444",8))
 		self.logger.debug("[created] " +output +" ok")
