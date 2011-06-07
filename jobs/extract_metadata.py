@@ -21,6 +21,7 @@ import shutil
 import getopt
 import base64
 import tempfile
+import gzip
 
 unitsyncpath=os.path.join(UpqConfig().paths['jobs_dir'],'unitsync')
 metalinkpath=os.path.join(UpqConfig().paths['jobs_dir'],'metalink')
@@ -92,7 +93,7 @@ class Extract_metadata(UpqJob):
 			self.logger.debug("["+str(i) +"/"+ str(mapcount)+ "] extracting data from "+filename)
 			springname = usync.GetMapName(i)
 			self.dumpmap(usync, springname, outputpath, filename,i)
-			self.writeMapXmlData(usync, springname, i, outputpath +"/" +filename+".metadata.xml",maparchivecount, archivepath)
+			self.writeMapXmlData(usync, springname, i, outputpath +"/" +filename+".metadata.xml.gz",maparchivecount, archivepath)
 			self.create_torrent(archivepath, outputpath +"/" +filename+".torrent")
 		for i in range (0, gamescount):
 			springname=usync.GetPrimaryModName(i)
@@ -102,7 +103,7 @@ class Extract_metadata(UpqJob):
 			archivepath=usync.GetArchivePath(filename)+filename
 			self.logger.debug("["+str(i) +"/"+ str(gamescount)+ "] extracting data from "+filename)
 			gamearchivecount=usync.GetPrimaryModArchiveCount(i) # initialization for GetPrimaryModArchiveList()
-			self.writeGameXmlData(usync, springname, i, outputpath + "/" + filename + ".metadata.xml", gamearchivecount, archivepath)
+			self.writeGameXmlData(usync, springname, i, outputpath + "/" + filename + ".metadata.xml.gz", gamearchivecount, archivepath)
 			self.create_torrent(archivepath, outputpath +"/" +filename+".torrent")
 		self.logger.debug( "Parsed "+ str(gamescount) + " games, " + str(mapcount) + " maps")
 		self.enqueue_newjob("upload", {"fid": fid})
@@ -180,12 +181,7 @@ class Extract_metadata(UpqJob):
 			self.getMapPositions(usync,doc,idx,archive)
 			self.getMapDepends(usync,doc,idx,archive,maparchivecount)
 			doc.appendChild(archive)
-			tmp=".tmp.xml"
-			metadata = open(tmp,'w')
-			metadata.write(doc.toxml("utf-8"))
-			metadata.close()
-			shutil.move(tmp,filename)
-			self.logger.debug("[created] " +filename +" ok")
+			self.writexml(doc,filename)
 
 	# extracts minimap from given file
 	def createMapImage(self, usync, mapname, outfile, size):
@@ -281,6 +277,13 @@ class Extract_metadata(UpqJob):
 			self.getXmlData(doc, file, "Filename", str(name.value))
 			self.getXmlData(doc, file, "Size", str(size.value))
 			i+=1
+	def writexml(self, xml, filename):
+		tmp=".tmp.xml.gz"
+		f = gzip.open(tmp, 'wb')
+		f.write(xml.toxml("utf-8"))
+		f.close()
+		shutil.move(tmp,filename)
+		self.logger.debug("[created] " +filename +" ok")
 
 	def writeGameXmlData(self, usync, springname, idx, filename,gamesarchivecount, archivename):
 		if os.path.isfile(filename):
@@ -303,12 +306,7 @@ class Extract_metadata(UpqJob):
 		self.getGameDepends(usync, idx, gamesarchivecount, doc, archive)
 		self.getUnits(usync, doc, archive)
 		self.getFiles(usync, self.tmpfile, doc, archive)
-		tmp=".tmp.xml"
-		f=open(tmp, 'w')
-		f.write(doc.toxml("utf-8"))
-		f.close()
-		shutil.move(tmp,filename)
-		self.logger.debug("[created] " +filename +" ok")
+		self.writexml(doc,filename)
 
 	springnames={}
 	def createdict(self,usync,gamescount, mapcount):
