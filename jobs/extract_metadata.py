@@ -200,7 +200,10 @@ class Extract_metadata(UpqJob):
 			self.getMapPositions(usync,doc,idx,archive)
 			self.getMapDepends(usync,doc,idx,archive,maparchivecount)
 			version="" #TODO: add support
-			UpqDB().insert("springdata_archives", {"fid": self.fid, "name": mapname, "version": version, "cid": self.getCid("maps")})
+			try:
+				UpqDB().insert("springdata_archives", {"fid": self.fid, "name": mapname, "version": version, "cid": self.getCid("maps")})
+			except UpqDBIntegrityError:
+				pass
 			doc.appendChild(archive)
 			self.writexml(doc,filename)
 
