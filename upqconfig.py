@@ -29,13 +29,13 @@ class UpqConfig():
                 obj[value]=default
     def setbool(self,obj, section, value, default):
         try:
-            obj[value]=bool(self.config.get(section, value))
+            obj[value]=self.config.getboolean(section, value)
         except:
             if default!=None:
                 obj[value]=default
     def setint(self,obj, section, value, default):
         try:
-            obj[value]=int(self.config.get(section, value))
+            obj[value]=self.config.getint(section, value)
         except:
             if default!=None:
                 obj[value]=default
