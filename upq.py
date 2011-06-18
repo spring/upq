@@ -30,7 +30,7 @@ import traceback
 import daemon
 import lockfile
 
-import upqconfig
+from upqconfig import UpqConfig
 import log
 import upqserver
 import upqdb
@@ -41,19 +41,20 @@ class Upq():
     # don't use this class before upqconfig.UpqConfig().readConfig() ran!
 
     def __init__(self):
-        self.uc = upqconfig.UpqConfig()
         self.logger = log.getLogger("upq")
     
     def start_server(self):
-        if os.path.exists(self.uc.paths['socket']):
-            self.logger.debug("File '%s' exists - removing it.", self.uc.paths['socket'])
-            os.remove(self.uc.paths['socket'])
+        if os.path.exists(UpqConfig().paths['socket']):
+            self.logger.debug("File '%s' exists - removing it.", UpqConfig().paths['socket'])
+            os.remove(UpqConfig().paths['socket'])
         try:
-            server = upqserver.UpqServer(self.uc.paths['socket'], upqserver.UpqRequestHandler)
-        except:
-           self.logger.error("Couldn't create socket %s", self.uc.paths['socket'])
+            server = upqserver.UpqServer(UpqConfig().paths['socket'], upqserver.UpqRequestHandler)
+        except Exception, e:
+           msg="Couldn't create socket %s %s" %(UpqConfig().paths['socket'], e)
+           self.logger.error(msg)
+           print msg
            sys.exit(1)
-        os.chmod(self.uc.paths['socket'], int(str(self.uc.paths['socket_chmod']),8))
+        os.chmod(UpqConfig().paths['socket'], int(str(UpqConfig().paths['socket_chmod']),8))
         self.logger.info("Server listening on '%s'.", server.server_address)
 
         # Start a thread with the server -- that thread will then start one
@@ -108,30 +109,29 @@ def main(argv=None):
 
     try:
         # read ini file
-        uc = upqconfig.UpqConfig(options.configfile, options.logfile)
-        uc.readConfig()
+        UpqConfig(options.configfile, options.logfile)
+        UpqConfig().readConfig()
 
-        if uc.daemon.has_key('pidfile'):
-            #TODO: why doesn't this produce a pidfile?
-            if os.path.exists(uc.daemon['pidfile']):
-                os.remove(uc.daemon['pidfile'])
-            context.pidfile = lockfile.FileLock(uc.daemon['pidfile'])
+        if UpqConfig().daemon.has_key('pidfile'):
+            if os.path.exists(UpqConfig().daemon['pidfile']):
+                os.remove(UpqConfig().daemon['pidfile'])
+            context.pidfile = lockfile.FileLock(UpqConfig().daemon['pidfile'])
 
         # daemonize
-        context = daemon.DaemonContext(**uc.daemon)
+        context = daemon.DaemonContext(**UpqConfig().daemon)
         context.stdout = sys.stderr
         context.stderr = sys.stderr
 
         upq = Upq()
         with context:
             # initialize logging
-            logger = log.init_logging(uc.logging)
+            logger = log.init_logging(UpqConfig().logging)
             logger.info("Starting logging...")
-            logger.debug(uc.config_log)
+            logger.debug(UpqConfig().config_log)
             # setup and test DB
             logger.info("Connecting to DB...")
             db = upqdb.UpqDB()
-            db.connect(uc.db['url'])
+            db.connect(UpqConfig().db['url'])
             db.version()
             # start server
             logger.info("Starting socket server...")
