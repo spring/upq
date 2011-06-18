@@ -77,6 +77,7 @@ class UpqConfig():
         self.setstr(self.paths, "paths", "jobs_dir", "./jobs")
         self.setstr(self.paths, "paths", "socket", "/var/run/upq-incoming.sock")
         self.setint(self.paths, "paths", "socket_chmod", 660)
+        self.paths['jobs_dir']=os.path.abspath(self.paths['jobs_dir'])
 
         self.db = {}
         self.setstr(self.db, "db", "url", "sqlite://upq.db")
