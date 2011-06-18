@@ -66,8 +66,8 @@ class UpqDB():
         strkeys=""
         strvalues=""
         if not self.tables.has_key(table): # load structure from table
-            self.tables['table']=Table(table, self.meta, autoload=True)
-        query=self.tables['table'].insert(values)
+            self.tables[table]=Table(table, self.meta, autoload=True)
+        query=self.tables[table].insert(values)
         s=Session(self.engine)
         try:
             s.execute(query)
