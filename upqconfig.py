@@ -17,32 +17,38 @@ class UpqConfig():
     jobs   = {}
     db     = {}
     config_log = "Log replay from config parsing:\n"
-    config = None
+    config = ""
+    configfile = "upq.cfg"
+    logfile = ""
 
     def __init__(self, argv_options=None):
         self.__dict__ = self.__shared_state
-        if argv_options: self.argv_options = argv_options
+        try:
+            self.configfile=argv_options.configfile
+            self.logfile=argv_options.logfile
+        except:
+            pass
 
     def conf_log(self, msg):
         self.config_log += msg+"\n"
 
     def readConfig(self):
-        if not os.access(self.argv_options.configfile, os.R_OK):
-            print >> sys.stderr, "Cannot read config file \"%s\"."%self.argv_options.configfile
+        if not os.access(self.configfile, os.R_OK):
+            print >> sys.stderr, "Cannot read config file \"%s\"."%self.configfile
             sys.exit(1)
         self.config = ConfigParser.RawConfigParser()
-        self.config.read(self.argv_options.configfile)
+        self.config.read(self.configfile)
 
         if not self.config.has_section("logging"):
             # make sure to have a working logging system
-            if self.argv_options.logfile:
-                self.logging = {'logfile': self.argv_options.logfile}
+            if self.logfile:
+                self.logging = {'logfile': self.logfile}
             else:
                 self.logging = {}
         else:
             self.logging = dict(self.config.items("logging"))
-            if self.argv_options.logfile:
-                self.logging['logfile'] = self.argv_options.logfile
+            if self.logfile:
+                self.logging['logfile'] = self.logfile
         for section in self.config.sections():
             self.conf_log("found section '%s'"%section)
             if section == "logging":
