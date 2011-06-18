@@ -21,13 +21,31 @@ class UpqConfig():
     configfile = "upq.cfg"
     logfile = ""
 
-    def __init__(self, argv_options=None):
-        self.__dict__ = self.__shared_state
+    def setstr(self,obj, section, value, default):
         try:
-            self.configfile=argv_options.configfile
-            self.logfile=argv_options.logfile
+            obj[value]=self.config.get(section, value)
         except:
-            pass
+            if default!=None:
+                obj[value]=default
+    def setbool(self,obj, section, value, default):
+        try:
+            obj[value]=bool(self.config.get(section, value))
+        except:
+            if default!=None:
+                obj[value]=default
+    def setint(self,obj, section, value, default):
+        try:
+            obj[value]=int(self.config.get(section, value))
+        except:
+            if default!=None:
+                obj[value]=default
+
+    def __init__(self, configfile="", logfile=""):
+        self.__dict__ = self.__shared_state
+        if len(configfile)>0:
+            self.configfile=configfile
+        if len(logfile)>0:
+            self.logfile=logfile
 
     def conf_log(self, msg):
         self.config_log += msg+"\n"
@@ -36,41 +54,35 @@ class UpqConfig():
         if not os.access(self.configfile, os.R_OK):
             print >> sys.stderr, "Cannot read config file \"%s\"."%self.configfile
             sys.exit(1)
-        self.config = ConfigParser.RawConfigParser()
-        self.config.read(self.configfile)
+        try:
+            self.config = ConfigParser.RawConfigParser()
+            self.config.read(self.configfile)
+        except Exception,e:
+            print "Couldn't parse %s %s" % (self.configfile, e)
+            sys.exit(1)
+        self.logging = {}
+        self.setstr(self.logging,"logging", "loglevel", "info")
+        self.setstr(self.logging,"logging", "logformat", "%(asctime)s %(levelname)-8s %(name)s.%(module)s.%(funcName)s() l.%(lineno)03d : %(message)s")
+        self.setstr(self.logging,"logging", "logfile", "/var/log/upq.log")
 
-        if not self.config.has_section("logging"):
-            # make sure to have a working logging system
-            if self.logfile:
-                self.logging = {'logfile': self.logfile}
-            else:
-                self.logging = {}
-        else:
-            self.logging = dict(self.config.items("logging"))
-            if self.logfile:
-                self.logging['logfile'] = self.logfile
+        self.daemon = {}
+        self.setbool(self.daemon, "daemon", "detach_process", False)
+        self.setint(self.daemon, "daemon", "umask", 22)
+        self.setstr(self.daemon, "daemon", "pidfile", None)
+        self.setstr(self.daemon, "daemon", "chroot_directory", None)
+        self.setint(self.daemon, "daemon", "uid", None)
+        self.setint(self.daemon, "daemon", "gid", None)
+
+        self.paths = {}
+        self.setstr(self.paths, "paths", "jobs_dir", "./jobs")
+        self.setstr(self.paths, "paths", "socket", "/var/run/upq-incoming.sock")
+        self.setint(self.paths, "paths", "socket_chmod", 660)
+
+        self.db = {}
+        self.setstr(self.db, "db", "url", "sqlite://upq.db")
+
         for section in self.config.sections():
-            self.conf_log("found section '%s'"%section)
-            if section == "logging":
-                pass
-            elif section == "paths":
-                self.paths = dict(self.config.items(section))
-                for entry in ["jobs_dir", "socket"]:
-                    self.paths[entry] = os.path.abspath(self.paths[entry])
-            elif section.startswith("db"):
-                self.db = dict(self.config.items(section))
-            elif section.startswith("daemon"):
-                self.daemon = dict(self.config.items(section))
-                # purge empty values, because we'll use this dict as arg to a function
-                for key in self.daemon.keys():
-                    if not self.daemon[key]:
-                        del self.daemon[key]
-                for key in ['umask', 'uid', 'gid']:
-                    if self.daemon.has_key(key):
-                        self.daemon[key] = int(self.daemon[key])
-                if self.daemon.has_key("pidfile"):
-                    self.daemon["pidfile"] = os.path.abspath(self.daemon["pidfile"])
-            elif section.startswith("job"):
+            if section.startswith("job"):
                 job=section.split()[1]
                 if self.config.getboolean(section, "enabled"):
                     self.jobs[job]={} #initialize default values

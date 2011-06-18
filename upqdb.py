@@ -37,8 +37,7 @@ class UpqDB():
             self.logger.info("MySQL server version: %s", res[0])
     def connect(self, databaseurl):
         self.cleanup()
-        self.databaseurl = databaseurl
-        self.engine = create_engine(self.databaseurl, encoding="utf-8", echo=False, pool_recycle=True)
+        self.engine = create_engine(databaseurl, encoding="utf-8", echo=False, pool_recycle=True)
         self.logger.info("Opened DB connection.")
         self.meta=MetaData()
         """ TODO: use this?

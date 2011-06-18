@@ -48,9 +48,12 @@ class Upq():
         if os.path.exists(self.uc.paths['socket']):
             self.logger.debug("File '%s' exists - removing it.", self.uc.paths['socket'])
             os.remove(self.uc.paths['socket'])
-        
-        server = upqserver.UpqServer(self.uc.paths['socket'], upqserver.UpqRequestHandler)
-        os.chmod(self.uc.paths['socket'], int(self.uc.paths['socket_chmod'],8))
+        try:
+            server = upqserver.UpqServer(self.uc.paths['socket'], upqserver.UpqRequestHandler)
+        except:
+           self.logger.error("Couldn't create socket %s", self.uc.paths['socket'])
+           sys.exit(1)
+        os.chmod(self.uc.paths['socket'], int(str(self.uc.paths['socket_chmod']),8))
         self.logger.info("Server listening on '%s'.", server.server_address)
 
         # Start a thread with the server -- that thread will then start one
@@ -94,36 +97,30 @@ def main(argv=None):
 
     usage = "usage: %prog -c CONFIGFILE [options]"
     parser = OptionParser(usage)
-    parser.add_option("-c", "--config", dest="configfile",
+    parser.add_option("-c", "--config", dest="configfile", default="",
                       help="path to config file CONFIGFILE")
 #TODO: use this to en/disable daemonization
 #    parser.add_option("-d", "--daemonize",
 #                      help="detach from terminal etc")
-    parser.add_option("-l", "--logfile", dest="logfile",
+    parser.add_option("-l", "--logfile", dest="logfile", default="",
                       help="path to logfile LOGFILE")
     (options, argv) = parser.parse_args()
-    if not options.configfile:
-        parser.print_help()
-        parser.error("Please supply the path to the configuration file.")
-
-    # convert relative to absolute paths
-    options.configfile = os.path.abspath(options.configfile)
-    if options.logfile: options.logfile = os.path.abspath(options.logfile)
 
     try:
         # read ini file
-        uc = upqconfig.UpqConfig(options)
+        uc = upqconfig.UpqConfig(options.configfile, options.logfile)
         uc.readConfig()
+
+        if uc.daemon.has_key('pidfile'):
+            #TODO: why doesn't this produce a pidfile?
+            if os.path.exists(uc.daemon['pidfile']):
+                os.remove(uc.daemon['pidfile'])
+            context.pidfile = lockfile.FileLock(uc.daemon['pidfile'])
 
         # daemonize
         context = daemon.DaemonContext(**uc.daemon)
         context.stdout = sys.stderr
         context.stderr = sys.stderr
-        if uc.daemon['pidfile']:
-            #TODO: why doesn't this produce a pidfile?
-            if os.path.exists(uc.daemon['pidfile']):
-                os.remove(uc.daemon['pidfile'])
-            context.pidfile = lockfile.FileLock(uc.daemon['pidfile'])
 
         upq = Upq()
         with context:
