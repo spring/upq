@@ -52,7 +52,7 @@ class Upq():
         except Exception, e:
            msg="Couldn't create socket %s %s" %(UpqConfig().paths['socket'], e)
            self.logger.error(msg)
-           print msg
+           print >>sys.stderr, msg
            sys.exit(1)
         os.chmod(UpqConfig().paths['socket'], int(str(UpqConfig().paths['socket_chmod']),8))
         self.logger.info("Server listening on '%s'.", server.server_address)
