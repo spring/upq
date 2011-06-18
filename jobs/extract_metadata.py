@@ -192,6 +192,7 @@ class Extract_metadata(UpqJob):
 			self.getXmlData(doc, archive, "FileName", usync.GetMapFileName(idx))
 			self.getXmlData(doc, archive, "MapMinHeight", usync.GetMapMinHeight(mapname))
 			self.getXmlData(doc, archive, "MapMaxHeight", usync.GetMapMaxHeight(mapname))
+			self.getXmlData(doc, archive, "SdpName", self.getSDPName(usync, filename))
 
 			self.getMapResources(usync, doc, idx,archive, maparchivecount)
 			self.getUnits(usync, doc, archive)
@@ -240,7 +241,6 @@ class Extract_metadata(UpqJob):
 			im.save(tmp)
 			shutil.move(tmp,outfile)
 			self.logger.debug("[created] " +outfile +" ok")
-
 
 	def dumpmap(self, usync, springname, outpath, filename, idx):
 		metalmap = outpath + '/' + filename + ".metalmap" + ".jpg"
@@ -303,6 +303,39 @@ class Extract_metadata(UpqJob):
 			self.getXmlData(doc, file, "Filename", name.value)
 			self.getXmlData(doc, file, "Size", size.value)
 			i+=1
+	def getSDPName(self, usync, filename):
+		archiveh=usync.OpenArchive(filename)
+		pos=0
+		files = []
+		#get a list of all files
+		while True:
+			name=ctypes.create_string_buffer(1024)
+			size=ctypes.c_int(1024)
+			res=usync.FindFilesArchive(archiveh, pos, name, ctypes.byref(size))
+			if res<=0:
+				self.logger.error("FindFilesArchive returned invalid archive for %s" % (filename))
+				break
+			fileh=usync.OpenArchiveFile(archiveh, name.value)
+			if fileh<0:
+				self.logger.error("Invalid handle for %s %s %s", (name.value,fileh,  usync.GetNextError()))
+				break
+			files.append(name.value)
+			pos=pos+1
+		m=hashlib.md5()
+		files.sort(cmp = lambda a, b: cmp(a.lower(), b.lower()))
+		i=0
+		for f in files:
+			# ignore directory entries
+		        if f[-1] == '/': continue
+			fileh=usync.OpenArchiveFile(archiveh, f)
+			size=usync.SizeArchiveFile(archiveh, fileh)
+			buf = ctypes.create_string_buffer(size)
+			bytes=usync.ReadArchiveFile(archiveh, fileh, buf, size)
+			usync.CloseArchiveFile(archiveh, fileh)
+			m.update(hashlib.md5(f.lower()).digest())
+			m.update(hashlib.md5(ctypes.string_at(buf,size)).digest())
+			i=i+1
+		return m.hexdigest()
 	def writexml(self, xml, filename):
 		tmp=".tmp.xml.gz"
 		f = gzip.open(tmp, 'wb')
@@ -338,6 +371,7 @@ class Extract_metadata(UpqJob):
 		self.getXmlData(doc, archive, "Name", springname)
 		self.getXmlData(doc, archive, "Description", usync.GetPrimaryModDescription(idx))
 		self.getXmlData(doc, archive, "Version", version)
+		self.getXmlData(doc, archive, "SdpName", self.getSDPName(usync, filename))
 		try:
 			UpqDB().insert("springdata_archives", {"fid": self.fid, "name": springname, "version": version, "cid": self.getCid("games")})
 		except UpqDBIntegrityError:
