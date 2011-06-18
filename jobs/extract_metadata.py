@@ -22,6 +22,7 @@ import getopt
 import base64
 import tempfile
 import gzip
+import hashlib
 
 unitsyncpath=os.path.join(UpqConfig().paths['jobs_dir'],'unitsync')
 metalinkpath=os.path.join(UpqConfig().paths['jobs_dir'],'metalink')
@@ -51,19 +52,31 @@ class Extract_metadata(UpqJob):
 		self.logger.debug("symlinking %s %s" % (srcfile,self.tmpfile))
 		os.symlink(srcfile,self.tmpfile)
 		return temppath
+
+	def savedelete(self,file):
+		try:
+			os.remove(file)
+		except:
+			pass
+		try:
+			os.rmdir(file)
+		except:
+			pass
+
+
 	"""
 		cleans up temporary directory, removes also files created by unitsync
 	"""
 	def cleandir(self, temppath):
-		try:
-			os.remove(self.tmpfile)
-			os.rmdir(os.path.join(temppath,"games"))
-			os.remove(os.path.join(temppath,"cache","ArchiveCacheV9.lua"))
-			os.remove(os.path.join(temppath,"cache","CACHEDIR.TAG"))
-			os.rmdir(os.path.join(temppath,"cache"))
-			os.remove(os.path.join(temppath,"unitsync.log"))
-			os.rmdir(temppath)
-		except Exception, e:
+		self.savedelete(self.tmpfile)
+		self.savedelete(os.path.join(temppath,"games"))
+		self.savedelete(os.path.join(temppath,"cache","ArchiveCacheV9.lua"))
+		self.savedelete(os.path.join(temppath,"cache","ArchiveCache.lua"))
+		self.savedelete(os.path.join(temppath,"cache","CACHEDIR.TAG"))
+		self.savedelete(os.path.join(temppath,"cache"))
+		self.savedelete(os.path.join(temppath,"unitsync.log"))
+		self.savedelete(temppath)
+		if os.path.exists(temppath):
 			dirList=os.listdir(temppath)
 			files=""
 			for fname in dirList:
@@ -348,6 +361,7 @@ class Extract_metadata(UpqJob):
 			m.update(hashlib.md5(f.lower()).digest())
 			m.update(hashlib.md5(ctypes.string_at(buf,size)).digest())
 			i=i+1
+		self.logger.debug("SDP %s" % m.hexdigest())
 		return m.hexdigest()
 	def writexml(self, xml, filename):
 		tmp=".tmp.xml.gz"
