@@ -69,6 +69,19 @@ class Extract_metadata(UpqJob):
 			for fname in dirList:
 				files+=fname
 			self.logger.warn("Didn't clean temp directory %s: %s %s" % (temppath, files, e));
+	def check(self):
+		if self.jobdata['fid']<=0:
+			self.msg="no id specified";
+			return False
+
+		results=UpqDB().query("SELECT * FROM files WHERE fid=%d" % int(self.jobdata['fid']))
+		res=results.first()
+		if res == None:
+			self.msg="fid not found";
+			return False
+		id=self.enqueue_job()
+		self.msg="Job queued %s %s" % (id, self)
+		return True
 
 	def run(self):
 		self.fid=int(self.jobdata['fid'])
