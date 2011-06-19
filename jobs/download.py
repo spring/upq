@@ -47,6 +47,6 @@ class Download(UpqJob):
 		#TODO validate somehow?
 		shutil.move(tmpfile, dstfile)
 		filepath=os.path.join(self.jobcfg['prefix'], filename)
-		filesize=os.path.getsize(dstfile)
-		UpqDB().insert("files", { "uid": uid, "filename": filename, "filepath": filepath, "filemime": "application/octet-stream", "filesize":filesize, "status":1, "timestamp":time()})
+		self.enqueue_newjob("new_file", "filepath": filepath)
 		return True
+
