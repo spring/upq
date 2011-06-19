@@ -15,11 +15,11 @@ def send_cmd(txts, socket_path):
     print >>sys.stderr, "Connected to '%s'."%socket_path
     #for txt in txts:
     txt = reduce(lambda x, y: x+" "+y, txts)
+    sock.settimeout(10)
     sock.send(txt+"\n")
     print >>sys.stderr, "Sent    : '%s'"%txt
     res=""
     while True:
-        sock.settimeout(10)
         res += sock.recv(1)
         if res.endswith("\n"):
             print >>sys.stderr, res,
