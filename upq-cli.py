@@ -8,7 +8,10 @@ import ConfigParser
 
 def send_cmd(txts, socket_path):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    sock.connect(socket_path)
+    try:
+        sock.connect(socket_path)
+    except:
+       raise Exception("Couldn't connect to %s" % (socket_path))
     print >>sys.stderr, "Connected to '%s'."%socket_path
     #for txt in txts:
     txt = reduce(lambda x, y: x+" "+y, txts)
