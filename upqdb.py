@@ -42,7 +42,7 @@ class UpqDB():
         self.meta=MetaData()
         """ TODO: use this?
         #Maybe this can be used later on...
-        self.tbl_upqueue = Table('upqueue', metadata,
+        self.tables['upqueue'] = Table('upqueue', metadata,
             Column('jobid', Integer, Sequence('jobid_seq'), primary_key=True),
             Column('jobname', String),
             Column('state', String),
@@ -53,6 +53,29 @@ class UpqDB():
             Column('start_time', DateTime),
             Column('end_time', DateTime),
         )
+	self.tables['springdata_archives'] = Table('springdata_archives', metadata,
+		Column('fid')
+		Column('name')
+		Column('version')
+		Column('cid')
+		Column('sdp')
+	)
+	self.tables['springdata_categories'] = Table('springdata_categories', metadata,
+		Column('cid')
+		Column('name')
+	)
+	self.tables['springdata_depends'] = Table('springdata_depends', metadata,
+		Column('fid')
+		Column('depends')
+		Column('depends_string')
+	)
+	self.tables['springdata_startpos'] = Table('springdata_startpos', metadata,
+		Column('fid')
+		Column('id')
+		Column('x')
+		Column('z')
+	)
+
         self.meta.create_all(self.engine)
         """
         self.meta.bind = self.engine
