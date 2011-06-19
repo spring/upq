@@ -151,36 +151,36 @@ class UpqDB():
 		except:
 			raise Exception("Unable to initialize database %s" %(databaseurl))
 		self.meta.bind = self.engine
-    def query(self, query):
-        self.logger.debug(query)
-        return self.engine.execute(query)
-    """
+	def query(self, query):
+		self.logger.debug(query)
+		return self.engine.execute(query)
+	"""
 		insert values into tables, returns last insert id if primary key is autoincrement
-    """
-    def insert(self, table, values):
-        strkeys=""
-        strvalues=""
-        if not self.tables.has_key(table): # load structure from table
-            self.tables[table]=Table(table, self.meta, autoload=True)
-        query=self.tables[table].insert(values)
-        s=Session(self.engine)
-        try:
-            s.execute(query)
-        except IntegrityError as e:
-            raise UpqDBIntegrityError("Integrity Error" + e.statement)
-        finally:
-            result=s.scalar("SELECT LAST_INSERT_ID()")
-            s.close()
-            self.logger.debug("%s (%s) id:%s", query, values, result)
-        return result
-    def tbl_upqueue(self):
-        return self.tbl_upqueue
-    def cleanup(self):
-        try:
-            self.engine.close()
-            self.logger.info("(%s) Closed MySQL connection.", self.thread)
-        except:
-            pass
-    def now(self):
-        return func.now()
+	"""
+	def insert(self, table, values):
+		strkeys=""
+		strvalues=""
+		if not self.tables.has_key(table): # load structure from table
+			self.tables[table]=Table(table, self.meta, autoload=True)
+		query=self.tables[table].insert(values)
+		s=Session(self.engine)
+		try:
+			s.execute(query)
+		except IntegrityError as e:
+			raise UpqDBIntegrityError("Integrity Error" + e.statement)
+		finally:
+			result=s.scalar("SELECT LAST_INSERT_ID()")
+			s.close()
+			self.logger.debug("%s (%s) id:%s", query, values, result)
+		return result
+	def tbl_upqueue(self):
+		return self.tbl_upqueue
+	def cleanup(self):
+		try:
+			self.engine.close()
+			self.logger.info("(%s) Closed MySQL connection.", self.thread)
+		except:
+			pass
+	def now(self):
+		return func.now()
 
