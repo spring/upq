@@ -15,6 +15,7 @@ import SocketServer
 import sys
 import json
 import signal
+import traceback
 
 import log
 from upqjob import UpqJob
@@ -58,16 +59,20 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
             if not self.data:
                 break
             logger.debug("received: '%s'", self.data)
-            uj=UpqQueueMngr().new_job_by_string(self.data)
-            if isinstance(uj,UpqJob):
-                if uj.check():
-                    self.wfile.write("ACK " + uj.msg + "\n");
+            try:
+                uj=UpqQueueMngr().new_job_by_string(self.data)
+                if isinstance(uj,UpqJob):
+                    if uj.check():
+                        self.wfile.write("ACK " + uj.msg + "\n");
+                    else:
+                        self.wfile.write("ERR " + uj.msg + "\n");
                 else:
-                    self.wfile.write("ERR " + uj.msg + "\n");
-            else:
-                msg="Unknown command: %s"% self.data
-                logger.debug(msg)
-                self.wfile.write("ERR "+msg+'\n')
-                break
+                    msg="Unknown command: %s"% self.data
+                    logger.debug(msg)
+                    self.wfile.write("ERR "+msg+'\n')
+                    break
+            except Exception, e:
+                logger.error("Exception on job: %s" %(traceback.format_exc(100)))
+                self.wfile.write("ERR Exception caught while handling job\n")
             logger.debug("sent: '%s'", uj.msg)
         logger.debug("end of transmission")
