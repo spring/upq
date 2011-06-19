@@ -80,7 +80,8 @@ class UpqConfig():
         self.paths['jobs_dir']=os.path.abspath(self.paths['jobs_dir'])
 
         self.db = {}
-        self.setstr(self.db, "db", "url", "sqlite://upq.db")
+        self.setstr(self.db, "db", "url", "sqlite:///var/lib/upq/upq.db")
+        self.setbool(self.db, "db", "debug", False)
 
         for section in self.config.sections():
             if section.startswith("job"):

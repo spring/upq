@@ -131,7 +131,7 @@ def main(argv=None):
             # setup and test DB
             logger.info("Connecting to DB...")
             db = upqdb.UpqDB()
-            db.connect(UpqConfig().db['url'])
+            db.connect(UpqConfig().db['url'], UpqConfig().db['debug'])
             db.version()
             # start server
             logger.info("Starting socket server...")
