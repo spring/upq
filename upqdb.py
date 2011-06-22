@@ -118,12 +118,14 @@ class UpqDB():
 			Column('filemime', VARCHAR(length=255), nullable=False),
 			Column('filesize', INTEGER(display_width=10), nullable=False, ),
 			Column('status', INTEGER(display_width=11), nullable=False),
-			Column('timestamp', INTEGER(display_width=10), nullable=False),
+			Column('timestamp', TIMESTAMP(timezone=False)),
 			Column('origname', VARCHAR(length=255), nullable=False))
 		self.tables['springdata_archives']=Table('springdata_archives', self.meta,
 			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=False),
-			Column('springname', VARCHAR(length=256)),
-			Column('cid', INTEGER(display_width=11)))
+			Column('name', VARCHAR(length=256)),
+			Column('version', VARCHAR(length=256)),
+			Column('cid', INTEGER(display_width=11)),
+			Column('sdp', VARCHAR(length=32)))
 		self.tables['springdata_categories']=Table('springdata_categories', self.meta,
 			Column('cid', INTEGER(display_width=11), primary_key=True, nullable=False, autoincrement=True),
 			Column('name', VARCHAR(length=24), nullable=False))

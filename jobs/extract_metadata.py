@@ -122,8 +122,10 @@ class Extract_metadata(UpqJob):
 			except UpqDBIntegrityError:
 				pass
 		try:
-			UpqDB().insert("springdata_archives", {"fid": fid, "name": data['Name'], "version": data['Version'], "cid": self.getCid(data['Type']), "sdp": data['sdp']})
+			cid=self.getCid(data['Type'])
+			UpqDB().insert("springdata_archives", {"fid": fid, "name": data['Name'], "version": data['Version'], "cid": cid, "sdp": data['sdp']})
 		except UpqDBIntegrityError:
+			UpqDB().query("UPDATE springdata_archives SET name='%s', version='%s', cid=%s WHERE fid=%s" %(data['Name'],data['Version'],cid, fid))
 			pass
 		#TODO: add additional data
 	#move file to destination, makes path relative, updates db
