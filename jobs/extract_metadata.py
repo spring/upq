@@ -40,8 +40,8 @@ class Extract_metadata(UpqJob):
 	"""
 	def setupdir(self, fid, filepath):
 		if not os.path.exists(filepath):
-			self.msg="error setting up temp dir, file doesn't exist %s" %(filepath)
-			raise Exception(self.msg)
+			self.msg("error setting up temp dir, file doesn't exist %s" %(filepath))
+			raise Exception(self.msgstr)
 		temppath=tempfile.mkdtemp(dir=self.jobcfg['temppath'])
 		archivetmp=os.path.join(temppath, "games")
 		os.mkdir(archivetmp)
@@ -82,16 +82,16 @@ class Extract_metadata(UpqJob):
 			self.logger.warn("Didn't clean temp directory %s: %s %s" % (temppath, files, e));
 	def check(self):
 		if self.jobdata['fid']<=0:
-			self.msg="no id specified";
+			self.msg("no id specified")
 			return False
 
 		results=UpqDB().query("SELECT * FROM files WHERE fid=%d" % int(self.jobdata['fid']))
 		res=results.first()
 		if res == None:
-			self.msg="fid not found";
+			self.msg("fid not found")
 			return False
 		id=self.enqueue_job()
-		self.msg="Job queued %s %s" % (id, self)
+		self.msg("Job queued %s %s" % (id, self))
 		return True
 	def getMapIdx(self, usync, filename):
 		mapcount = usync.GetMapCount()
@@ -131,8 +131,8 @@ class Extract_metadata(UpqJob):
 		dstfile=os.path.join(prefix,moveto)
 		if filepath!=dstfile:
 			if os.path.exists(dstfile):
-				self.msg="Destination file already exists: dst: %s src: %s" %(dstfile, filepath)
-				raise Exception(self.msg)
+				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, filepath))
+				raise Exception(self.msgstr)
 			shutil.move(filepath, dstfile)
 		UpqDB().query("UPDATE files SET filepath='%s', filename='%s' WHERE fid=%d" %(moveto,os.path.basename(moveto), fid))
 		self.logger.debug("moved file to (abs)%s (rel)%s" %(dstfile, moveto))
@@ -150,7 +150,7 @@ class Extract_metadata(UpqJob):
 		else:
 			filepath=os.path.join(self.jobcfg['datadir'],res['filepath']) # absolute filename
 		if not os.path.exists(filepath):
-			self.msg="File doesn't exist: %s" %(filepath)
+			self.msg("File doesn't exist: %s" %(filepath))
 			return False
 		tmpdir=self.setupdir(fid, filepath) #temporary directory for unitsync
 
@@ -174,7 +174,7 @@ class Extract_metadata(UpqJob):
 		else: # file is a game
 			idx=self.getGameIdx(usync,filename)
 			if idx<0:
-				self.msg="Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx)
+				self.msg("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
 				return False
 			self.logger.debug("Extracting data from "+filename)
 			archivepath=usync.GetArchivePath(filename)+filename

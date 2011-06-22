@@ -31,7 +31,7 @@ class UpqJob(object):
         self.logger  = log.getLogger("upq")
         self.thread  = "Thread-new-UpqJob"
         self.jobid   = -1
-        self.msg     = ""
+        self.msgstr  = ""
         self.result  = None
         self.finished= threading.Event()
 
@@ -74,6 +74,9 @@ class UpqJob(object):
         self.__dict__.update(dict)
         self.logger = log.getLogger("upq")
 
+    def msg(self, msg):
+        self.msgstr+=str(msg)
+
     def notify(self, succeed):
         """
         Notify someone responsible about job result.
@@ -82,12 +85,12 @@ class UpqJob(object):
         if succeed:
             if self.jobcfg['notify_success']:
                 params = UpqQueueMngr().getParams(self.jobcfg['notify_success'])
-                params['msg'] = self.msg
+                params['msg'] = self.msgstr
                 params['success'] = True
         else:
             if self.jobcfg['notify_fail']:
                 params = UpqQueueMngr().getParams(self.jobcfg['notify_fail'])
-                params['msg'] = self.msg
+                params['msg'] = self.msgstr
                 params['success'] = False
         if params:
             job=UpqQueueMngr().new_job("notify", params)

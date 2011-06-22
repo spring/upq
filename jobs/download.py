@@ -28,7 +28,7 @@ class Download(UpqJob):
 
 	def check(self):
 		tmp=self.jobcfg['temppath']
-		self.msg=str(self.jobdata)
+		self.msg(self.jobdata)
 		self.enqueue_job()
 		return True
 
@@ -43,11 +43,11 @@ class Download(UpqJob):
 			filename, headers = my_download().retrieve(url, tmpfile)
 			urllib.urlcleanup()
 		except Exception, e:
-			self.msg=str(e)
+			self.msg(e)
 			return False
 		#TODO validate somehow?
 		shutil.move(tmpfile, dstfile)
-		self.msg="Downloaded %s (%s bytes)" % (dstfile, os.path.getsize(dstfile))
+		self.msg("Downloaded %s (%s bytes)" % (dstfile, os.path.getsize(dstfile)))
 		self.enqueue_newjob("new_file", { "filepath": dstfile, "filename": filename, "uid":uid })
 		return True
 

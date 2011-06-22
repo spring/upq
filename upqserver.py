@@ -63,9 +63,9 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
                 uj=UpqQueueMngr().new_job_by_string(self.data)
                 if isinstance(uj,UpqJob):
                     if uj.check():
-                        self.wfile.write("ACK " + uj.msg + "\n");
+                        self.wfile.write("ACK " + uj.msgstr + "\n");
                     else:
-                        self.wfile.write("ERR " + uj.msg + "\n");
+                        self.wfile.write("ERR " + uj.msgstr + "\n");
                 else:
                     msg="Unknown command: %s"% self.data
                     logger.debug(msg)
@@ -74,5 +74,5 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
             except Exception, e:
                 logger.error("Exception on job: %s" %(traceback.format_exc(100)))
                 self.wfile.write("ERR Exception caught while handling job\n")
-            logger.debug("sent: '%s'", uj.msg)
+            logger.debug("sent: '%s'", uj.msgstr)
         logger.debug("end of transmission")

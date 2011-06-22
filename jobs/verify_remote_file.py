@@ -36,8 +36,7 @@ class Verify_remote_file(upqjob.UpqJob):
         res = result.first()
 
         if not res:
-            self.msg = "File with jobdata='%s' not found in DB."%(self.jobdata)
-            self.logger.debug(self.msg)
+            self.msg("File with jobdata='%s' not found in DB."%(self.jobdata))
             return False
 
         script_url = res['url_prefix']+"/"+res['url_deamon']
@@ -48,8 +47,7 @@ class Verify_remote_file(upqjob.UpqJob):
         result = upqdb.UpqDB().query("SELECT md5 FROM filehash WHERE fid=%d" %  int(res['fid']))
         res = result.first()
         if not res:
-            self.msg = "File md5 with jobdata='%s' not found in DB."%(self.jobdata)
-            self.logger.debug(self.msg)
+            self.msg("File md5 with jobdata='%s' not found in DB."%(self.jobdata))
             return False
         md5 = res['md5']
         # retrieve md5 hash from deamon.php on remote mirror server
@@ -58,23 +56,21 @@ class Verify_remote_file(upqjob.UpqJob):
         hash = hash_file.read()
         hash_file.close()
 
-        self.msg = "received md5 hash for filename=%s on fmfid=%s is %s" %(file_path, fmfid, hash)
+        self.msg("received md5 hash for filename=%s on fmfid=%s is %s" %(file_path, fmfid, hash))
         self.result = hash
-        self.logger.debug(self.msg)
-
         
         if res['md5'] == hash:
             #TODO add notify job here
             upqdb.UpqDB().query("UPDATE file_mirror_files SET md5='%s', md5check=NOW(), active=1 WHERE fmfid=%d" %(res['md5'], fmfid))
-            self.msg = 'Remote hash matches hash in DB.'
+            self.msg('Remote hash matches hash in DB.')
             return True
         else:
             if len(hash)==32:
                 #TODO: delete from db to allow re-upload
                 query="UPDATE file_mirror_files SET md5='%s', active=0 WHERE fmfid=%s " %(hash, fmfid)
                 upqdb.UpqDB().query(query)
-                self.msg  = 'Remote hash does NOT match hash in DB.'
+                self.msg('Remote hash does NOT match hash in DB.')
             else:
-                self.msg = 'error retrieving hash from ' + hash_url
+                self.msg('error retrieving hash from ' + hash_url)
             return False
 

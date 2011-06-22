@@ -46,7 +46,7 @@ AND CHAR_LENGTH(h.md5)>0""" % (fid))
         fid=int(self.jobdata['fid'])
         results = UpqDB().query("SELECT filepath, filesize FROM files where fid=%d "% fid)
         if results.rowcount!=1:
-            self.msg = "Wrong result count with fid %d" % fid
+            self.msg("Wrong result count with fid %d" % fid)
             return False
         res=results.first()
         srcfilename=self.jobcfg['path']+res['filepath']
@@ -71,7 +71,7 @@ GROUP by m.fmid"% fid)
             passive=int(res['ftp_passive'])>1
             cwddir=res['ftp_dir']
             if not os.path.isfile(srcfilename):
-                self.msg="File doesn't exist: " + srcfilename
+                self.msg("File doesn't exist: " + srcfilename)
                 return False
             try:
                 f=open(srcfilename,"rb")
@@ -116,5 +116,5 @@ GROUP by m.fmid"% fid)
                 self.logger.error("Upload (%s) %s failed %s" % (host, srcfilename,e));
                 return False
             uploadcount+=1
-        self.msg="Uploaded to %d mirrors." % (uploadcount)
+        self.msg("Uploaded to %d mirrors." % (uploadcount))
         return True

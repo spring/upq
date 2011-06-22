@@ -10,24 +10,29 @@
 # upload_file
 
 from upqjob import UpqJob
-import ftplib
+from upqdb import UpqDB
 import time
-import copy
+from sqlalchemy import Table, MetaData
+import pprint
 
 class Test(UpqJob):
     def check(self):
-        self.enqueue_job()
-        self.msg="Test job: "+str(self.jobid)+" data:"+str(self.jobdata)
+	tables = ["upqueue",
+		"file_mirror",
+		"file_mirror_paths",
+		"file_mirror_files",
+		"springdata_archives",
+		"springdata_categories",
+		"springdata_depends",
+		"springdata_startpos",
+		"files",
+		"filehash" ]
+	meta=MetaData()
+	meta.bind = UpqDB().engine
+	for t in tables:
+		tbl=Table(t, meta, autoload=True)
+	pprint.pprint(meta.tables)
         return True
+"""
 
-    def run(self):
-        time.sleep(1)
-        self.jd = copy.deepcopy(self.jobdata)
-        try:
-            self.jd['child'] = self.jd['child']+"*"
-        except KeyError:
-            pass
-        self.enqueue_newjob("test", self.jd)
-        self.msg="(%s,%d) Job successfully run" % (self.jobname,self.jobid)
-        return True
-
+"""

@@ -27,18 +27,18 @@ class Hash(UpqJob):
 	def check(self):
 		results = UpqDB().query("SELECT filepath,md5 FROM files as f LEFT JOIN filehash as h ON f.fid=h.fid WHERE f.fid=%d " % int(self.jobdata['fid']))
 		if results.rowcount > 1:
-			self.msg = "Integry check failed, more than 1 file to hash in result"
+			self.msg("Integry check failed, more than 1 file to hash in result")
 			return False
 		for res in results:
 			if len(res['md5']) > 0: #md5 already present, don't hash again
-				self.msg = "MD5 already present: " + res['md5']
+				self.msg("MD5 already present: " + res['md5'])
 				return False
 			self.enqueue_job()
 			if not os.path.isfile(self.jobcfg['path'] + res['filepath']):
-				self.msg = "File not found " + self.jobcfg['path'] + res['filepath']
+				self.msg("File not found " + self.jobcfg['path'] + res['filepath'])
 				return False;
 			return True
-		self.msg = "File not found"
+		self.msg("File not found")
 		return False
 
 	def run(self):
@@ -57,7 +57,7 @@ class Hash(UpqJob):
 			try:
 				UpqDB().insert("filehash", { "fid": fid, "md5": hashes['md5'], "sha1": hashes['sha1'], "sha256": hashes['sha256'] })
 			except UpqDBIntegrityError:
-				self.msg = "Hash already exists in db, not updating"
+				self.msg("Hash already exists in db, not updating")
 		self.enqueue_newjob("extract_metadata",{"fid": fid})
 		return True
 

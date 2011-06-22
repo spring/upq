@@ -23,9 +23,9 @@ class New_file(UpqJob):
 	def check(self):
 		if 'fid' or 'filepath' in self.jobdata:
 			self.enqueue_job()
-			self.msg="enqueued job"
+			self.msg("enqueued job")
 			return True
-		self.msg="Either fid or filepath has to be set!"
+		self.msg("Either fid or filepath has to be set!")
 		return False
 	"""
 		params:
@@ -51,7 +51,7 @@ class New_file(UpqJob):
 			fid=UpqDB().insert("files", { "uid": uid, "filename": filename, "filepath": filepath, "filemime": "application/octet-stream", "filesize":filesize, "status":1, "timestamp":UpqDB().now()})
 			filepath=os.path.abspath(self.jobdata['filepath'])
 		if not os.access(filepath, os.R_OK):
-			self.msg="can't read %s" % (filepath)
+			self.msg("can't read %s" % (filepath))
 			return False
 		self.enqueue_newjob("hash", { "fid": fid})
 		return True
