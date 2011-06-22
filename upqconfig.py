@@ -100,9 +100,6 @@ class UpqConfig():
                 else:
                     self.conf_log("   job '%s' is disabled" % job )
 
-            else:
-                self.conf_log("Unknown section '%s' found in config file, ignoring."% (section))
-
         self.conf_log("paths='%s'" % self.paths)
         self.conf_log("jobs='%s'" % self.jobs)
         self.conf_log("db='%s'" % self.db)

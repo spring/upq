@@ -28,7 +28,7 @@ import sys, os, os.path
 import threading
 import traceback
 import daemon
-import lockfile
+from daemon import pidlockfile
 
 from upqconfig import UpqConfig
 import log
@@ -112,16 +112,15 @@ def main(argv=None):
         UpqConfig(options.configfile, options.logfile)
         UpqConfig().readConfig()
 
+        #FIXME: remove following line + how does this $%$!" work?
+        del UpqConfig().daemon['pidfile']
+        if UpqConfig().daemon.has_key('pidfile'):
+            lockfile=UpqConfig().daemon['pidfile']
+            UpqConfig().daemon['pidfile']=pidlockfile.TimeoutPIDLockFile(lockfile, acquire_timeout=1)
         context = daemon.DaemonContext(**UpqConfig().daemon)
         # daemonize
         context.stdout = sys.stderr
         context.stderr = sys.stderr
-
-        if UpqConfig().daemon.has_key('pidfile'):
-            if os.path.exists(UpqConfig().daemon['pidfile']):
-                os.remove(UpqConfig().daemon['pidfile'])
-            context.pidfile = lockfile.FileLock(UpqConfig().daemon['pidfile'])
-
 
         upq = Upq()
         with context:
