@@ -48,7 +48,7 @@ class Hash(UpqJob):
 		fid = int(self.jobdata['fid'])
 		results = UpqDB().query("SELECT * FROM files f LEFT JOIN filehash h ON f.fid=h.fid WHERE f.fid=%d  " % int(fid))
 		for res in results:
-			if not os.path.isabs:
+			if not os.path.isabs(res['filepath']):
 				file = os.path.join(self.jobcfg['path'], res['filepath'])
 			else:
 				file=res['filepath']

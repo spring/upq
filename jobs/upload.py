@@ -44,7 +44,7 @@ AND CHAR_LENGTH(h.md5)>0""" % (fid))
 
     def run(self):
         fid=int(self.jobdata['fid'])
-        results = UpqDB().query("SELECT filepath, filesize FROM files where fid=%d "% fid)
+        results = UpqDB().query("SELECT filepath, filesize, md5 FROM files f LEFT JOIN filehash h ON f.fid=h.fid where f.fid=%d "% (fid))
         if results.rowcount!=1:
             self.msg("Wrong result count with fid %d" % fid)
             return False
@@ -52,6 +52,7 @@ AND CHAR_LENGTH(h.md5)>0""" % (fid))
         srcfilename=self.jobcfg['path']+res['filepath']
         dstfilename=res['filepath'][len(self.jobcfg['prefix']):]
         filesize=res['filesize']
+	md5=res['md5']
         #uploads a fid to all mirrors
         results = UpqDB().query("SELECT m.fmid, ftp_url, ftp_user, ftp_pass, ftp_dir, ftp_port, ftp_passive, ftp_ssl \
 FROM file_mirror as m \
@@ -59,7 +60,7 @@ LEFT JOIN file_mirror_files as f ON m.fmid=f.fmid \
 WHERE m.active=1 \
 AND m.dynamic=1 \
 AND m.fmid not in ( \
-SELECT fmid FROM file_mirror_files WHERE fid=%d \
+SELECT fmid FROM file_mirror_files WHERE fid=%d AND active=1\
 ) \
 GROUP by m.fmid"% fid)
         uploadcount=0
@@ -70,6 +71,11 @@ GROUP by m.fmid"% fid)
             password=res['ftp_pass']
             passive=int(res['ftp_passive'])>1
             cwddir=res['ftp_dir']
+            res2=UpqDB().query("SELECT fmfid FROM file_mirror_files WHERE md5='%s' AND fmid='%d' AND active=1" % (md5, res['fmid']))
+            row=res2.first()
+            if not row==None:
+                self.msg("File %s with md5 already detected on file mirror %s, not uploading!"%(row['fmfid'], res['fmid']))
+		continue
             if not os.path.isfile(srcfilename):
                 self.msg("File doesn't exist: " + srcfilename)
                 return False

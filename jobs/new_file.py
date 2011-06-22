@@ -34,7 +34,7 @@ class New_file(UpqJob):
 			return False
 		id=self.enqueue_job()
 		self.msg("Enqueued job")
-		return False
+		return True
 	"""
 		params:
 			filepath: absoulte path of file
@@ -47,6 +47,10 @@ class New_file(UpqJob):
 		if 'fid' in self.jobdata: # file already exists in db
 			result=UpqDB().query("SELECT * from files where fid=%s"% (self.jobdata['fid']))
 			res=result.first()
+			if res==None:
+				self.msg("fid not found in db!")
+				return False
+			fid=self.jobdata['fid']
 		else: # file doesn't exist in db, add it
 			filepath=self.jobdata['filepath']
 			filename=self.jobdata['filename']
