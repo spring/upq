@@ -21,11 +21,19 @@ class New_file(UpqJob):
 	"""
 
 	def check(self):
-		if 'fid' or 'filepath' in self.jobdata:
-			self.enqueue_job()
-			self.msg("enqueued job")
-			return True
-		self.msg("Either fid or filepath has to be set!")
+		if 'filepath' in self.jobdata and 'filename' in self.jobdata:
+			filepath=self.jobdata['filepath']
+			filename=self.jobdata['filename']
+			result=UpqDB().query("SELECT * from files where filename='%s'" % (filename))
+			res=result.first()
+			if res!=None:
+				self.msg("File %s already exists: %s"%(filepath, res['filepath']))
+				return False
+		elif not 'fid' in self.jobdata:
+			self.msg("Either filepath & filename or fid has to be set!")
+			return False
+		id=self.enqueue_job()
+		self.msg("Enqueued job")
 		return False
 	"""
 		params:
