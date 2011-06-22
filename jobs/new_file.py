@@ -47,7 +47,6 @@ class New_file(UpqJob):
 		if 'fid' in self.jobdata: # file already exists in db
 			result=UpqDB().query("SELECT * from files where fid=%s"% (self.jobdata['fid']))
 			res=result.first()
-			filepath=os.path.abspath(res['filepath'])
 		else: # file doesn't exist in db, add it
 			filepath=self.jobdata['filepath']
 			filename=self.jobdata['filename']
@@ -58,9 +57,9 @@ class New_file(UpqJob):
 				uid=0
 			fid=UpqDB().insert("files", { "uid": uid, "filename": filename, "filepath": filepath, "filemime": "application/octet-stream", "filesize":filesize, "status":1, "timestamp":UpqDB().now()})
 			filepath=os.path.abspath(self.jobdata['filepath'])
-		if not os.access(filepath, os.R_OK):
-			self.msg("can't read %s" % (filepath))
-			return False
+			if not os.access(filepath, os.R_OK):
+				self.msg("can't read %s" % (filepath))
+				return False
 		self.enqueue_newjob("hash", { "fid": fid})
 		return True
 
