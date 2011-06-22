@@ -180,7 +180,7 @@ class Extract_metadata(UpqJob):
 		self.create_torrent(archivepath, outputpath +"/" +filename+".torrent")
 		self.insertData(data, fid)
 		self.moveFile(filepath,self.jobcfg['datadir'], moveto, fid)
-#		self.enqueue_newjob("upload", {"fid": fid})
+		self.enqueue_newjob("upload", {"fid": fid})
 		self.cleandir(tmpdir)
 		return True
 
