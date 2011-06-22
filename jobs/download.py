@@ -38,6 +38,7 @@ class Download(UpqJob):
 		dstfile=os.path.join(self.jobcfg['downloaddir'], filename)
 		url=self.jobdata['url']
 		uid=int(self.jobdata['uid'])
+		self.logger.debug("going to download %s", url)
 		try:
 			filename, headers = my_download().retrieve(url, tmpfile)
 			urllib.urlcleanup()
@@ -46,7 +47,7 @@ class Download(UpqJob):
 			return False
 		#TODO validate somehow?
 		shutil.move(tmpfile, dstfile)
-		filepath=os.path.join(self.jobcfg['prefix'], filename)
-		self.enqueue_newjob("new_file", "filepath": filepath)
+		self.msg="Downloaded %s (%s bytes)" % (dstfile, os.path.getsize(dstfile))
+		self.enqueue_newjob("new_file", { "filepath": dstfile, "filename": filename, "uid":uid })
 		return True
 

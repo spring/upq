@@ -112,15 +112,16 @@ def main(argv=None):
         UpqConfig(options.configfile, options.logfile)
         UpqConfig().readConfig()
 
+        context = daemon.DaemonContext(**UpqConfig().daemon)
+        # daemonize
+        context.stdout = sys.stderr
+        context.stderr = sys.stderr
+
         if UpqConfig().daemon.has_key('pidfile'):
             if os.path.exists(UpqConfig().daemon['pidfile']):
                 os.remove(UpqConfig().daemon['pidfile'])
             context.pidfile = lockfile.FileLock(UpqConfig().daemon['pidfile'])
 
-        # daemonize
-        context = daemon.DaemonContext(**UpqConfig().daemon)
-        context.stdout = sys.stderr
-        context.stderr = sys.stderr
 
         upq = Upq()
         with context:

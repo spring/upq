@@ -38,15 +38,15 @@ class Extract_metadata(UpqJob):
 		setup temporary directory.
 		creates <tempdir>/games and symlinks archive file into that directory
 	"""
-	def setupdir(self,fid):
+	def setupdir(self, fid, filepath):
+		if not os.path.exists(filepath):
+			self.msg="error setting up temp dir, file doesn't exist %s" %(filepath)
+			raise Exception(self.msg)
 		temppath=tempfile.mkdtemp(dir=self.jobcfg['temppath'])
-		results=UpqDB().query("SELECT * FROM files WHERE fid=%d" % fid)
-		res=results.first()
-		filename=os.path.basename(res['filepath'])
 		archivetmp=os.path.join(temppath, "games")
 		os.mkdir(archivetmp)
-		srcfile=os.path.join(self.jobcfg['datadir'], res['filepath'])
-		self.tmpfile=os.path.join(archivetmp, filename)
+		srcfile=os.path.join(self.jobcfg['datadir'], filepath)
+		self.tmpfile=os.path.join(archivetmp, os.path.basename(filepath))
 		self.logger.debug("symlinking %s %s" % (srcfile,self.tmpfile))
 		os.symlink(srcfile,self.tmpfile)
 		return temppath
@@ -109,8 +109,8 @@ class Extract_metadata(UpqJob):
 				return i
 		return -1
 
-	def insertData(self, data):
-		for depend in data['depends']:
+	def insertData(self, data, fid):
+		for depend in data['Depends']:
 			res=UpqDB().query("SELECT fid FROM springdata_archives WHERE CONCAT(name,' ',version)='%s'" % ( deps))
 			row=res.first()
 			if not row:
@@ -118,27 +118,40 @@ class Extract_metadata(UpqJob):
 			else:
 				id=row['fid']
 			try:
-				UpqDB().insert("springdata_depends", {"fid":self.fid, "depends_string": depend, "depends": id})
+				UpqDB().insert("springdata_depends", {"fid":fid, "depends_string": depend, "depends": id})
 			except UpqDBIntegrityError:
 				pass
 		try:
-			UpqDB().insert("springdata_archives", {"fid": self.fid, "name": data['Name'], "version": data['Version'], "cid": self.getCid(data['Type'], "sdp": data['sdp'])})
+			UpqDB().insert("springdata_archives", {"fid": fid, "name": data['Name'], "version": data['Version'], "cid": self.getCid(data['Type']), "sdp": data['sdp']})
 		except UpqDBIntegrityError:
 			pass
 		#TODO: add additional data
+	#move file to destination, makes path relative, updates db
+	def moveFile(self, filepath,prefix, moveto, fid):
+		dstfile=os.path.join(prefix,moveto)
+		shutil.move(filepath, dstfile)
+		UpqDB().query("UPDATE files SET filepath='%s', filename='%s' WHERE fid=%d" %(moveto,os.path.basename(moveto), fid))
+		self.logger.debug("moved file to (abs)%s (rel)%s" %(dstfile, moveto))
 
 	def run(self):
-		self.fid=int(self.jobdata['fid'])
-		results=UpqDB().query("SELECT * FROM files WHERE fid=%d" % self.fid)
+		fid=int(self.jobdata['fid'])
+		results=UpqDB().query("SELECT * FROM files WHERE fid=%d" % fid)
 		res=results.first()
 		#filename of the archive to be scanned
-		filename=os.path.basename(res['filepath'])
+		filename=os.path.basename(res['filepath']) # relative filename
 		libunitsync=self.jobcfg['unitsync']
 		outputpath=self.jobcfg['outputpath']
-		datadir=self.setupdir(self.fid)
+		if os.path.isabs(res['filepath']):
+			filepath=res['filepath']
+		else:
+			filepath=os.path.join(self.jobcfg['datadir'],res['filepath']) # absolute filename
+		if not os.path.exists(filepath):
+			self.msg="File doesn't exist: %s" %(filepath)
+			return False
+		tmpdir=self.setupdir(fid, filepath) #temporary directory for unitsync
 
 		outputpath = os.path.abspath(outputpath)
-		os.environ["SPRING_DATADIR"]=datadir
+		os.environ["SPRING_DATADIR"]=tmpdir
 		usync = unitsync.Unitsync(libunitsync)
 
 		usync.Init(True,1)
@@ -148,25 +161,27 @@ class Extract_metadata(UpqJob):
 		usync.AddAllArchives(filename)
 
 		idx=self.getMapIdx(usync,filename)
-		if idx>=0:
+		if idx>=0: #file is map
 			archivepath=usync.GetArchivePath(filename)+filename
 			springname = usync.GetMapName(idx)
 			self.dumpmap(usync, springname, outputpath, filename,idx)
 			data=self.getMapData(usync, idx, maparchivecount)
-		else:
-
+			moveto=os.path.join(self.jobcfg['maps-path'], filename)
+		else: # file is a game
 			idx=self.getGameIdx(usync,filename)
 			if idx<0:
-				self.msg="%s Invalid file detected: %s %s %s"% (count, filename,usync.GetNextError(), idx)
+				self.msg="Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx)
 				return False
 			self.logger.debug("Extracting data from "+filename)
 			archivepath=usync.GetArchivePath(filename)+filename
 			gamearchivecount=usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath)
+			moveto=os.path.join(self.jobcfg['games-path'], filename)
 		self.create_torrent(archivepath, outputpath +"/" +filename+".torrent")
-		self.insertdata(data)
-		self.enqueue_newjob("upload", {"fid": self.fid})
-		self.cleandir(datadir)
+		self.insertData(data, fid)
+		self.moveFile(filepath,self.jobcfg['datadir'], moveto, fid)
+#		self.enqueue_newjob("upload", {"fid": fid})
+		self.cleandir(tmpdir)
 		return True
 
 	springcontent = [ 'bitmaps.sdz', 'springcontent.sdz', 'maphelper.sdz', 'cursors.sdz' ]
@@ -330,6 +345,7 @@ class Extract_metadata(UpqJob):
 		res['Description']= usync.GetPrimaryModDescription(idx)
 		res['Version']= version
 		if usync.GetSpringVersion()=="0.82.7":
+			res['sdp']=""
 			self.logger.error("Incompatible Spring unitsync.dll detected, not extracting sdp name");
 		else:
 			res['sdp']= self.getSDPName(usync, archivename)
@@ -356,13 +372,13 @@ class Extract_metadata(UpqJob):
 		res['FileName'] = usync.GetMapFileName(idx)
 		res['MapMinHeight'] = usync.GetMapMinHeight(mapname)
 		res['MapMaxHeight'] = usync.GetMapMaxHeight(mapname)
-		res['SdpName'] = self.getSDPName(usync, filename)
+		res['sdp'] = self.getSDPName(usync, filename)
 
 		res['Resources'] = self.getMapResources(usync, idx,archive, maparchivecount)
 		res['Units'] = self.getUnits(usync, archive)
 
-		self.getMapPositions(usync,idx,archive)
-		self.getMapDepends(usync,idx,archive,maparchivecount)
+		res['StartPos']=self.getMapPositions(usync,idx,archive)
+		res['Depends']=self.getMapDepends(usync,idx,archive,maparchivecount)
 		version="" #TODO: add support
 
 	springnames={}
