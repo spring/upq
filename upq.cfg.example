@@ -20,6 +20,7 @@ socket    = /var/run/upq-incoming.sock
 
 [db]
 url= mysql://user:password@hostname/dbname
+#debug = false
 ##relative paths don't work (?)
 #url = sqlite:////tmp/upq.db
 
