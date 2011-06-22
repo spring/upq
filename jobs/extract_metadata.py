@@ -129,6 +129,9 @@ class Extract_metadata(UpqJob):
 	#move file to destination, makes path relative, updates db
 	def moveFile(self, filepath,prefix, moveto, fid):
 		dstfile=os.path.join(prefix,moveto)
+		if os.path.exists(dstfile):
+			self.msg="Destination file already exists: %s" %(dstfile)
+			raise Exception(self.msg)
 		shutil.move(filepath, dstfile)
 		UpqDB().query("UPDATE files SET filepath='%s', filename='%s' WHERE fid=%d" %(moveto,os.path.basename(moveto), fid))
 		self.logger.debug("moved file to (abs)%s (rel)%s" %(dstfile, moveto))
