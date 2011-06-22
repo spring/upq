@@ -27,7 +27,7 @@ class New_file(UpqJob):
 			result=UpqDB().query("SELECT * from files where filename='%s'" % (filename))
 			res=result.first()
 			if res!=None:
-				self.msg("File %s already exists: %s"%(filepath, res['filepath']))
+				self.msg("File %s already exists: fid: %s"%(filepath, res['fid']))
 				return False
 		elif not 'fid' in self.jobdata:
 			self.msg("Either filepath & filename or fid has to be set!")
