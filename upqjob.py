@@ -75,6 +75,7 @@ class UpqJob(object):
         self.logger = log.getLogger("upq")
 
     def msg(self, msg):
+        self.logger.debug(msg)
         self.msgstr+=str(msg)
 
     def notify(self, succeed):
