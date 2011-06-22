@@ -135,6 +135,7 @@ class Extract_metadata(UpqJob):
 				raise Exception(self.msgstr)
 			shutil.move(filepath, dstfile)
 		UpqDB().query("UPDATE files SET filepath='%s', filename='%s' WHERE fid=%d" %(moveto,os.path.basename(moveto), fid))
+		os.chmod(dstfile, int("0444",8))
 		self.logger.debug("moved file to (abs)%s (rel)%s" %(dstfile, moveto))
 
 	def run(self):
