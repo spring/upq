@@ -92,3 +92,13 @@ temppath=/tmp
 enabled = true
 concurrent = 1
 from = root@localhost
+
+[job download]
+enabled = true
+concurrent = 1
+temppath = /tmp
+; where to store not categorized files
+downloaddir = /home/jj/web/www/sites/default/files/downloads/spring
+; which path to prefix for drupal
+prefix = sites/default/files/images/spring/
+
