@@ -28,7 +28,7 @@ import sys, os, os.path
 import threading
 import traceback
 import daemon
-from daemon import pidlockfile
+#from daemon import pidlockfile
 
 from upqconfig import UpqConfig
 import log
@@ -114,9 +114,9 @@ def main(argv=None):
 
         #FIXME: remove following line + how does this $%$!" work?
         del UpqConfig().daemon['pidfile']
-        if UpqConfig().daemon.has_key('pidfile'):
-            lockfile=UpqConfig().daemon['pidfile']
-            UpqConfig().daemon['pidfile']=pidlockfile.TimeoutPIDLockFile(lockfile, acquire_timeout=1)
+#        if UpqConfig().daemon.has_key('pidfile'):
+#            lockfile=UpqConfig().daemon['pidfile']
+#            UpqConfig().daemon['pidfile']=pidlockfile.TimeoutPIDLockFile(lockfile, acquire_timeout=1)
         context = daemon.DaemonContext(**UpqConfig().daemon)
         # daemonize
         context.stdout = sys.stderr

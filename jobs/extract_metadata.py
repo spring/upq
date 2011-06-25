@@ -137,7 +137,10 @@ class Extract_metadata(UpqJob):
 				raise Exception(self.msgstr)
 			shutil.move(filepath, dstfile)
 		UpqDB().query("UPDATE files SET filepath='%s', filename='%s' WHERE fid=%d" %(moveto,os.path.basename(moveto), fid))
-		os.chmod(dstfile, int("0444",8))
+		try:
+			os.chmod(dstfile, int("0444",8))
+		except OSError:
+			pass
 		self.logger.debug("moved file to (abs)%s (rel)%s" %(dstfile, moveto))
 
 	def run(self):
@@ -160,6 +163,8 @@ class Extract_metadata(UpqJob):
 		outputpath = os.path.abspath(outputpath)
 		os.environ["SPRING_DATADIR"]=tmpdir
 		usync = unitsync.Unitsync(libunitsync)
+		version = usync.GetSpringVersion();
+		self.logger.debug("using unitsync version %s" %(version))
 
 		usync.Init(True,1)
 
@@ -185,6 +190,11 @@ class Extract_metadata(UpqJob):
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath)
 			moveto=os.path.join(self.jobcfg['games-path'], filename)
 		self.create_torrent(archivepath, outputpath +"/" +filename+".torrent")
+		if version=="0.82.7":
+			data['sdp']=""
+			self.logger.error("Incompatible Spring unitsync.dll detected, not extracting sdp name");
+		else:
+			data['sdp']= self.getSDPName(usync, archivename)
 		self.insertData(data, fid)
 		self.moveFile(filepath,self.jobcfg['datadir'], moveto, fid)
 		self.enqueue_newjob("upload", {"fid": fid})
@@ -203,7 +213,7 @@ class Extract_metadata(UpqJob):
 
 	def getMapDepends(self, usync,Map):
 		res=[]
-		count=GetMapArchiveCount(Map)
+		count=usync.GetMapArchiveCount(Map)
 		for i in range (1, count): # get depends for file, idx=0 is filename itself
 			deps=os.path.basename(usync.GetMapArchiveName(i))
 			if not deps in self.springcontent:
@@ -352,18 +362,13 @@ class Extract_metadata(UpqJob):
 		res['Name']= springname
 		res['Description']= usync.GetPrimaryModDescription(idx)
 		res['Version']= version
-		if usync.GetSpringVersion()=="0.82.7":
-			res['sdp']=""
-			self.logger.error("Incompatible Spring unitsync.dll detected, not extracting sdp name");
-		else:
-			res['sdp']= self.getSDPName(usync, archivename)
 		res['Depends']=self.getGameDepends(usync, idx, gamesarchivecount, archivename)
 		res['Units']=self.getUnits(usync, archivename)
 		return res
 
 	def getMapData(self, usync, filename, idx):
 		res={}
-		res['type'] = "Map"
+		res['Type'] = "Map"
 		mapname=usync.GetMapName(idx)
 		res['Name'] = mapname
 
@@ -381,14 +386,15 @@ class Extract_metadata(UpqJob):
 		res['FileName'] = usync.GetMapFileName(idx)
 		res['MapMinHeight'] = usync.GetMapMinHeight(mapname)
 		res['MapMaxHeight'] = usync.GetMapMaxHeight(mapname)
-		res['sdp'] = self.getSDPName(usync, filename)
 
-		res['Resources'] = self.getMapResources(usync, idx,archive)
-		res['Units'] = self.getUnits(usync, archive)
+		res['Resources'] = self.getMapResources(usync, idx,filename)
+		res['Units'] = self.getUnits(usync, filename)
 
-		res['StartPos']=self.getMapPositions(usync,idx,archive)
-		res['Depends']=self.getMapDepends(usync,archive)
+		res['StartPos']=self.getMapPositions(usync,idx,filename)
+		res['Depends']=self.getMapDepends(usync,filename)
 		version="" #TODO: add support
+		res['Version']=version
+		return res
 
 	springnames={}
 	def createdict(self,usync,gamescount, mapcount):
