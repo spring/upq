@@ -172,7 +172,7 @@ class Extract_metadata(UpqJob):
 			archivepath=usync.GetArchivePath(filename)+filename
 			springname = usync.GetMapName(idx)
 			self.dumpmap(usync, springname, outputpath, filename,idx)
-			data=self.getMapData(usync, idx, maparchivecount)
+			data=self.getMapData(usync, filename, idx)
 			moveto=os.path.join(self.jobcfg['maps-path'], filename)
 		else: # file is a game
 			idx=self.getGameIdx(usync,filename)
@@ -201,14 +201,15 @@ class Extract_metadata(UpqJob):
 			res.append({'x': x, 'z': z})
 		return res
 
-	def getMapDepends(self, usync,idx,Map,maparchivecount):
+	def getMapDepends(self, usync,Map):
 		res=[]
-		for j in range (1, maparchivecount): # get depends for file, idx=0 is filename itself
-			deps=os.path.basename(usync.GetMapArchiveName(j))
+		count=GetMapArchiveCount(Map)
+		for i in range (1, count): # get depends for file, idx=0 is filename itself
+			deps=os.path.basename(usync.GetMapArchiveName(i))
 			if not deps in self.springcontent:
 				res.append(deps)
 		return res
-	def getMapResources(self, usync,idx,Map, maparchivecount):
+	def getMapResources(self, usync,idx,Map):
 		res=[]
 		resourceCount=usync.GetMapResourceCount(idx)
 		for i in range (0, resourceCount):
@@ -360,10 +361,11 @@ class Extract_metadata(UpqJob):
 		res['Units']=self.getUnits(usync, archivename)
 		return res
 
-	def getMapData(self, usync, idx, maparchivecount):
+	def getMapData(self, usync, filename, idx):
 		res={}
 		res['type'] = "Map"
-		res['Name'] = usync.GetMapName(idx)
+		mapname=usync.GetMapName(idx)
+		res['Name'] = mapname
 
 		res['Author'] = usync.GetMapAuthor(idx)
 		res['Description'] = usync.GetMapDescription(idx)
@@ -381,11 +383,11 @@ class Extract_metadata(UpqJob):
 		res['MapMaxHeight'] = usync.GetMapMaxHeight(mapname)
 		res['sdp'] = self.getSDPName(usync, filename)
 
-		res['Resources'] = self.getMapResources(usync, idx,archive, maparchivecount)
+		res['Resources'] = self.getMapResources(usync, idx,archive)
 		res['Units'] = self.getUnits(usync, archive)
 
 		res['StartPos']=self.getMapPositions(usync,idx,archive)
-		res['Depends']=self.getMapDepends(usync,idx,archive,maparchivecount)
+		res['Depends']=self.getMapDepends(usync,archive)
 		version="" #TODO: add support
 
 	springnames={}
