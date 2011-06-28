@@ -13,8 +13,6 @@ import logging.handlers
 logger=None
 
 def init_logging(conf):
-    import logging.handlers
-    
     global logger
     
     if conf.has_key('loglevel'):

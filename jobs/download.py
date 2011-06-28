@@ -19,7 +19,7 @@ import shutil
 
 class my_download(urllib.URLopener):
 	def http_error_default(self, url, fp, errcode, errmsg, headers):
-        	raise Exception("Error retrieving %s %d %s" %(url, errcode, errmsg))
+		raise Exception("Error retrieving %s %d %s" %(url, errcode, errmsg))
 
 class Download(UpqJob):
 	"""

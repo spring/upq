@@ -17,14 +17,14 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import func
-from sqlalchemy.dialects.mysql import TEXT, INTEGER, INTEGER, BIGINT, DATETIME, CHAR, VARCHAR, TIMESTAMP
+from sqlalchemy.dialects.mysql import TEXT, INTEGER, BIGINT, DATETIME, CHAR, VARCHAR, TIMESTAMP
 
 
 class UpqDBIntegrityError(Exception):
-    def __init__(self, value):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
+	def __init__(self, value):
+		self.value = value
+	def __str__(self):
+		return repr(self.value)
 
 class UpqDB():
 	__shared_state = {}

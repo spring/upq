@@ -52,7 +52,7 @@ AND CHAR_LENGTH(h.md5)>0""" % (fid))
         srcfilename=self.jobcfg['path']+res['filepath']
         dstfilename=res['filepath'][len(self.jobcfg['prefix']):]
         filesize=res['filesize']
-	md5=res['md5']
+        md5=res['md5']
         #uploads a fid to all mirrors
         results = UpqDB().query("SELECT m.fmid, ftp_url, ftp_user, ftp_pass, ftp_dir, ftp_port, ftp_passive, ftp_ssl \
 FROM file_mirror as m \
@@ -75,7 +75,7 @@ GROUP by m.fmid"% fid)
             row=res2.first()
             if not row==None:
                 self.msg("File %s with md5 already detected on file mirror %s, not uploading!"%(row['fmfid'], res['fmid']))
-		continue
+                continue
             if not os.path.isfile(srcfilename):
                 self.msg("File doesn't exist: " + srcfilename)
                 return False

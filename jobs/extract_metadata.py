@@ -327,7 +327,7 @@ class Extract_metadata(UpqJob):
 		i=0
 		for f in files:
 			# ignore directory entries
-		        if f[-1] == '/': continue
+			if f[-1] == '/': continue
 			fileh=usync.OpenArchiveFile(archiveh, f)
 			size=usync.SizeArchiveFile(archiveh, fileh)
 			buf = ctypes.create_string_buffer(size)
