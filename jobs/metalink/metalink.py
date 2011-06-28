@@ -1458,7 +1458,7 @@ class Torrent(object):
 
         root['creation date'] = int(time.time())
 
-	return self.bencode(root)
+        return self.bencode(root)
 
     def bdecode(self):
         c = self.data[self.pos]
