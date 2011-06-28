@@ -79,7 +79,7 @@ class Extract_metadata(UpqJob):
 			files=""
 			for fname in dirList:
 				files+=fname
-			self.logger.warn("Didn't clean temp directory %s: %s %s" % (temppath, files, e));
+			self.logger.warn("Didn't clean temp directory %s: %s" % (temppath, files));
 	def check(self):
 		if self.jobdata['fid']<=0:
 			self.msg("no id specified")
@@ -111,7 +111,7 @@ class Extract_metadata(UpqJob):
 
 	def insertData(self, data, fid):
 		for depend in data['Depends']:
-			res=UpqDB().query("SELECT fid FROM springdata_archives WHERE CONCAT(name,' ',version)='%s'" % ( deps))
+			res=UpqDB().query("SELECT fid FROM springdata_archives WHERE CONCAT(name,' ',version)='%s'" % (depend))
 			row=res.first()
 			if not row:
 				id=0
@@ -194,7 +194,7 @@ class Extract_metadata(UpqJob):
 			data['sdp']=""
 			self.logger.error("Incompatible Spring unitsync.dll detected, not extracting sdp name");
 		else:
-			data['sdp']= self.getSDPName(usync, archivename)
+			data['sdp']= self.getSDPName(usync, archivename) # <-- "archivename" undef variable!
 		self.insertData(data, fid)
 		self.moveFile(filepath,self.jobcfg['datadir'], moveto, fid)
 		self.enqueue_newjob("upload", {"fid": fid})
