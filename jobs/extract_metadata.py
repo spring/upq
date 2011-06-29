@@ -194,7 +194,7 @@ class Extract_metadata(UpqJob):
 			data['sdp']=""
 			self.logger.error("Incompatible Spring unitsync.dll detected, not extracting sdp name");
 		else:
-			data['sdp']= self.getSDPName(usync, archivename) # <-- "archivename" undef variable!
+			data['sdp']= self.getSDPName(usync, filename)
 		self.insertData(data, fid)
 		self.moveFile(filepath,self.jobcfg['datadir'], moveto, fid)
 		self.enqueue_newjob("upload", {"fid": fid})
