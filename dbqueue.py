@@ -12,12 +12,13 @@
 
 from Queue import *
 
-import log
 import upqdb
 import json
 from re import escape
 
 class DBQueue(Queue, object):
+    threads = {}
+
     """ returns job """
     def get(self, block=True, timeout=None):
         job = super(DBQueue, self).get(block, timeout)

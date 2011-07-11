@@ -12,27 +12,39 @@
 from upqjob import UpqJob
 from upqdb import UpqDB
 import time
+import random
 from sqlalchemy import Table, MetaData
 import pprint
+from time import sleep
 
 class Test(UpqJob):
 	def check(self):
-		tables = ["upqueue",
-			"file_mirror",
-			"file_mirror_paths",
-			"file_mirror_files",
-			"springdata_archives",
-			"springdata_categories",
-			"springdata_depends",
-			"springdata_startpos",
-			"files",
-			"filehash" ]
-		meta=MetaData()
-		meta.bind = UpqDB().engine
-		for t in tables:
-			tbl=Table(t, meta, autoload=True)
-		pprint.pprint(meta.tables)
+#		tables = ["upqueue",
+#			"file_mirror",
+#			"file_mirror_paths",
+#			"file_mirror_files",
+#			"springdata_archives",
+#			"springdata_categories",
+#			"springdata_depends",
+#			"springdata_startpos",
+#			"files",
+#			"filehash" ]
+#		meta=MetaData()
+#		meta.bind = UpqDB().engine
+#		for t in tables:
+#			tbl=Table(t, meta, autoload=True)
+#		pprint.pprint(meta.tables)
+		self.enqueue_job()
 		return True
-"""
 
-"""
+	def run(self):
+		sleep(random.uniform(2, 4))
+		pprint.pprint("%d - %s - test *" % (self.jobid, self.thread))
+		sleep(random.uniform(0, 3))
+		pprint.pprint("%d - %s - test **" % (self.jobid, self.thread))
+		sleep(random.uniform (0, 3))
+		pprint.pprint("%d - %s - test ***" % (self.jobid, self.thread))
+		sleep(random.uniform (0, 3))
+		pprint.pprint("%d - %s - test ****" % (self.jobid, self.thread))
+		self.msg("finished '%s'" % self.jobdata)
+		return self.jobdata

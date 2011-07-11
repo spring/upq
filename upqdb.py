@@ -154,7 +154,7 @@ class UpqDB():
 			raise Exception("Unable to initialize database %s" %(databaseurl))
 		self.meta.bind = self.engine
 	def query(self, query):
-		self.logger.debug(query)
+		#self.logger.debug(query)
 		return self.engine.execute(query)
 	"""
 		insert values into tables, returns last insert id if primary key is autoincrement
@@ -176,7 +176,7 @@ class UpqDB():
 			except:
 				result=s.scalar("SELECT last_insert_rowid()")
 			s.close()
-			self.logger.debug("%s (%s) id:%s", query, values, result)
+			#self.logger.debug("%s (%s) id:%s", query, values, result)
 		return result
 	def tbl_upqueue(self):
 		return self.tbl_upqueue

@@ -29,7 +29,7 @@ class UpqJob(object):
         self.jobcfg  = UpqConfig().jobs[jobname] #settings from config-fule
         self.jobdata = jobdata #runtime parameters, these are stored into database and restored on re-run
         self.logger  = log.getLogger("upq")
-        self.thread  = "Thread-new-UpqJob"
+        self.thread  = "T-none-0"
         self.jobid   = -1
         self.msgstr  = ""
         self.result  = None

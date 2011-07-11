@@ -33,8 +33,8 @@ class UpqQueueMngr():
         self.__dict__ = self.__shared_state
         self.logger = log.getLogger("upq")
 
-    """ returns id of job """
     def enqueue_job(self, job):
+        """ returns id of job """
         # add job to its queue
         self.qlock.acquire()
         if self.queues.has_key(job.__module__):
@@ -55,40 +55,47 @@ class UpqQueueMngr():
                 res=job.run()
                 job.notify(res)
             except Exception, e:
-                job.msg="Error in job %s %s %s" % (job.__module__, str(e), traceback.format_exc(100))
+                job.msgstr += "Error in job %s %s %s" % (job.__module__, str(e), traceback.format_exc(100))
 
-            self.logger.info("(%s:%d,%s) finished: %s, %s", job.jobname, job.jobid, thread_id, str(res),job.msg)
+            self.logger.info("(%s:%d,%s) finished: %s, %s", job.jobname, job.jobid, thread_id, str(res),job.msgstr)
             queue.task_done(job)
             job.finished.set()
+            if len(queue.threads)-1 >= queue.qsize() and len(queue.threads) > 1:
+                # terminate myself if there will be enough threads for this queue
+                break
+        del queue.threads[thread_id]
+        self.logger.info("(%s,%s) terminated", queue.name, thread_id)
 
-    """ returns id of job """
     def new_queue(self, job):
+        """ returns id of job """
         queue = dbqueue.DBQueue()
+        queue.name = job.__module__
         self.qlock.acquire()
         self.queues[job.__module__] = queue
         self.qlock.release()
-        self.logger.info("(%s) created new queue with %d threads", job.__module__,job.jobcfg['concurrent'])
+        self.logger.info("created new queue '%s'", queue.name)
+        self.add_thread_to_queue(queue)
+
         res=self.insert_into_queue(job)
-        for i in range(job.jobcfg['concurrent']):
-            self.thread_id += 1
-            tname = "Thread-%d" % self.thread_id
-            t = Thread(target=self.worker, name=tname, args=(queue, tname))
-            t.setDaemon(True)
-            t.start()
-            self.logger.debug("(%s,%s) started %s'", job.__module__, t.name, t.ident)
         return res
 
-    """ returns id of job """
     def insert_into_queue(self, job):
+        """ returns id of job """
         self.qlock.acquire()
-        ret = self.queues[job.__module__].put(job)
+        queue = self.queues[job.__module__]
         self.qlock.release()
+        ret = queue.put(job)
+        if queue.qsize() > len(queue.threads) and job.jobcfg['concurrent'] > len(queue.threads):
+            # if there are more jobs in this queue than threads, and we're
+            # below the configured thread limit, add a thread
+            self.add_thread_to_queue(queue)
         return ret
-    """
-         extract params into dict from a string like this:
-         key1=value1 key2=value2
-    """
+
     def getParams(self, stri):
+        """
+        extract params into dict from a string like this:
+        key1=value1 key2=value2
+        """
         keyvals = stri.split()
         res = {}
         for k in keyvals:
@@ -101,9 +108,9 @@ class UpqQueueMngr():
 
     def new_job_by_string(self, jobcmd):
         """
-            creates a new job and initializes by command string
-            better use new_job if possible as it doesn't need to parse the string
-            for example jobcmd="notify mail:user@server1,user@server2 syslog"
+        creates a new job and initializes by command string
+        better use new_job if possible as it doesn't need to parse the string
+        for example jobcmd="notify mail:user@server1,user@server2 syslog"
         """
         params=jobcmd.split(" ",1)
         jobname=params[0]
@@ -115,10 +122,10 @@ class UpqQueueMngr():
 
     def new_job(self, jobname, params):
         """
-            creates a new job and initializes by command array
-            for example
-                jobname=notify
-                params={ "syslog": "", "mail": "user@server1,user@server2" }
+        creates a new job and initializes by command array
+        for example
+            jobname=notify
+            params={ "syslog": "", "mail": "user@server1,user@server2" }
         """
         # parse first word to find job
         uc = upqconfig.UpqConfig()
@@ -131,7 +138,16 @@ class UpqQueueMngr():
                 return upqjob
             else:
                 self.logger.error("(%s) job not found: %s"%(jobname, params))
-        except Exception, e:
+        except Exception:
             self.logger.error("(%s) couldn't load module: %s" % (jobname, traceback.format_exc(100)))
         return None
 
+    def add_thread_to_queue(self, queue):
+        """ adds a thread to the queue """
+        self.thread_id += 1
+        tname = "T-%s-%d" % (queue.name, self.thread_id)
+        t = Thread(target=self.worker, name=tname, args=(queue, tname))
+        t.setDaemon(True)
+        queue.threads[tname] = t
+        t.start()
+        self.logger.info("(%s,%s) started %s", queue.name, t.name, t.ident)
