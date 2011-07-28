@@ -42,9 +42,9 @@ class Test(UpqJob):
 		pprint.pprint("%d - %s - test *" % (self.jobid, self.thread))
 		sleep(random.uniform(0, 3))
 		pprint.pprint("%d - %s - test **" % (self.jobid, self.thread))
-		sleep(random.uniform (0, 3))
-		pprint.pprint("%d - %s - test ***" % (self.jobid, self.thread))
-		sleep(random.uniform (0, 3))
-		pprint.pprint("%d - %s - test ****" % (self.jobid, self.thread))
+#		sleep(random.uniform (0, 3))
+#		pprint.pprint("%d - %s - test ***" % (self.jobid, self.thread))
+#		sleep(random.uniform (0, 3))
+#		pprint.pprint("%d - %s - test ****" % (self.jobid, self.thread))
 		self.msg("finished '%s'" % self.jobdata)
 		return self.jobdata

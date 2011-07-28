@@ -86,14 +86,15 @@ class UpqJob(object):
         if succeed:
             if self.jobcfg['notify_success']:
                 params = UpqQueueMngr().getParams(self.jobcfg['notify_success'])
-                params['msg'] = self.msgstr
+                #params['msg'] = self.msgstr
                 params['success'] = True
         else:
             if self.jobcfg['notify_fail']:
                 params = UpqQueueMngr().getParams(self.jobcfg['notify_fail'])
-                params['msg'] = self.msgstr
+                #params['msg'] = self.msgstr
                 params['success'] = False
         if params:
+            params['job'] = self.__dict__
             job=UpqQueueMngr().new_job("notify", params)
             if isinstance(job, UpqJob):
                 UpqQueueMngr().enqueue_job(job)

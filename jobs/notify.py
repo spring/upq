@@ -20,20 +20,33 @@ import email
 import log
 import upqconfig
 from upqjob import UpqJob
+from upqqueuemngr import UpqQueueMngr
 
 class Notify(UpqJob):
     def run(self):
         for key,value in self.jobdata.items():
-            msg=self.jobdata['msg']
-            err='success' in self.jobdata
-            if (key=="mail"):
-                if err:
+            msg=self.jobdata['job']['msgstr']
+            if key=="mail":
+                if self.jobdata['success']:
                     subject="Error"
                 else:
                     subject="Success"
+                log.getLogger().debug("notify mail(value, msg, subject)=mail(%s, %s, %s)", value, msg, subject)
                 self.mail(value, msg, subject)
-            elif (key=="syslog"):
-                self.syslog(err, msg)
+            elif key=="syslog":
+                log.getLogger().debug("notify syslog")
+                self.syslog(self.jobdata['success'], msg)
+            elif key == "retry":
+                log.getLogger().debug("notify retry, value='%s'", value)
+                #job = self.jobdata['job']
+                job = UpqJob()
+                job.__dict__ = self.jobdata['job']
+                try:
+                    job.retry += 1
+                except AttributeError:
+                    job.retry = 1
+                if not job.retry > value:
+                    UpqQueueMngr().enqueue_job(job)
         return True
 
     def success(self, jobname, msg):
