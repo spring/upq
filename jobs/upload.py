@@ -71,7 +71,7 @@ GROUP by m.fmid"% fid)
             password=res['ftp_pass']
             passive=int(res['ftp_passive'])>1
             cwddir=res['ftp_dir']
-            res2=UpqDB().query("SELECT fmfid FROM file_mirror_files WHERE md5='%s' AND fmid='%d' AND active=1" % (md5, res['fmid']))
+            res2=UpqDB().query("SELECT fmfid,fid FROM file_mirror_files WHERE md5='%s' AND fmid='%d' AND active=1" % (md5, res['fmid']))
             row=res2.first()
             if not row==None:
                 self.msg("File %s with md5 already detected on file mirror %s, not uploading!"%(row['fmfid'], res['fmid']))
@@ -93,24 +93,29 @@ GROUP by m.fmid"% fid)
 #                else:
                 ftp.login(username, password)
                 ftp.set_pasv(passive) #set passive mode
-                self.logger.debug("cd into "+cwddir)
-                ftp.cwd(cwddir)
+                if (len(cwddir)>0):
+                    self.logger.debug("cd into "+cwddir)
+                    ftp.cwd(cwddir)
                 dstdir=os.path.dirname(dstfilename)
                 try:
                     self.logger.debug("cd into "+dstdir)
                     ftp.cwd(dstdir)
                 except:
-                    self.logger.debug("mkdir "+dstdir)
-                    ftp.mkd(dstdir)
-                    self.logger.debug("cwd "+dstdir)
-                    ftp.cwd(dstdir)
+                    try:
+                        self.logger.debug("mkdir "+dstdir)
+                        ftp.mkd(dstdir)
+                        self.logger.debug("cwd "+dstdir)
+                        ftp.cwd(dstdir)
+                    except:
+                        self.logger.error("couldn't cd/mkdir %s, skipping upload " % (dstdir))
+                        continue
                 self.logger.info("uploading %s to %s" % (os.path.basename(dstfilename),host))
                 ftp.storbinary('STOR '+os.path.basename(dstfilename), f)
                 ftp.quit()
                 f.close()
-                try:
+                try: #upload succeed, mark in db as uploaded
                     id=UpqDB().insert("file_mirror_files", {"fmid":res['fmid'],"fid":fid, "path":dstfilename, "size":filesize, "active":1, "changed":UpqDB().now()})
-                except  UpqDBIntegrityError:
+                except UpqDBIntegrityError:
                     #TODO: archive file that gets overwritten/deleted
                     UpqDB().query("DELETE FROM file_mirror_files WHERE path='%s' AND fmid=%d"%(dstfilename, res['fmid']))
                     id=UpqDB().insert("file_mirror_files", {"fmid":res['fmid'],"fid":fid, "path":dstfilename, "size":filesize, "active":1, "changed":UpqDB().now()})
