@@ -21,8 +21,6 @@ import urllib
 
 class Verify_remote_file(upqjob.UpqJob):
 
-    where = ""
-
     def check(self):
         # TODO: check if time last file checked is < 1 Year
         self.enqueue_job()
