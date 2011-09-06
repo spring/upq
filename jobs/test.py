@@ -43,6 +43,8 @@ class Test(UpqJob):
 		sleep(random.uniform(0, 3))
 		pprint.pprint("%d - %s - test **" % (self.jobid, self.thread))
 		sleep(random.uniform (0, 3))
+		self.enqueue_newjob("test2", {})
+		self.enqueue_newjob("test2", {})
 		pprint.pprint("%d - %s - test ***" % (self.jobid, self.thread))
 		sleep(random.uniform (0, 3))
 		pprint.pprint("%d - %s - test ****" % (self.jobid, self.thread))
