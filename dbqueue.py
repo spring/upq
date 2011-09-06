@@ -17,7 +17,10 @@ import json
 from re import escape
 
 class DBQueue(Queue, object):
-    threads = {}
+
+    def __init__(self):
+        super(DBQueue, self).__init__()
+        self.threads = {}
 
     """ returns job """
     def get(self, block=True, timeout=None):
