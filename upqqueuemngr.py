@@ -10,14 +10,13 @@
 # UpqQueueMngr: queue manager (singleton) for all queues
 #
 
-from threading import Thread
+from threading import Thread, RLock, enumerate
 
 import log
 import dbqueue
 import upqconfig
 import module_loader
 import traceback
-from threading import RLock
 
 class UpqQueueMngr():
     # Borg design pattern (pythons cooler singleton)
@@ -43,6 +42,7 @@ class UpqQueueMngr():
             jobid=self.new_queue(job)
         self.qlock.release()
         self.logger.info("(%s:%d) added to queue", job.jobname, jobid)
+        self.logger.debug("all threads='%s'", [t.name for t in enumerate()])
         return jobid
 
     def worker(self, queue, thread_id):
@@ -64,7 +64,9 @@ class UpqQueueMngr():
                 # terminate myself if there will be enough threads for this queue
                 break
         del queue.threads[thread_id]
-        self.logger.info("(%s,%s) terminated", queue.name, thread_id)
+        self.logger.info("(%s,%s) terminated, %d threads and %d jobs remain in queue", queue.name, thread_id, len(queue.threads), queue.qsize())
+        self.logger.debug("all threads='%s'", [t.name for t in enumerate()])
+
 
     def new_queue(self, job):
         """ returns id of job """
@@ -150,4 +152,4 @@ class UpqQueueMngr():
         t.setDaemon(True)
         queue.threads[tname] = t
         t.start()
-        self.logger.info("(%s,%s) started %s", queue.name, t.name, t.ident)
+        self.logger.info("(%s,%s) started %s (queue now has %d threads and %d jobs)", queue.name, t.name, t.ident, len(queue.threads), queue.qsize())

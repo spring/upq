@@ -31,7 +31,7 @@ def init_logging(conf):
     if conf.has_key('log_format'):
         logformat = conf['log_format']
     else:
-        logformat = "%(asctime)s %(levelname)-8s %(name)s.%(module)s : %(message)s"
+        logformat = "%(asctime)s %(levelname)-8s %(module)s.%(funcName)s(%(lineno)03d) %(message)s"
 
     logging.basicConfig(level=logging.__getattribute__(loglevel),
                         format=logformat,

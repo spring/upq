@@ -33,6 +33,8 @@ class Download(UpqJob):
 		return True
 
 	def run(self):
+		#temporary disabled, springfiles.com isn't ready for that
+		return True
 		filename=os.path.basename(self.jobdata['filename'])
 		tmpfile=os.path.join(self.jobcfg['temppath'], filename)
 		dstfile=os.path.join(self.jobcfg['downloaddir'], filename)
