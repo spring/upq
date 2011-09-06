@@ -101,6 +101,8 @@ class UpqConfig():
                     self.conf_log("   job '%s' is disabled" % job )
 
         self.conf_log("paths='%s'" % self.paths)
-        self.conf_log("jobs='%s'" % self.jobs)
+        self.conf_log("jobs:'%s'" % sorted(self.jobs.keys()))
+        for job in sorted(self.jobs.keys()):
+            self.conf_log("  {0}: {1}".format(job, self.jobs[job]))
         self.conf_log("db='%s'" % self.db)
         self.conf_log("daemon='%s'" % self.daemon)
