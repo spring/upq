@@ -12,7 +12,7 @@
 import log
 import module_loader
 
-from sqlalchemy import create_engine, Table, Column, Integer, String,DateTime,PickleType, MetaData, ForeignKey, Sequence
+from sqlalchemy import create_engine, Index, Table, Column, Integer, String,DateTime,PickleType, MetaData, ForeignKey, Sequence
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import insert
 from sqlalchemy.exc import IntegrityError
@@ -127,8 +127,9 @@ class UpqDB():
 			Column('cid', INTEGER(display_width=11)),
 			Column('sdp', VARCHAR(length=1024)))
 		self.tables['springdata_archivetags']=Table('springdata_archivetags', self.meta,
-			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=False),
+			Column('fid', INTEGER(display_width=10), nullable=False, autoincrement=False),
 			Column('tag', VARCHAR(length=256), unique=True))
+		Index('idx_fid_tag', self.tables['springdata_archivetags'].c.fid, self.tables['springdata_archivetags'].c.tag)
 		self.tables['springdata_categories']=Table('springdata_categories', self.meta,
 			Column('cid', INTEGER(display_width=11), primary_key=True, nullable=False, autoincrement=True),
 			Column('name', VARCHAR(length=24), nullable=False))
