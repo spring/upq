@@ -103,3 +103,8 @@ downloaddir = /home/jj/web/www/sites/default/files/downloads/spring
 ; which path to prefix for drupal
 prefix = sites/default/files/images/spring/
 
+[job rapidsync]
+enabled = true
+concurrent = 1
+; mainrepo=http://repos.caspring.org/repos.gz
+
