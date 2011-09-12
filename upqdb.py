@@ -125,8 +125,10 @@ class UpqDB():
 			Column('name', VARCHAR(length=256)),
 			Column('version', VARCHAR(length=256)),
 			Column('cid', INTEGER(display_width=11)),
-			Column('tag', VARCHAR(length=256), unique=True),
 			Column('sdp', VARCHAR(length=1024)))
+		self.tables['springdata_archivetags']=Table('springdata_archivetags', self.meta,
+			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=False),
+			Column('tag', VARCHAR(length=256), unique=True))
 		self.tables['springdata_categories']=Table('springdata_categories', self.meta,
 			Column('cid', INTEGER(display_width=11), primary_key=True, nullable=False, autoincrement=True),
 			Column('name', VARCHAR(length=24), nullable=False))
