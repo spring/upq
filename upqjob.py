@@ -101,3 +101,11 @@ class UpqJob(object):
     def __str__(self):
         return "Job: "+self.jobname +" id:"+ str(self.jobid)+" jobdata:"+json.dumps(self.jobdata) +" thread: "+self.thread
 
+    def getcfg(self, name, default):
+        """
+            returns a config value or default, if config isn't set
+        """
+        if self.jobcfg.has_key(name):
+            return self.jobcfg[name]
+        else:
+            return default

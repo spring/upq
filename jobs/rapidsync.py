@@ -8,10 +8,7 @@ from upqdb import UpqDB
 
 class Rapidsync(UpqJob):
 	def run(self):
-		if len(self.jobcfg['mainrepo'])<=0:
-			self.logger.debug("mainrepo isn't set, using default")
-			self.jobcfg['mainrepo']="http://repos.caspring.org/repos.gz"
-		repos=self.fetchListing(self.jobcfg['mainrepo'])
+		repos=self.fetchListing(self.getcfg('mainrepo', "http://repos.caspring.org/repos.gz"))
 		i=0
 		for repo in repos:
 			sdps=self.fetchListing(repo[1] + "/versions.gz")
@@ -41,7 +38,7 @@ class Rapidsync(UpqJob):
 	def fetchListing(self, url):
 		self.logger.debug("Fetching %s" % (url))
 		ParseResult=urlparse.urlparse(url)
-		dir=os.path.join(self.jobcfg['temppath'], ParseResult.hostname)
+		dir=os.path.join(self.getcfg('temppath', '/tmp'), ParseResult.hostname)
 		filename=os.path.basename(ParseResult.path)
 		absname=os.path.join(dir, filename)
 		if not os.path.exists(dir):
