@@ -30,7 +30,7 @@ class Rapidsync(UpqJob):
 					UpqDB().query("INSERT INTO springdata_archivetags (fid, tag) VALUES (%s, '%s')" % (row['fid'], sdp[0]))
 					#check if sdp is set, if not update
 					if len(row['sdp'])<=0:
-						UpqDB().query("UPDATE springdata_archives SET sdp='%s' WHERE fid='%s'" % (sdp[0], repo[1] +"/packages/" + sdp[1], row['fid']))
+						UpqDB().query("UPDATE springdata_archives SET sdp='%s' WHERE fid='%s'" % (repo[1] +"/packages/" + sdp[1], row['fid']))
 				else:
 					#TODO: add somehow to db without fid (download by rapid + create it?)
 					if i<5: #limit output
