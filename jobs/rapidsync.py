@@ -25,7 +25,7 @@ class Rapidsync(UpqJob):
 				row=res.first()
 				if row: #is already known
 					#delete tag from existing files
-					UpqDB().query("DELETE springdata_archivetags WHERE tag='%s'" % (sdp[0]))
+					UpqDB().query("DELETE FROM springdata_archivetags WHERE tag='%s'" % (sdp[0]))
 					#insert updated tag
 					UpqDB().query("INSERT INTO springdata_archivetags (fid, tag) VALUES (%s, '%s')" % (row['fid'], sdp[0]))
 					#check if sdp is set, if not update
