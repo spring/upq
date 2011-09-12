@@ -24,13 +24,13 @@ class Rapidsync(UpqJob):
 				res=UpqDB().query("SELECT * FROM springdata_archives WHERE BINARY CONCAT(name,' ',version)='%s'" % (sdp[3]))
 				row=res.first()
 				if row: #is already known
+					#delete tag from existing files
+					UpqDB().query("DELETE springdata_archivetags WHERE tag='%s'" % (sdp[0]))
+					#insert updated tag
+					UpqDB().query("INSERT INTO springdata_archivetags (fid, tag) VALUES (%s, '%s')" % (row['fid'], sdp[0]))
 					#check if sdp is set, if not update
 					if len(row['sdp'])<=0:
-						#delete tag from existing files
-						UpqDB().query("DELETE springdata_archivetags WHERE tag='%s'" % (sdp[0]))
-						#insert updated tag
-						UpqDB().query("INSERT INTO springdata_archivetags (fid, tag) VALUES (%s, '%s')" % (row['fid'], sdp[0]))
-						UpqDB().query("UPDATE springdata_archives SET tag='%s', sdp='%s' WHERE fid='%s'" % (sdp[0], repo[1] +"/packages/" + sdp[1], row['fid']))
+						UpqDB().query("UPDATE springdata_archives SET sdp='%s' WHERE fid='%s'" % (sdp[0], repo[1] +"/packages/" + sdp[1], row['fid']))
 				else:
 					#TODO: add somehow to db without fid (download by rapid + create it?)
 					if i<5: #limit output
