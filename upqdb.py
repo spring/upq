@@ -168,6 +168,9 @@ class UpqDB():
 		strvalues=""
 		if not self.tables.has_key(table): # load structure from table
 			self.tables[table]=Table(table, self.meta, autoload=True)
+		for key in values.keys():
+			if values[key].__class__==str:
+				values[key]=values[key].replace("'", "\'")
 		query=self.tables[table].insert(values)
 		s=Session(self.engine)
 		try:
