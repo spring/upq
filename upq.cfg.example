@@ -88,6 +88,10 @@ unitsync=/usr/lib/spring/libunitsync.so
 outputpath=/var/www/springfiles/sites/default/files/springdata
 datadir=/var/www/springfiles/sites/default/files/springdata
 temppath=/tmp
+; directory where to move maps to, relative to datadir
+maps-path=maps
+; directory where to move games to, relative to datadir
+games-path=games
 
 [job notify]
 enabled = true
