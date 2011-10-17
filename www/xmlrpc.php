@@ -197,7 +197,7 @@ function file_mirror_xmlsearch($req){
 			}
 		}
 		$res[$i]['description']=_file_mirror_getlink($res[$i]['fid']);
-//		if (count($res[$i]['mirrors'])>2) //remove main mirror to reduce load if enough alternatives are avaiable
+//		if (count($res[$i]['mirrors'])>2) //remove main mirror to reduce load if enough alternatives are available
 //			array_shift($res[$i]['mirrors']);
 		//randomize order of result
 		shuffle($res[$i]['mirrors']);
