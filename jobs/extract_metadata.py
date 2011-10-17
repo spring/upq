@@ -162,6 +162,7 @@ class Extract_metadata(UpqJob):
 
 		outputpath = os.path.abspath(outputpath)
 		os.environ["SPRING_DATADIR"]=tmpdir
+#		os.environ["SPRING_ISOLATED"]="true"
 		usync = unitsync.Unitsync(libunitsync)
 		version = usync.GetSpringVersion();
 		self.logger.debug("using unitsync version %s" %(version))
