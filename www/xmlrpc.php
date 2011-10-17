@@ -2,6 +2,7 @@
 require("include/xmlrpc.inc");
 require("include/xmlrpcs.inc");
 require("include/drupal_dummy.inc");
+require("config.php");
 
 //this script requires >= php 5.25
 
@@ -9,10 +10,11 @@ $callbacks = array(
 	"springfiles.search" => "file_mirror_xmlsearch",
 );
 
-if(!mysql_connect("localhost", "upq", "upq"))
-	die(mysql_error());
-if(!mysql_select_db("upq"))
-	die(mysql_error());
+if(!mysql_connect($config['db_host'], $config['db_user'], $config['db_pass']))
+	die("mysql error: ".mysql_error());
+
+if(!mysql_select_db($config['db_db']))
+	die("mysql error: ".mysql_error());
 
 function db_fetch_array($result){
 	if ($result)
@@ -68,7 +70,8 @@ function _file_mirror_createquery(&$query, &$vars, $logical,$condition, $data){
 }
 
 function _file_mirror_gettorrent($filename){
-	$file=file_directory_path()."/springdata/".$filename.".torrent";
+	global $config;
+	$file=$config['torrentpath'].$filename.".torrent";
 	if (is_readable($file)){
 		$res = new stdClass();
 		$res->is_base64=true;
@@ -187,8 +190,12 @@ function file_mirror_xmlsearch($req){
 		while($row = db_fetch_array($result)){
 			$res[$i]['tags'][]=$row['tag'];
 		}
-		if(array_key_exists('torrent', $req))
+		if(array_key_exists('torrent', $req)){
 			$res[$i]['torrent']=_file_mirror_gettorrent($res[$i]['filename']);
+			if (!is_object($res[$i]['torrent'])){
+				unset($res[$i]['torrent']);
+			}
+		}
 		$res[$i]['description']=_file_mirror_getlink($res[$i]['fid']);
 //		if (count($res[$i]['mirrors'])>2) //remove main mirror to reduce load if enough alternatives are avaiable
 //			array_shift($res[$i]['mirrors']);
