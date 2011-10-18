@@ -21,7 +21,7 @@ function db_fetch_array($result){
 		return mysql_fetch_array($result, MYSQL_ASSOC);
 }
 function watchdog($msg, $arr=array()){
-	echo $msg;
+	return;
 	if (sizeof($arr)>0)
 		print_r($arr);
 	echo "\n";
@@ -76,10 +76,11 @@ function _file_mirror_createquery(&$query, &$vars, $logical,$condition, $data){
 
 function _file_mirror_gettorrent($filename){
 	global $config;
-	$file=$config['torrentpath'].$filename.".torrent";
+	$file=$config['metadata'].'/'.$filename.".torrent";
 	if (is_readable($file)){
 		$res = new stdClass();
 		$res->is_base64=true;
+		$res->is_date=false;
 		$res->data=base64_encode(file_get_contents($file));
 		return $res;
 	}
@@ -108,9 +109,10 @@ function _file_mirror_getlink($fid){
 */
 
 function file_mirror_xmlsearch($req){
+	global $config;
+
 	if (!is_array($req))
 		return "Invalid request";
-	global $base_url;
 	$res="";
 	$category="%";
 	$query="";
@@ -135,7 +137,7 @@ function file_mirror_xmlsearch($req){
 		distinct(f.fid) as fid,
 		f.name as name,
 		f.filename as filename,
-		m.path as filepath,
+		f.path as path,
 		f.md5 as md5,
 		f.sdp as sdp,
 		f.version as version,
@@ -156,15 +158,17 @@ function file_mirror_xmlsearch($req){
 	);
 	$res=array();
 	while($row = db_fetch_array($result)){
+		$row['mirrors']=array($config['base_url'].'/'.$row['path'].'/'.$row['filename']);
 		$res[]=$row;
 	}
+
 
 	for($i=0;$i<count($res);$i++){
 		//search + add depends to file
 		$result=db_query("SELECT CONCAT(a.name,' ',a.version) as springname, depends_string
 			FROM {file_depends} AS d
-			LEFT JOIN {files} AS a ON d.depends_fid=a.fid
-			WHERE depends.fid=%d",$res[$i]['fid']);
+			LEFT JOIN {file} AS a ON d.depends_fid=a.fid
+			WHERE d.fid=%d",$res[$i]['fid']);
 		while($row = db_fetch_array($result)){
 			if(!is_array($res[$i]['depends']))
 				$res[$i]['depends']=array();
@@ -175,9 +179,9 @@ function file_mirror_xmlsearch($req){
 			}
 		}
 		//search + add mirrors to file
-		$result=db_query('SELECT CONCAT(m.url_prefix,"/",files.path) as url
+		$result=db_query('SELECT CONCAT(m.url_prefix,"/",f.path) as url
 			FROM mirror_file as mf
-			LEFT JOIN mirror as m ON mf.fmid=m.fmid
+			LEFT JOIN mirror as m ON mf.mid=m.mid
 			LEFT JOIN file as f ON f.fid=mf.fid
 			WHERE f.fid=%d
 			AND m.status=1

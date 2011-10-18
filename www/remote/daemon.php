@@ -1,15 +1,5 @@
 <?php
-/*
-example (optional) config file:
-<?php
-
-define('PASSWORD','');
-define('ALLOWED_IP','94.23.170.70');
-define('LOCK_FILE','sys_get_temp_dir()./springfiles_daemon.lock');
-define('MAX_LOCK_FILE_AGE_S', 10*60); //10 minutes
-
-*/
-
+//for an example config, see config.php
 if (file_exists('config.php'))
 	include ('config.php');
 
