@@ -130,19 +130,22 @@ class Extract_metadata(UpqJob):
 				fid
 			))
 	#move file to destination, makes path relative, updates db
-	def moveFile(self, filepath,prefix, moveto, fid):
-		dstfile=os.path.join(prefix,moveto)
-		if filepath!=dstfile:
+	#subdir = games|maps
+	#source = absolute filename
+	#prefix = UpqConfig().data['file']
+	def moveFile(self, source ,prefix, subdir, fid):
+		dstfile=os.path.join(prefix, subdir, os.path.basename(source))
+		if source!=dstfile:
 			if os.path.exists(dstfile):
 				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, filepath))
 				raise Exception(self.msgstr)
-			shutil.move(filepath, dstfile)
-			UpqDB().query("UPDATE file SET path='%s' WHERE fid=%d" %(prefix, fid))
+			shutil.move(source, dstfile)
+			UpqDB().query("UPDATE file SET path='%s' WHERE fid=%d" %(subdir, fid))
 		try:
 			os.chmod(dstfile, int("0444",8))
 		except OSError:
 			pass
-		self.logger.debug("moved file to (abs)%s (rel)%s" %(dstfile, moveto))
+		self.logger.debug("moved file to (abs)%s (rel)%s" %(source, subdir))
 
 	def run(self):
 		fid=int(self.jobdata['fid'])
@@ -177,7 +180,7 @@ class Extract_metadata(UpqJob):
 			springname = usync.GetMapName(idx)
 			self.dumpmap(usync, springname, outputpath, filename,idx)
 			data=self.getMapData(usync, filename, idx)
-			moveto=os.path.join(self.jobcfg['maps-path'], filename)
+			moveto=self.jobcfg['maps-path']
 		else: # file is a game
 			idx=self.getGameIdx(usync,filename)
 			if idx<0:
@@ -187,7 +190,7 @@ class Extract_metadata(UpqJob):
 			archivepath=usync.GetArchivePath(filename)+filename
 			gamearchivecount=usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath)
-			moveto=os.path.join(self.jobcfg['games-path'], filename)
+			moveto=self.jobcfg['games-path']
 		self.create_torrent(archivepath, os.path.join(outputpath, filename+".torrent"))
 		data['Torrent']=filename+".torrent"
 		if version=="0.82.7":
