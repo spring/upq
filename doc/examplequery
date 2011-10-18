@@ -1,0 +1,64 @@
+This is a example request (a bit formated for better readability):
+
+POST /xmlrpc.php HTTP/1.0.
+Host: springfiles.com.
+User-Agent: xmlrpclib.py/1.0.1 (by www.pythonware.com).
+Content-Type: text/xml.
+Content-Length: 406.
+
+<?xml version='1.0'?>
+<methodCall>
+	<methodName>springfiles.search</methodName>
+	<params>
+	<param><value><struct>
+		<member>
+			<name>springname</name>
+			<value><string>Tabula-V2</string></value>
+		</member>
+		<member>
+			<name>logical</name>
+			<value><string>or</string></value>
+		</member>
+		<member>
+			<name>filename</name>
+			<value><string>Tabula-V2</string></value>
+		</member>
+	</struct></value></param>
+	</params>
+</methodCall>
+
+And the correspondending response:
+
+HTTP/1.1 200 OK.
+Date: Thu, 27 Jan 2011 12:33:34 GMT.
+Server: Apache/2.2.12 (Ubuntu).
+X-Powered-By: PHP/5.2.10-2ubuntu6.5.
+Expires: Sun, 19 Nov 1978 05:00:00 GMT.
+Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0.
+Connection: close.
+Last-Modified: Thu, 27 Jan 2011 12:33:34 GMT.
+Content-Length: 885.
+Vary: Accept-Encoding.
+Content-Type: text/xml.
+
+<?xml version="1.0"?>
+<methodResponse>
+	<params>
+		<param>
+		<value><array><data>
+			<value><struct>
+				<member><name>filename</name><value><string>Tabula-v2.sd7</string></value></member>
+				<member><name>md5</name><value><string>c6f262b3e8e35aefaff11641ae4a34ce</string></value></member>
+				<member><name>springname</name><value><string>Tabula-v2</string></value></member>
+				<member><name>category</name><value><string>Spring Maps</string></value></member>
+				<member><name>mirrors</name><value><array><data>
+					<value><string>http://springfiles.com/system/files/downloads/spring/spring-maps/Tabula-v2.sd7</string></value>
+					<value><string>http://springfiles.com/download/1711/5</string></value>
+					<value><string>http://springfiles.com/download/2940/1</string></value>
+				</data></array></value></member>
+			</struct></value>
+		</data></array></value>
+		</param>
+	</params>
+</methodResponse>
+
