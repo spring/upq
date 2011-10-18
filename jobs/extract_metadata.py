@@ -72,6 +72,7 @@ class Extract_metadata(UpqJob):
 		self.savedelete(os.path.join(temppath,"cache","CACHEDIR.TAG"))
 		self.savedelete(os.path.join(temppath,"cache"))
 		self.savedelete(os.path.join(temppath,"unitsync.log"))
+		self.savedelete(os.path.join(temppath,".springrc"))
 		self.savedelete(temppath)
 		if os.path.exists(temppath):
 			dirList=os.listdir(temppath)
