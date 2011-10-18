@@ -120,8 +120,14 @@ class Extract_metadata(UpqJob):
 				UpqDB().insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
 			except UpqDBIntegrityError:
 				pass
-		cid=self.getCid(data['Type'])
-		UpqDB().query("UPDATE file SET name='%s', version='%s', cid=%s WHERE fid=%s" %(data['Name'],data['Version'],cid, fid))
+		UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, torrent='%s' WHERE fid=%s" %(
+				data['Name'],
+				data['Version'],
+				data['sdp'],
+				self.getCid(data['Type']),
+				data['Torrent'],
+				fid
+			))
 	#move file to destination, makes path relative, updates db
 	def moveFile(self, filepath,prefix, moveto, fid):
 		dstfile=os.path.join(prefix,moveto)
@@ -130,7 +136,7 @@ class Extract_metadata(UpqJob):
 				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, filepath))
 				raise Exception(self.msgstr)
 			shutil.move(filepath, dstfile)
-		UpqDB().query("UPDATE file SET path='%s' WHERE fid=%d" %(moveto, fid))
+			UpqDB().query("UPDATE file SET path='%s' WHERE fid=%d" %(prefix, fid))
 		try:
 			os.chmod(dstfile, int("0444",8))
 		except OSError:
@@ -154,11 +160,10 @@ class Extract_metadata(UpqJob):
 
 		outputpath = os.path.abspath(outputpath)
 		os.environ["SPRING_DATADIR"]=tmpdir
-#		os.environ["SPRING_ISOLATED"]="true"
+		os.environ["HOME"]=tmpdir
 		usync = unitsync.Unitsync(libunitsync)
 		version = usync.GetSpringVersion();
 		self.logger.debug("using unitsync version %s" %(version))
-
 		usync.Init(True,1)
 
 		usync.RemoveAllArchives()
@@ -182,7 +187,8 @@ class Extract_metadata(UpqJob):
 			gamearchivecount=usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath)
 			moveto=os.path.join(self.jobcfg['games-path'], filename)
-		self.create_torrent(archivepath, outputpath +"/" +filename+".torrent")
+		self.create_torrent(archivepath, os.path.join(outputpath, filename+".torrent"))
+		data['Torrent']=filename+".torrent"
 		if version=="0.82.7":
 			data['sdp']=""
 			self.logger.error("Incompatible Spring unitsync.dll detected, not extracting sdp name");
@@ -311,7 +317,7 @@ class Extract_metadata(UpqJob):
 				break
 			fileh=usync.OpenArchiveFile(archiveh, name.value)
 			if fileh<0:
-				self.logger.error("Invalid handle for %s %s %s", (name.value,fileh,  usync.GetNextError()))
+				self.logger.error("Invalid handle for %s %s %s" % (name.value, fileh,  ""+usync.GetNextError()))
 				break
 			files.append(name.value)
 			pos=pos+1
@@ -406,10 +412,10 @@ class Extract_metadata(UpqJob):
 	def create_torrent(self, filename, output):
 		if os.path.isdir(filename):
 			self.logger.debug("[skip] " +filename + "is a directory, can't create torrent")
-			return
+			return ""
 		if os.path.isfile(output):
 			self.logger.debug("[skip] " +output + " already exists, skipping...")
-			return
+			return output
 		metalink._opts = { 'overwrite': False }
 		filesize=os.path.getsize(filename)
 		torrent = metalink.Torrent(filename)
@@ -430,4 +436,5 @@ class Extract_metadata(UpqJob):
 		shutil.move(tmp,output)
 		os.chmod(output, int("0444",8))
 		self.logger.debug("[created] " +output +" ok")
+		return output
 
