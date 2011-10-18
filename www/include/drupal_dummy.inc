@@ -69,7 +69,7 @@ function db_query($query) {
   return _db_query($query);
 }
 
-function _db_query($query, $debug = 0) {
+function _db_query($query) {
   $result = mysql_query($query);
   if (!mysql_errno()) {
     return $result;

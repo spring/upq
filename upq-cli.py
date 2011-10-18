@@ -12,6 +12,7 @@ def send_cmd(txts, socket_path):
         sock.connect(socket_path)
     except:
        raise Exception("Couldn't connect to %s" % (socket_path))
+       return 2
     print >>sys.stderr, "Connected to '%s'."%socket_path
     #for txt in txts:
     txt = reduce(lambda x, y: x+" "+y, txts)
@@ -25,6 +26,7 @@ def send_cmd(txts, socket_path):
             print >>sys.stderr, res,
             break
     sock.close()
+    return 0
 
 def main(argv=None):
     config = ConfigParser.RawConfigParser()
@@ -32,7 +34,10 @@ def main(argv=None):
     socket_path=config.get("paths","socket")
     if argv is None:
         argv = sys.argv
-    send_cmd(argv[1:],socket_path)
+    if len(argv)==1:
+	print 'Usage: %s "<jobname>( param:value)*"' % (argv[0])
+        return 1
+    return send_cmd(argv[1:],socket_path)
 
 if __name__ == "__main__":
     sys.exit(main())

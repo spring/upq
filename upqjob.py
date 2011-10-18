@@ -76,7 +76,10 @@ class UpqJob(object):
 
     def msg(self, msg):
         self.logger.debug(msg)
-        self.msgstr+=str(msg)
+        if len(self.msgstr)+len(msg)<=500:
+			self.msgstr+=str(msg)
+        else:
+			self.logger.error("msg to long: --------%s-------" %(msg))
 
     def notify(self, succeed):
         """

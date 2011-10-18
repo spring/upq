@@ -45,7 +45,12 @@ function main($argv){
 if (array_key_exists('argv', $_SERVER))
 	main($_SERVER['argv']);
 else
-	xmlrpc_server($callbacks);
+	if ($_SERVER['REQUEST_METHOD']=="POST"){
+		xmlrpc_server($callbacks);
+	} else {
+		echo file_get_contents("readme.html");
+		return;
+	}
 
 /**
 * @param query resulting query, for example "AND filename='%s'"
@@ -123,25 +128,25 @@ function file_mirror_xmlsearch($req){
 	if (array_key_exists('category', $req))
 		_file_mirror_createquery($query,$vars, $logical,'c.name LIKE BINARY "%s"', $req['category']);
 	if (array_key_exists('springname', $req))
-		_file_mirror_createquery($query,$vars, $logical,"CONCAT(a.name,' ',a.version) LIKE BINARY '%s' OR a.name LIKE BINARY '%s'", array($req['springname'],$req['springname']));
+		_file_mirror_createquery($query,$vars, $logical,"CONCAT(f.name,' ',f.version) LIKE BINARY '%s' OR f.name LIKE BINARY '%s'", array($req['springname'],$req['springname']));
 	if($query!="")
 		$query=" AND (".$query.")";
 	$result=db_query("SELECT
 		distinct(f.fid) as fid,
+		f.name as name,
 		f.filename as filename,
-		f.filepath as filepath,
-		h.md5 as md5,
-		a.name as name,
-		a.version as version,
+		m.path as filepath,
+		f.md5 as md5,
+		f.sdp as sdp,
+		f.version as version,
 		LOWER(c.name) as category,
-		f.filesize as size,
-		f.timestamp as timestamp,
-		a.sdp as sdp
-		FROM files as f
-		LEFT JOIN springdata_archives as a ON f.fid=a.fid
-		LEFT JOIN springdata_categories as c ON a.cid=c.cid
-		LEFT JOIN filehash as h ON f.fid=h.fid
-		LEFT JOIN springdata_archivetags as t ON t.fid=f.fid
+		f.size as size,
+		f.timestamp as timestamp
+		FROM file as f
+		LEFT JOIN categories as c ON f.cid=c.cid
+		LEFT JOIN mirror_file as m ON f.fid=m.fid
+		LEFT JOIN tag_file as tf ON tf.fid=f.fid
+		LEFT JOIN tag as t ON  tf.tid=t.tid
 		WHERE c.cid>0
 		$query
 		ORDER BY f.fid DESC
@@ -151,17 +156,14 @@ function file_mirror_xmlsearch($req){
 	);
 	$res=array();
 	while($row = db_fetch_array($result)){
-		//add primary server
-		$row['mirrors']=array($base_url.'/'.$row['filepath']);
-		unset($row['filepath']);
 		$res[]=$row;
 	}
 
 	for($i=0;$i<count($res);$i++){
 		//search + add depends to file
-		$result=db_query("SELECT CONCAT(archives.name,' ',archives.version) as springname, depends_string
-			FROM {springdata_depends} AS depends
-			LEFT JOIN {springdata_archives} AS archives ON depends.depends=archives.fid
+		$result=db_query("SELECT CONCAT(a.name,' ',a.version) as springname, depends_string
+			FROM {file_depends} AS d
+			LEFT JOIN {files} AS a ON d.depends_fid=a.fid
 			WHERE depends.fid=%d",$res[$i]['fid']);
 		while($row = db_fetch_array($result)){
 			if(!is_array($res[$i]['depends']))
@@ -172,20 +174,24 @@ function file_mirror_xmlsearch($req){
 				$res[$i]['depends'][]=$row['springname'];
 			}
 		}
-		//search + add additional mirrors to file
-		$result=db_query('SELECT CONCAT(mirror.url_prefix,"/",files.path) as url
-			FROM file_mirror_files as files
-			LEFT JOIN file_mirror as mirror ON files.fmid=mirror.fmid
-			WHERE files.fid=%d
-			AND mirror.active=1
-			AND files.active=1
-			ORDER BY files.md5check',array($res[$i]['fid']));
+		//search + add mirrors to file
+		$result=db_query('SELECT CONCAT(m.url_prefix,"/",files.path) as url
+			FROM mirror_file as mf
+			LEFT JOIN mirror as m ON mf.fmid=m.fmid
+			LEFT JOIN file as f ON f.fid=mf.fid
+			WHERE f.fid=%d
+			AND m.status=1
+			AND mf.status=1',array($res[$i]['fid']));
 		while($row = db_fetch_array($result)){
 			$res[$i]['mirrors'][]=$row['url'];
 		}
+		//randomize order of result
+		shuffle($res[$i]['mirrors']);
+
 		//add tags
 		$res[$i]['tags']=array();
-		$result=db_query('SELECT tag FROM {springdata_archivetags}
+		$result=db_query('SELECT tag FROM {tag_file} f
+			LEFT JOIN tag t ON t.tid=f.tid
 			WHERE fid=%d', array($res[$i]['fid']));
 		while($row = db_fetch_array($result)){
 			$res[$i]['tags'][]=$row['tag'];
@@ -197,10 +203,6 @@ function file_mirror_xmlsearch($req){
 			}
 		}
 		$res[$i]['description']=_file_mirror_getlink($res[$i]['fid']);
-//		if (count($res[$i]['mirrors'])>2) //remove main mirror to reduce load if enough alternatives are available
-//			array_shift($res[$i]['mirrors']);
-		//randomize order of result
-		shuffle($res[$i]['mirrors']);
 		unset($res[$i]['fid']);
 		if ($res[$i]['version']=="")
 			$res[$i]['springname']=$res[$i]['name'];
@@ -213,19 +215,4 @@ function file_mirror_xmlsearch($req){
 	return $res;
 }
 
-function file_mirror_uploadfile($req){
-	watchdog("filemirror", "upload request: ".$req['url']);
-	$params = array( 'name' => $req['username'],
-			'pass' => $req['password']);
-	$user=user_authenticate($params);
-	if (!is_object($user))
-		return "Invalid username/password";
-	$filename=$req['filename'];
-	$sdp=$req['sdp']; # optional
-	$tag=$req['tag']; # optional
-	$url=$req['url'];
-	$uid=$user->uid;
-	$res=_file_mirror_run_upq("download url:$url sdp:$sdp filename:$filename uid:$uid");
 
-	return $res;
-}

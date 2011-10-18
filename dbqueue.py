@@ -32,7 +32,8 @@ class DBQueue(Queue, object):
 
     def task_done(self, job):
         # update job state in DB
-        query="UPDATE upqueue SET state = '%s', end_time=NOW(), result_msg='%s' WHERE jobid = %d" % ("done", str(escape(job.msgstr)), int(job.jobid))
+        msgstr = str(escape(job.msgstr.strip("%")))
+        query="UPDATE upqueue SET state = '%s', end_time=NOW(), result_msg='%s' WHERE jobid = %d" % ("done", msgstr, int(job.jobid))
         upqdb.UpqDB().query(query)
         super(DBQueue, self).task_done()
 

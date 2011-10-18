@@ -42,13 +42,12 @@ class Extract_metadata(UpqJob):
 		if not os.path.exists(filepath):
 			self.msg("error setting up temp dir, file doesn't exist %s" %(filepath))
 			raise Exception(self.msgstr)
-		temppath=tempfile.mkdtemp(dir=self.jobcfg['temppath'])
+		temppath=tempfile.mkdtemp(dir=UpqConfig().paths['tmp'])
 		archivetmp=os.path.join(temppath, "games")
 		os.mkdir(archivetmp)
-		srcfile=os.path.join(self.jobcfg['datadir'], filepath)
 		self.tmpfile=os.path.join(archivetmp, os.path.basename(filepath))
-		self.logger.debug("symlinking %s %s" % (srcfile,self.tmpfile))
-		os.symlink(srcfile,self.tmpfile)
+		self.logger.debug("symlinking %s %s" % (filepath,self.tmpfile))
+		os.symlink(filepath,self.tmpfile)
 		return temppath
 
 	def savedelete(self,file):
@@ -85,7 +84,7 @@ class Extract_metadata(UpqJob):
 			self.msg("no id specified")
 			return False
 
-		results=UpqDB().query("SELECT * FROM files WHERE fid=%d" % int(self.jobdata['fid']))
+		results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % int(self.jobdata['fid']))
 		res=results.first()
 		if res == None:
 			self.msg("fid not found")
@@ -111,23 +110,18 @@ class Extract_metadata(UpqJob):
 
 	def insertData(self, data, fid):
 		for depend in data['Depends']:
-			res=UpqDB().query("SELECT fid FROM springdata_archives WHERE CONCAT(name,' ',version)='%s'" % (depend))
+			res=UpqDB().query("SELECT fid FROM files WHERE CONCAT(name,' ',version)='%s'" % (depend))
 			row=res.first()
 			if not row:
 				id=0
 			else:
 				id=row['fid']
 			try:
-				UpqDB().insert("springdata_depends", {"fid":fid, "depends_string": depend, "depends": id})
+				UpqDB().insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
 			except UpqDBIntegrityError:
 				pass
-		try:
-			cid=self.getCid(data['Type'])
-			UpqDB().insert("springdata_archives", {"fid": fid, "name": data['Name'], "version": data['Version'], "cid": cid, "sdp": data['sdp']})
-		except UpqDBIntegrityError:
-			UpqDB().query("UPDATE springdata_archives SET name='%s', version='%s', cid=%s WHERE fid=%s" %(data['Name'],data['Version'],cid, fid))
-			pass
-		#TODO: add additional data
+		cid=self.getCid(data['Type'])
+		UpqDB().query("UPDATE file SET name='%s', version='%s', cid=%s WHERE fid=%s" %(data['Name'],data['Version'],cid, fid))
 	#move file to destination, makes path relative, updates db
 	def moveFile(self, filepath,prefix, moveto, fid):
 		dstfile=os.path.join(prefix,moveto)
@@ -136,7 +130,7 @@ class Extract_metadata(UpqJob):
 				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, filepath))
 				raise Exception(self.msgstr)
 			shutil.move(filepath, dstfile)
-		UpqDB().query("UPDATE files SET filepath='%s', filename='%s' WHERE fid=%d" %(moveto,os.path.basename(moveto), fid))
+		UpqDB().query("UPDATE file SET path='%s' WHERE fid=%d" %(moveto, fid))
 		try:
 			os.chmod(dstfile, int("0444",8))
 		except OSError:
@@ -145,16 +139,14 @@ class Extract_metadata(UpqJob):
 
 	def run(self):
 		fid=int(self.jobdata['fid'])
-		results=UpqDB().query("SELECT * FROM files WHERE fid=%d" % fid)
+		results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % fid)
 		res=results.first()
 		#filename of the archive to be scanned
-		filename=os.path.basename(res['filepath']) # relative filename
+		filename=res['filename'] # filename only (no path info)
+		filepath=os.path.join(UpqConfig().paths['files'], res['path'], res['filename']) # absolute filename
 		libunitsync=self.jobcfg['unitsync']
-		outputpath=self.jobcfg['outputpath']
-		if os.path.isabs(res['filepath']):
-			filepath=res['filepath']
-		else:
-			filepath=os.path.join(self.jobcfg['datadir'],res['filepath']) # absolute filename
+		outputpath=UpqConfig().paths['metadata']
+
 		if not os.path.exists(filepath):
 			self.msg("File doesn't exist: %s" %(filepath))
 			return False
@@ -197,7 +189,7 @@ class Extract_metadata(UpqJob):
 		else:
 			data['sdp']= self.getSDPName(usync, filename)
 		self.insertData(data, fid)
-		self.moveFile(filepath,self.jobcfg['datadir'], moveto, fid)
+		self.moveFile(filepath,UpqConfig().paths['files'], moveto, fid)
 		self.enqueue_newjob("upload", {"fid": fid})
 		self.cleandir(tmpdir)
 		return True
@@ -342,9 +334,9 @@ class Extract_metadata(UpqJob):
 	""" returns the category id specified by name"""
 	def getCid(self, name):
 		try:
-			cid=UpqDB().insert("springdata_categories", {"name": name})
+			cid=UpqDB().insert("categories", {"name": name})
 		except UpqDBIntegrityError:
-			res=UpqDB().query("SELECT cid from springdata_categories WHERE name='%s'" % name)
+			res=UpqDB().query("SELECT cid from categories WHERE name='%s'" % name)
 			cid=res.first()['cid']
 		return cid
 

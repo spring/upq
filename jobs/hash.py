@@ -17,6 +17,7 @@ import os.path
 from upqjob import UpqJob
 from upqdb import UpqDB
 from upqdb import UpqDBIntegrityError
+from upqconfig import UpqConfig
 
 class Hash(UpqJob):
 	"""
@@ -25,18 +26,17 @@ class Hash(UpqJob):
 	"""
 	#TODO: allow recheck hash if last check of hash is older than one year (time taken from config)
 	def check(self):
-		results = UpqDB().query("SELECT filepath,md5 FROM files as f LEFT JOIN filehash as h ON f.fid=h.fid WHERE f.fid=%d " % int(self.jobdata['fid']))
+		results = UpqDB().query("SELECT filename,md5 FROM file WHERE fid=%d " % int(self.jobdata['fid']))
 		if results.rowcount > 1:
 			self.msg("Integry check failed, more than 1 file to hash in result")
 			return False
 		for res in results:
+			if res['md5'] is None:
+				self.enqueue_job()
+				return True
 			if len(res['md5']) > 0: #md5 already present, don't hash again
 				self.msg("MD5 already present: " + res['md5'])
 				return False
-			self.enqueue_job()
-			if not os.path.isfile(self.jobcfg['path'] + res['filepath']):
-				self.msg("File not found " + self.jobcfg['path'] + res['filepath'])
-				return False;
 			return True
 		self.msg("File not found")
 		return False
@@ -46,16 +46,14 @@ class Hash(UpqJob):
 			class Hash must be initialized with fileid!
 		"""
 		fid = int(self.jobdata['fid'])
-		results = UpqDB().query("SELECT * FROM files f LEFT JOIN filehash h ON f.fid=h.fid WHERE f.fid=%d  " % int(fid))
+		results = UpqDB().query("SELECT path, filename  FROM file WHERE fid=%d  " % int(fid))
 		for res in results:
-			if not os.path.isabs(res['filepath']):
-				file = os.path.join(self.jobcfg['path'], res['filepath'])
-			else:
-				file=res['filepath']
+			file = os.path.join(UpqConfig().paths['files'], res['path'], res['filename'])
 			hashes = self.hash(file)
-
+			print len(hashes['sha256'])
 			try:
-				UpqDB().insert("filehash", { "fid": fid, "md5": hashes['md5'], "sha1": hashes['sha1'], "sha256": hashes['sha256'] })
+				UpqDB().query("UPDATE file set md5='%s', sha1='%s', sha256='%s' WHERE fid=%d" %
+					(hashes['md5'], hashes['sha1'], hashes['sha256'], fid))
 			except UpqDBIntegrityError:
 				self.msg("Hash already exists in db, not updating")
 		self.enqueue_newjob("extract_metadata",{"fid": fid})

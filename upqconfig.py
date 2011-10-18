@@ -27,6 +27,13 @@ class UpqConfig():
         except:
             if default!=None:
                 obj[value]=default
+    def setpath(self, obj, section, value, default):
+        try:
+            obj[value]=os.path.abspath(self.config.get(section, value))
+        except:
+            if default!=None:
+				self.setstr(obj, section, value, os.path.abspath(default))
+
     def setbool(self,obj, section, value, default):
         try:
             obj[value]=self.config.getboolean(section, value)
@@ -74,10 +81,16 @@ class UpqConfig():
         self.setint(self.daemon, "daemon", "gid", None)
 
         self.paths = {}
-        self.setstr(self.paths, "paths", "jobs_dir", "./jobs")
-        self.setstr(self.paths, "paths", "socket", "/var/run/upq-incoming.sock")
+        self.setpath(self.paths, "paths", "jobs_dir", "jobs")
+        self.setpath(self.paths, "paths", "socket", "/var/run/upq-incoming.sock")
+
+        self.setpath(self.paths, "paths", "uploads", "uploads")
+        self.setpath(self.paths, "paths", "files", "files")
+        self.setpath(self.paths, "paths", "metadata", "metadata")
+        self.setpath(self.paths, "paths", "broken", "paths")
+        self.setpath(self.paths, "paths", "tmp", "tmp")
+
         self.setint(self.paths, "paths", "socket_chmod", 660)
-        self.paths['jobs_dir']=os.path.abspath(self.paths['jobs_dir'])
 
         self.db = {}
         self.setstr(self.db, "db", "url", "sqlite:///var/lib/upq/upq.db")

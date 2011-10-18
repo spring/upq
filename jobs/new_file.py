@@ -13,7 +13,9 @@
 
 from upqjob import UpqJob
 from upqdb import UpqDB
+from upqconfig import UpqConfig
 import os
+from shutil import move, copy
 
 class New_file(UpqJob):
 	"""
@@ -21,49 +23,80 @@ class New_file(UpqJob):
 	"""
 
 	def check(self):
-		if 'filepath' in self.jobdata and 'filename' in self.jobdata:
-			filepath=self.jobdata['filepath']
-			filename=self.jobdata['filename']
-			result=UpqDB().query("SELECT * from files where filename='%s'" % (filename))
+		if 'file' in self.jobdata :
+			self.jobdata['filename']=os.path.basename(self.jobdata['file'])
+			result=UpqDB().query("SELECT * from file where filename LIKE '%s'" % (self.jobdata['filename']))
 			res=result.first()
 			if res!=None:
-				self.msg("File %s already exists: fid: %s"%(filepath, res['fid']))
+				self.msg("File %s already exists: fid: %s"%(self.jobdata['file'], res['fid']))
+				return False
+			if not os.access(self.jobdata['file'], os.R_OK):
+				self.msg("Can't access %s"% self.jobdata['file'])
 				return False
 		elif not 'fid' in self.jobdata:
-			self.msg("Either filepath & filename or fid has to be set!")
+			self.msg("Either file or fid has to be set!")
 			return False
 		id=self.enqueue_job()
 		self.msg("Enqueued job")
 		return True
-	"""
-		params:
-			filepath: absoulte path of file
-			filename: filename
-			uid: uid
-		or:
-			fid
-	"""
+	def movefile(self, filepath):
+		"""
+			check if file is already in paths[files] directory, if not, move it there
+			@return the path where the file is, for example
+			paths[files]=/tmp
+			filepath = /tmp/path/somefile.sd7
+			returns path
+
+			paths[files]=/tmp
+			filepath = /bla/somefile.sd7
+			returns ""
+		"""
+		destination = filepath
+		if not filepath.startswith(UpqConfig().paths['files']): #file outside files dir
+			destination = os.path.join(UpqConfig().paths['files'], os.path.basename(filepath))
+			if filepath==destination:
+				return ""
+			try:
+				move(filepath, destination)
+			except:
+				copy(filepath, destination)
+			return ""
+		#file already in files dir, return subdirs
+		return os.path.dirname(filepath)[len(UpqConfig().paths['files']):]
+
 	def run(self):
+		"""
+			params:
+				filepath: absoulte path of file
+				filename: filename
+				uid: uid
+			or:
+				fid
+		"""
 		if 'fid' in self.jobdata: # file already exists in db
-			result=UpqDB().query("SELECT * from files where fid=%s"% (self.jobdata['fid']))
+			result=UpqDB().query("SELECT * from file where fid=%s"% (self.jobdata['fid']))
 			res=result.first()
 			if res==None:
 				self.msg("fid not found in db!")
 				return False
 			fid=self.jobdata['fid']
 		else: # file doesn't exist in db, add it
-			filepath=self.jobdata['filepath']
-			filename=self.jobdata['filename']
-			filesize=os.path.getsize(filepath)
+			filename=os.path.basename(self.jobdata['file'])
+			filepath=self.movefile(self.jobdata['file'])
+			abspath = os.path.join(UpqConfig().paths['files'], filepath, filename)
+			filesize=os.path.getsize(abspath)
 			if 'uid' in self.jobdata:
 				uid=self.jobdata['uid']
 			else:
 				uid=0
-			fid=UpqDB().insert("files", { "uid": uid, "filename": filename, "filepath": filepath, "filemime": "application/octet-stream", "filesize":filesize, "status":1, "timestamp":UpqDB().now()})
-			filepath=os.path.abspath(self.jobdata['filepath'])
-			if not os.access(filepath, os.R_OK):
-				self.msg("can't read %s" % (filepath))
-				return False
+			fid=UpqDB().insert("file", {
+					"uid": uid,
+					"filename": filename,
+					"path": filepath,
+					"size": filesize,
+					"status": 1,
+					"timestamp": UpqDB().now()
+				})
 		self.enqueue_newjob("hash", { "fid": fid})
 		return True
 

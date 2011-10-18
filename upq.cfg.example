@@ -13,10 +13,20 @@ loglevel = info
 logfile = /var/log/upq.log
 
 [paths]
-# paths beginning with "./" are treated as relative to path of this cfg file
+## paths beginning with "./" are treated as relative to path of this cfg file
 socket    = /var/run/upq-incoming.sock
 # socket_chmod = 660
 # jobs_dir  = ./jobs
+## directory that is regulary scanned for new files
+#uploads = ./uploads
+# where files are finally stored
+#files = ./files
+## metadata
+#metadata= ./metadata
+## where broken files are moved to
+#broken = ./broken
+## temp directory
+#tmp = ./tmp
 
 [db]
 url= mysql://user:password@hostname/dbname
@@ -27,8 +37,6 @@ url= mysql://user:password@hostname/dbname
 [job hash]
 enabled = true
 concurrent = 2
-#this can be accessed through self.jobcfg['path'] inside a job
-path = /var/www/springfiles/
 
 [job new_file]
 # needs filepath
