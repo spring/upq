@@ -27,12 +27,15 @@ class UpqConfig():
         except:
             if default!=None:
                 obj[value]=default
-    def setpath(self, obj, section, value, default):
+    def setpath(self, obj, section, value, default, directory=True):
         try:
             obj[value]=os.path.abspath(self.config.get(section, value))
         except:
             if default!=None:
-				self.setstr(obj, section, value, os.path.abspath(default))
+                self.setstr(obj, section, value, os.path.abspath(default))
+        if directory and not os.path.exists(obj[value]):
+            os.mkdir(obj[value])
+            self.conf_log("created '%s' because it didn't exist." % (obj[value]))
 
     def setbool(self,obj, section, value, default):
         try:
@@ -82,7 +85,7 @@ class UpqConfig():
 
         self.paths = {}
         self.setpath(self.paths, "paths", "jobs_dir", "jobs")
-        self.setpath(self.paths, "paths", "socket", "/var/run/upq-incoming.sock")
+        self.setpath(self.paths, "paths", "socket", "/var/run/upq-incoming.sock", False)
 
         self.setpath(self.paths, "paths", "uploads", "uploads")
         self.setpath(self.paths, "paths", "files", "files")
