@@ -206,6 +206,7 @@ function file_mirror_xmlsearch($req){
 				unset($res[$i]['torrent']);
 			}
 		}
+		$res[$i]['size']=intval($res[$i]['size']);
 		$res[$i]['description']=_file_mirror_getlink($res[$i]['fid']);
 		unset($res[$i]['fid']);
 		if ($res[$i]['version']=="")
