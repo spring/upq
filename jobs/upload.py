@@ -33,7 +33,7 @@ class Upload(UpqJob):
 
     def run(self):
         fid=int(self.jobdata['fid'])
-        results = UpqDB().query("SELECT filename, path, size, md5 FROM file where fid=%d "% (fid))
+        results = UpqDB().query("SELECT filename, path, size, md5 FROM file where fid=%d AND status=1"% (fid))
         if results.rowcount!=1:
             self.msg("Wrong result count with fid %d" % fid)
             return False
