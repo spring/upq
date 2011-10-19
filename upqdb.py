@@ -87,14 +87,14 @@ class UpqDB():
 			Column('mid', INTEGER(display_width=4)), # mirror id
 			Column('path', VARCHAR(length=64)), # relative to (mfid.url_prefix) path
 			Column('lastcheck', DATETIME(timezone=False)), # last time checksum/existence was checked
-			Column('status', INTEGER(display_width=4))) # 0=inactive, 1 = active, 2 = marked for recheck, 3 = invalid
+			Column('status', INTEGER(display_width=4))) # 0=inactive, 1 = active, 2 = marked for recheck, 3 = broken
 		self.tables['file']=Table('file', self.meta, #all known files
 			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True), #primary key of file
 			Column('uid', INTEGER(display_width=10), nullable=False), # owner uid of file
 			Column('filename', VARCHAR(length=255), nullable=False), # filename (without path)
 			Column('path', VARCHAR(length=255), nullable=False), # relative path where file is (without filename!)
 			Column('size', INTEGER(display_width=11), nullable=False), # file size
-			Column('status', INTEGER(display_width=11), nullable=False),
+			Column('status', INTEGER(display_width=11), nullable=False), # 0=inactive, 1 = active, 2 = marked for recheck, 3 = broken
 			Column('timestamp', TIMESTAMP(timezone=False)),
 			Column('torrent', VARCHAR(length=64)), # path to torrent file
 			Column('md5', CHAR(length=32)),

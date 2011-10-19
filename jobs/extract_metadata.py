@@ -130,22 +130,22 @@ class Extract_metadata(UpqJob):
 				fid
 			))
 	#move file to destination, makes path relative, updates db
-	#subdir = games|maps
 	#source = absolute filename
 	#prefix = UpqConfig().data['file']
-	def moveFile(self, source ,prefix, subdir, fid):
+	#subdir = games|maps
+	def moveFile(self, source ,prefix, subdir, fid, status=1):
 		dstfile=os.path.join(prefix, subdir, os.path.basename(source))
 		if source!=dstfile:
 			if os.path.exists(dstfile):
 				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, filepath))
 				raise Exception(self.msgstr)
 			shutil.move(source, dstfile)
-			UpqDB().query("UPDATE file SET path='%s' WHERE fid=%d" %(subdir, fid))
+			UpqDB().query("UPDATE file SET path='%s', status=%d WHERE fid=%d" %(subdir,status, fid))
 		try:
 			os.chmod(dstfile, int("0444",8))
 		except OSError:
 			pass
-		self.logger.debug("moved file to (abs)%s (rel)%s" %(source, subdir))
+		self.logger.debug("moved file to (abs)%s %s:(rel)%s" %(source, prefix,subdir))
 
 	def run(self):
 		fid=int(self.jobdata['fid'])
@@ -184,7 +184,8 @@ class Extract_metadata(UpqJob):
 		else: # file is a game
 			idx=self.getGameIdx(usync,filename)
 			if idx<0:
-				self.msg("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
+				self.logger.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
+				self.moveFile(filepath, UpqConfig().paths['broken'], "", fid, 3) # see upqdb for status description
 				return False
 			self.logger.debug("Extracting data from "+filename)
 			archivepath=usync.GetArchivePath(filename)+filename
