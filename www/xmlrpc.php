@@ -201,15 +201,17 @@ function file_mirror_xmlsearch($req){
 		}
 		if(array_key_exists('torrent', $req) && (strlen($res[$i]['torrent_file'])>0)){
 			$res[$i]['torrent']=_file_mirror_gettorrent($config['metadata'].'/'.$res[$i]['torrent_file']);
-			unset($res[$i]['torrent_file']);
 		}
 		$res[$i]['size']=intval($res[$i]['size']);
 		$res[$i]['description']=_file_mirror_getlink($res[$i]['fid']);
-		unset($res[$i]['fid']);
 		if ($res[$i]['version']=="")
 			$res[$i]['springname']=$res[$i]['name'];
 		else
 			$res[$i]['springname']=$res[$i]['name']." ".$res[$i]['version'];
+		$res[$i]['timestamp']=xmlrpc_date($res[$i]['timestamp']);
+		unset($res[$i]['fid']);
+		unset($res[$i]['path']);
+		unset($res[$i]['torrent_file']);
 	}
 	$count=count($res);
 	if ($count<>1)
