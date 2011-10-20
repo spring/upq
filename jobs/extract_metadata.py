@@ -25,12 +25,9 @@ import gzip
 import hashlib
 
 unitsyncpath=os.path.join(UpqConfig().paths['jobs_dir'],'unitsync')
-metalinkpath=os.path.join(UpqConfig().paths['jobs_dir'],'metalink')
 sys.path.append(unitsyncpath)
-sys.path.append(metalinkpath)
 
 import unitsync
-import metalink
 
 class Extract_metadata(UpqJob):
 
@@ -121,12 +118,11 @@ class Extract_metadata(UpqJob):
 				UpqDB().insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
 			except UpqDBIntegrityError:
 				pass
-		UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, torrent='%s' WHERE fid=%s" %(
+		UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s WHERE fid=%s" %(
 				data['Name'],
 				data['Version'],
 				data['sdp'],
 				self.getCid(data['Type']),
-				data['Torrent'],
 				fid
 			))
 	#move file to destination, makes path relative, updates db
@@ -141,11 +137,11 @@ class Extract_metadata(UpqJob):
 				raise Exception(self.msgstr)
 			shutil.move(source, dstfile)
 			UpqDB().query("UPDATE file SET path='%s', status=%d WHERE fid=%d" %(subdir,status, fid))
+			self.logger.debug("moved file to (abs)%s %s:(rel)%s" %(source, prefix,subdir))
 		try:
 			os.chmod(dstfile, int("0444",8))
 		except OSError:
 			pass
-		self.logger.debug("moved file to (abs)%s %s:(rel)%s" %(source, prefix,subdir))
 
 	def run(self):
 		fid=int(self.jobdata['fid'])
@@ -192,8 +188,6 @@ class Extract_metadata(UpqJob):
 			gamearchivecount=usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath)
 			moveto=self.jobcfg['games-path']
-		self.create_torrent(archivepath, os.path.join(outputpath, filename+".torrent"))
-		data['Torrent']=filename+".torrent"
 		if version=="0.82.7":
 			data['sdp']=""
 			self.logger.error("Incompatible Spring unitsync.dll detected, not extracting sdp name");
@@ -413,33 +407,4 @@ class Extract_metadata(UpqJob):
 			self.logger.debug( "["+str(i) +"/"+ str(mapcount)+ "] extracting data from "+filename)
 			springname = usync.GetMapName(i)
 			self.springnames[filename]=springname
-
-	def create_torrent(self, filename, output):
-		if os.path.isdir(filename):
-			self.logger.debug("[skip] " +filename + "is a directory, can't create torrent")
-			return ""
-		if os.path.isfile(output):
-			self.logger.debug("[skip] " +output + " already exists, skipping...")
-			return output
-		metalink._opts = { 'overwrite': False }
-		filesize=os.path.getsize(filename)
-		torrent = metalink.Torrent(filename)
-		m = metalink.Metafile()
-		m.hashes.filename=filename
-		m.scan_file(filename, True, 255, 1)
-		m.hashes.get_multiple('ed2k')
-		torrent_options = {'files':[[metalink.encode_text(filename), int(filesize)]],
-			'piece length':int(m.hashes.piecelength),
-			'pieces':m.hashes.pieces,
-			'encoding':'UTF-8',
-			}
-		data=torrent.create(torrent_options)
-		tmp=".tmp.torrent"
-		f=open(tmp,"wb")
-		f.write(data)
-		f.close()
-		shutil.move(tmp,output)
-		os.chmod(output, int("0444",8))
-		self.logger.debug("[created] " +output +" ok")
-		return output
 

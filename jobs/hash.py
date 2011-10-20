@@ -56,7 +56,7 @@ class Hash(UpqJob):
 					(hashes['md5'], hashes['sha1'], hashes['sha256'], fid))
 			except UpqDBIntegrityError:
 				self.msg("Hash already exists in db, not updating")
-		self.enqueue_newjob("extract_metadata",{"fid": fid})
+		self.enqueue_newjob("createtorrent",{"fid": fid})
 		return True
 
 	def hash(self, filename):

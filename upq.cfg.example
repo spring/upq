@@ -120,3 +120,7 @@ enabled = true
 concurrent = 1
 ; mainrepo=http://repos.caspring.org/repos.gz
 
+[job createtorrent]
+enabled = true
+concurrent = 1
+
