@@ -82,7 +82,7 @@ class Extract_metadata(UpqJob):
 			self.msg("no id specified")
 			return False
 
-		results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % int(self.jobdata['fid']))
+		results=UpqDB().query("SELECT * FROM file WHERE fid=%d AND status=1" % int(self.jobdata['fid']))
 		res=results.first()
 		if res == None:
 			self.msg("fid not found")
@@ -338,11 +338,12 @@ class Extract_metadata(UpqJob):
 		return m.hexdigest()
 	""" returns the category id specified by name"""
 	def getCid(self, name):
-		try:
+		result=UpqDB().query("SELECT cid from categories WHERE name='%s'" % name)
+		res=result.first()
+		if res:
+			cid=res['cid']
+		else:
 			cid=UpqDB().insert("categories", {"name": name})
-		except UpqDBIntegrityError:
-			res=UpqDB().query("SELECT cid from categories WHERE name='%s'" % name)
-			cid=res.first()['cid']
 		return cid
 
 	def getGameData(self, usync, idx, gamesarchivecount, archivename):
