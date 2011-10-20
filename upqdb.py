@@ -115,7 +115,7 @@ class UpqDB():
 
 		self.tables['tag_file']=Table('tag_file', self.meta,
 			Column('fid', INTEGER(display_width=10), nullable=False, autoincrement=False),
-			Column('tid', VARCHAR(length=256), unique=True))
+			Column('tid', INTEGER(display_width=10)))
 		self.tables['tag']=Table('tag', self.meta,
 			Column('tid', INTEGER(display_width=10), nullable=False, autoincrement=False),
 			Column('tag', VARCHAR(length=256), unique=True))
