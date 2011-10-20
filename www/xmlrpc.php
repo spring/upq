@@ -81,7 +81,7 @@ function _file_mirror_gettorrent($filename){
 		$res = new stdClass();
 		$res->is_base64=true;
 		$res->is_date=false;
-		$res->data=base64_encode(file_get_contents($file));
+		$res->data=file_get_contents($file);
 		return $res;
 	}
 	watchdog("file_mirror", "no torrent info for $file");
