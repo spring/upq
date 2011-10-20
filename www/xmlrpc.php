@@ -75,16 +75,14 @@ function _file_mirror_createquery(&$query, &$vars, $logical,$condition, $data){
 }
 
 function _file_mirror_gettorrent($filename){
-	global $config;
-	$file=$config['metadata'].'/'.$filename.".torrent";
-	if (is_readable($file)){
+	if (is_readable($filename)){
 		$res = new stdClass();
 		$res->is_base64=true;
 		$res->is_date=false;
-		$res->data=file_get_contents($file);
+		$res->data=file_get_contents($filename);
 		return $res;
 	}
-	watchdog("file_mirror", "no torrent info for $file");
+	watchdog("file_mirror", "no torrent info for $filename");
 	return "";
 }
 
@@ -143,7 +141,8 @@ function file_mirror_xmlsearch($req){
 		f.version as version,
 		LOWER(c.name) as category,
 		f.size as size,
-		f.timestamp as timestamp
+		f.timestamp as timestamp,
+		f.torrent as torrent_file
 		FROM file as f
 		LEFT JOIN categories as c ON f.cid=c.cid
 		LEFT JOIN mirror_file as m ON f.fid=m.fid
@@ -200,11 +199,9 @@ function file_mirror_xmlsearch($req){
 		while($row = db_fetch_array($result)){
 			$res[$i]['tags'][]=$row['tag'];
 		}
-		if(array_key_exists('torrent', $req)){
-			$res[$i]['torrent']=_file_mirror_gettorrent($res[$i]['filename']);
-			if (!is_object($res[$i]['torrent'])){
-				unset($res[$i]['torrent']);
-			}
+		if(array_key_exists('torrent', $req) && (strlen($res[$i]['torrent_file'])>0)){
+			$res[$i]['torrent']=_file_mirror_gettorrent($config['metadata'].'/'.$res[$i]['torrent_file']);
+			unset($res[$i]['torrent_file']);
 		}
 		$res[$i]['size']=intval($res[$i]['size']);
 		$res[$i]['description']=_file_mirror_getlink($res[$i]['fid']);
