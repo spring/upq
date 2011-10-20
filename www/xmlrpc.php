@@ -86,20 +86,13 @@ function _file_mirror_gettorrent($filename){
 	return "";
 }
 
-function _file_mirror_getlink($fid){
-	//TODO: xmlrpc call
-	/*
-	$res=db_query("SELECT nid FROM {content_field_file} as c WHERE field_file_fid=%d
-", array($fid));
-	$nid=db_result($res);
-	if ($nid<=0)
-		return "";
-	$res=db_query("SELECT dst FROM {url_alias} WHERE src='%s'",array("node/$nid"));
-	$url=db_result($res);
-	if (strlen($url)>0)
-		return "http://springfiles.com/$url";
-	return "http://springfiles.com/node/$nid";
-	*/
+/**
+* return images
+*/
+function _get_metadata($fid){
+//	db_query();
+	//TODO
+	return array();
 }
 
 /**
@@ -202,6 +195,12 @@ function file_mirror_xmlsearch($req){
 		if(array_key_exists('torrent', $req) && (strlen($res[$i]['torrent_file'])>0)){
 			$res[$i]['torrent']=_file_mirror_gettorrent($config['metadata'].'/'.$res[$i]['torrent_file']);
 		}
+		//links to metadata
+		if(array_kex_exists('metadata', $req)){
+			$res[$i]['metadata']=_get_metadata($res[$i]['fid']);
+		}
+
+		//additional metadata
 		$res[$i]['size']=intval($res[$i]['size']);
 		$res[$i]['description']=_file_mirror_getlink($res[$i]['fid']);
 		if ($res[$i]['version']=="")
