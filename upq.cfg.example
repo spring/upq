@@ -20,13 +20,13 @@ socket    = /var/run/upq-incoming.sock
 ## directory that is regulary scanned for new files
 #uploads = ./uploads
 # where files are finally stored
-#files = ./files
-## metadata
-#metadata= ./metadata
-## where broken files are moved to
-#broken = ./broken
-## temp directory
-#tmp = ./tmp
+files = ./files
+# metadata
+metadata= ./metadata
+# where broken files are moved to
+broken = ./broken
+# temp directory
+tmp = ./tmp
 
 [db]
 url= mysql://user:password@hostname/dbname
@@ -92,10 +92,7 @@ concurrent = 2
 [job extract_metadata]
 enabled = true
 concurrent = 2
-unitsync=/usr/lib/spring/libunitsync.so
-outputpath=/var/www/springfiles/sites/default/files/springdata
-datadir=/var/www/springfiles/sites/default/files/springdata
-temppath=/tmp
+unitsync=/home/abma/local/spring/master/lib/libunitsync.so
 ; directory where to move maps to, relative to datadir
 maps-path=maps
 ; directory where to move games to, relative to datadir
@@ -106,21 +103,17 @@ enabled = true
 concurrent = 1
 from = root@localhost
 
-[job download]
-enabled = true
-concurrent = 1
-temppath = /tmp
-; where to store not categorized files
-downloaddir = /home/jj/web/www/sites/default/files/downloads/spring
-; which path to prefix for drupal
-prefix = sites/default/files/images/spring/
-
 [job rapidsync]
 enabled = true
 concurrent = 1
-; mainrepo=http://repos.caspring.org/repos.gz
+mainrepo=http://repos.caspring.org/repos.gz
+temppath=/tmp
 
 [job createtorrent]
+enabled = true
+concurrent = 1
+
+[job movefile]
 enabled = true
 concurrent = 1
 
