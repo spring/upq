@@ -26,12 +26,12 @@ def init_logging(conf):
             # convert relative to absolute path
             logfile = os.path.realpath(os.path.dirname(__file__))+logfile[1:]            
     else:
-        logfile = '/tmp/upq.log'
+        filename=None
     
     if conf.has_key('log_format'):
         logformat = conf['log_format']
     else:
-        logformat = "%(asctime)s %(levelname)-8s %(module)s.%(funcName)s(%(lineno)03d) %(message)s"
+        logformat = "%(asctime)s %(levelname)-8s %(module)s.%(funcName)s:%(lineno)d %(message)s"
 
     logging.basicConfig(level=logging.__getattribute__(loglevel),
                         format=logformat,
