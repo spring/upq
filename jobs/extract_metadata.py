@@ -35,7 +35,7 @@ class Extract_metadata(UpqJob):
 		setup temporary directory.
 		creates <tempdir>/games and symlinks archive file into that directory
 	"""
-	def setupdir(self, fid, filepath):
+	def setupdir(self, filepath):
 		if not os.path.exists(filepath):
 			self.msg("error setting up temp dir, file doesn't exist %s" %(filepath))
 			raise Exception(self.msgstr)
@@ -125,11 +125,13 @@ class Extract_metadata(UpqJob):
 				self.getCid(data['Type']),
 				fid
 			))
-	#move file to destination, makes path relative, updates db
-	#source = absolute filename
-	#prefix = UpqConfig().data['file']
-	#subdir = games|maps
 	def moveFile(self, source ,prefix, subdir, fid, status=1):
+		"""
+		move file to destination, makes path relative, updates db
+		source = absolute filename
+		prefix = UpqConfig().data['file']
+		subdir = games|maps (willl be stored in db, too)
+		"""
 		dstfile=os.path.join(prefix, subdir, os.path.basename(source))
 		if source!=dstfile:
 			if os.path.exists(dstfile):
@@ -151,14 +153,13 @@ class Extract_metadata(UpqJob):
 		filename=res['filename'] # filename only (no path info)
 		filepath=os.path.join(UpqConfig().paths['files'], res['path'], res['filename']) # absolute filename
 		libunitsync=self.jobcfg['unitsync']
-		outputpath=UpqConfig().paths['metadata']
+		metadatapath=UpqConfig().paths['metadata']
 
 		if not os.path.exists(filepath):
 			self.msg("File doesn't exist: %s" %(filepath))
 			return False
-		tmpdir=self.setupdir(fid, filepath) #temporary directory for unitsync
+		tmpdir=self.setupdir(filepath) #temporary directory for unitsync
 
-		outputpath = os.path.abspath(outputpath)
 		os.environ["SPRING_DATADIR"]=tmpdir
 		os.environ["HOME"]=tmpdir
 		usync = unitsync.Unitsync(libunitsync)
@@ -174,7 +175,7 @@ class Extract_metadata(UpqJob):
 		if idx>=0: #file is map
 			archivepath=usync.GetArchivePath(filename)+filename
 			springname = usync.GetMapName(idx)
-			self.dumpmap(usync, springname, outputpath, filename,idx)
+			self.dumpmap(usync, springname, metadatapath, filename,idx)
 			data=self.getMapData(usync, filename, idx)
 			moveto=self.jobcfg['maps-path']
 		else: # file is a game
