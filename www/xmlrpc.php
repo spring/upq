@@ -16,7 +16,7 @@ function xmlrpc_tobase64($str){
 	return $res;
 }
 
-function file_mirror_xmlsearch($req){
+function xmlrpc_search($req){
 	$res=search($req);
 	for($i=0; $i<count($res); $i++){
 		$res[$i]['timestamp']=xmlrpc_date($res[$i]['timestamp']);
@@ -33,6 +33,7 @@ function main($argv){
 		"springname"=>"%",
 		"torrent"=>"true",
 	);
+	$res=xmlrpc_search($req);
 	$r=xmlrpc_value($res);
 	echo '<methodResponse>
  <params>
@@ -50,7 +51,7 @@ if (array_key_exists('argv', $_SERVER)) {
 } else {
 	if ($_SERVER['REQUEST_METHOD']=="POST"){
 		$callbacks = array(
-			"springfiles.search" => "file_mirror_xmlsearch",
+			"springfiles.search" => "xmlrpc_search",
 		);
 		xmlrpc_server($callbacks);
 	} else {
