@@ -27,6 +27,8 @@ class UpqJob(object):
     def __init__(self, jobname, jobdata):
         self.jobname = jobname
         self.jobcfg  = UpqConfig().jobs[jobname] #settings from config-fule
+	if not jobdata.has_key('subjobs'):
+		jobdata['subjobs'] = {}
         self.jobdata = jobdata #runtime parameters, these are stored into database and restored on re-run
         self.logger  = log.getLogger("upq")
         self.thread  = "T-none-0"
@@ -80,6 +82,16 @@ class UpqJob(object):
 			self.msgstr+=str(msg)
         else:
 			self.logger.error("msg to long: --------%s-------" %(msg))
+
+    def start_subjobs(self,job):
+        """
+            checks if a job has a subjob and runs it
+        """
+        if self.jobdata.has_key('subjobs') and len(job.jobdata['subjobs'])>0:
+            jobname=job.jobdata['subjobs'].pop()
+            newjob=UpqQueueMngr().new_job(jobname, job.jobdata)
+            if newjob.check():
+                UpqQueueMngr().enqueue_job(newjob)
 
     def notify(self, succeed):
         """

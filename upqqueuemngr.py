@@ -17,6 +17,7 @@ import dbqueue
 import upqconfig
 import module_loader
 import traceback
+import upqjob
 
 class UpqQueueMngr():
     # Borg design pattern (pythons cooler singleton)
@@ -60,6 +61,7 @@ class UpqQueueMngr():
             self.logger.info("(%s:%d,%s) finished: %s, %s", job.jobname, job.jobid, thread_id, str(res),job.msgstr)
             queue.task_done(job)
             job.finished.set()
+            job.start_subjobs(job)
             if len(queue.threads)-1 >= queue.qsize() and len(queue.threads) > 1:
                 # terminate myself if there will be enough threads for this queue
                 break
@@ -126,7 +128,7 @@ class UpqQueueMngr():
         """
         creates a new job and initializes by command array
         for example
-            jobname=notify
+            jobname="notify"
             params={ "syslog": "", "mail": "user@server1,user@server2" }
         """
         # parse first word to find job
@@ -153,3 +155,4 @@ class UpqQueueMngr():
         queue.threads[tname] = t
         t.start()
         self.logger.info("(%s,%s) started %s (queue now has %d threads and %d jobs)", queue.name, t.name, t.ident, len(queue.threads), queue.qsize())
+
