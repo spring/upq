@@ -55,13 +55,13 @@ class UpqQueueMngr():
             try:
                 res=job.run()
                 job.notify(res)
+                job.start_subjobs(job)
             except Exception, e:
                 job.msgstr += "Error in job %s %s %s" % (job.__module__, str(e), traceback.format_exc(100))
 
             self.logger.info("(%s:%d,%s) finished: %s, %s", job.jobname, job.jobid, thread_id, str(res),job.msgstr)
             queue.task_done(job)
             job.finished.set()
-            job.start_subjobs(job)
             if len(queue.threads)-1 >= queue.qsize() and len(queue.threads) > 1:
                 # terminate myself if there will be enough threads for this queue
                 break
