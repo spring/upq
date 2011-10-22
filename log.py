@@ -27,9 +27,9 @@ def init_logging(conf):
             logfile = os.path.realpath(os.path.dirname(__file__))+logfile[1:]            
     else:
         filename=None
-    
-    if conf.has_key('log_format'):
-        logformat = conf['log_format']
+
+    if conf.has_key('logformat'):
+        logformat = conf['logformat']
     else:
         logformat = "%(asctime)s %(levelname)-8s %(module)s.%(funcName)s:%(lineno)d %(message)s"
 
