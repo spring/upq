@@ -32,8 +32,6 @@ class Movefile(UpqJob):
 			return False
 		filename=os.path.basename(source)
 		dstfile=os.path.join(prefix, subdir, filename)
-		self.logger.debug("%s" %(dstfile))
-		self.logger.debug("moved file to (abs)%s %s:(rel)%s" %(source, prefix,subdir))
 		if source!=dstfile:
 			if os.path.exists(dstfile):
 				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, filepath))

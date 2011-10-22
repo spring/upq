@@ -51,7 +51,6 @@ class Createtorrent(UpqJob):
 		res=self.create_torrent(absfilename, torrent)
 		if res:
 			UpqDB().query("UPDATE file SET torrent='%s' WHERE fid=%s" %(filename+".torrent", fid))
-			self.enqueue_newjob("extract_metadata",{"fid": fid})
 		return res
 
 	def create_torrent(self, filename, output):
@@ -60,7 +59,7 @@ class Createtorrent(UpqJob):
 			return False
 		if os.path.isfile(output):
 			self.logger.debug("[skip] " +output + " already exists, skipping...")
-			return False
+			return True
 		metalink._opts = { 'overwrite': False }
 		filesize=os.path.getsize(filename)
 		torrent = metalink.Torrent(filename)

@@ -39,30 +39,6 @@ class New_file(UpqJob):
 		id=self.enqueue_job()
 		self.msg("Enqueued job")
 		return True
-	def movefile(self, filepath):
-		"""
-			check if file is already in paths[files] directory, if not, move it there
-			@return the path where the file is, for example
-			paths[files]=/tmp
-			filepath = /tmp/path/somefile.sd7
-			returns path
-
-			paths[files]=/tmp
-			filepath = /bla/somefile.sd7
-			returns ""
-		"""
-		destination = filepath
-		if not filepath.startswith(UpqConfig().paths['files']): #file outside files dir
-			destination = os.path.join(UpqConfig().paths['files'], os.path.basename(filepath))
-			if filepath==destination:
-				return ""
-			try:
-				move(filepath, destination)
-			except:
-				copy(filepath, destination)
-			return ""
-		#file already in files dir, return subdirs
-		return os.path.dirname(filepath)[len(UpqConfig().paths['files']):]
 
 	def run(self):
 		"""
@@ -81,10 +57,8 @@ class New_file(UpqJob):
 				return False
 			fid=self.jobdata['fid']
 		else: # file doesn't exist in db, add it
-			filename=os.path.basename(self.jobdata['file'])
-			filepath=self.movefile(self.jobdata['file'])
-			abspath = os.path.join(UpqConfig().paths['files'], filepath, filename)
-			filesize=os.path.getsize(abspath)
+			filename=self.jobdata['file']
+			filesize=os.path.getsize(filename)
 			if 'uid' in self.jobdata:
 				uid=self.jobdata['uid']
 			else:
@@ -92,11 +66,16 @@ class New_file(UpqJob):
 			fid=UpqDB().insert("file", {
 					"uid": uid,
 					"filename": filename,
-					"path": filepath,
+					"path": "",
 					"size": filesize,
 					"status": 1,
 					"timestamp": UpqDB().now()
 				})
-		self.enqueue_newjob("hash", { "fid": fid})
+			self.jobdata['fid']=fid
+		self.append_job("upload") #reverse order
+		self.append_job("extract_metadata")
+		self.append_job("createtorrent")
+		self.append_job("hash")
+		self.append_job("movefile")
 		return True
 

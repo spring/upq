@@ -93,6 +93,14 @@ class UpqJob(object):
             if newjob.check():
                 UpqQueueMngr().enqueue_job(newjob)
 
+    def append_job(self, job, params={}):
+        """
+            append job, will be added as the first job
+        """
+        self.jobdata['subjobs'].append(job)
+        for name in params:
+            self.jobdata[name]=params[name]
+
     def notify(self, succeed):
         """
         Notify someone responsible about job result.

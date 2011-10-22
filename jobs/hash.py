@@ -24,21 +24,14 @@ class Hash(UpqJob):
 		requirements to run hash:
 			file is in db + file has to exist
 	"""
-	#TODO: allow recheck hash if last check of hash is older than one year (time taken from config)
 	def check(self):
-		results = UpqDB().query("SELECT filename,md5 FROM file WHERE fid=%d " % int(self.jobdata['fid']))
-		if results.rowcount > 1:
-			self.msg("Integry check failed, more than 1 file to hash in result")
-			return False
-		for res in results:
-			if res['md5'] is None:
-				self.enqueue_job()
-				return True
-			if len(res['md5']) > 0: #md5 already present, don't hash again
-				self.msg("MD5 already present: " + res['md5'])
-				return False
+		results = UpqDB().query("SELECT fid, filename,path FROM file WHERE fid=%d " % int(self.jobdata['fid']))
+		res=results.first()
+		filename = os.path.join(UpqConfig().paths['files'], res['path'], res['filename'])
+		if os.path.exists(filename):
+			self.enqueue_job()
 			return True
-		self.msg("File not found")
+		self.logger.error("file %d doesn't exist: %s"%(res['fid'], filename))
 		return False
 
 	def run(self):
@@ -46,17 +39,18 @@ class Hash(UpqJob):
 			class Hash must be initialized with fileid!
 		"""
 		fid = int(self.jobdata['fid'])
-		results = UpqDB().query("SELECT path, filename  FROM file WHERE fid=%d  " % int(fid))
-		for res in results:
-			file = os.path.join(UpqConfig().paths['files'], res['path'], res['filename'])
-			hashes = self.hash(file)
-			print len(hashes['sha256'])
-			try:
-				UpqDB().query("UPDATE file set md5='%s', sha1='%s', sha256='%s' WHERE fid=%d" %
-					(hashes['md5'], hashes['sha1'], hashes['sha256'], fid))
-			except UpqDBIntegrityError:
-				self.msg("Hash already exists in db, not updating")
-		self.enqueue_newjob("createtorrent",{"fid": fid})
+		results = UpqDB().query("SELECT path, filename, md5, sha1, sha256  FROM file WHERE fid=%d  " % int(fid))
+		res=results.first()
+		file = os.path.join(UpqConfig().paths['files'], res['path'], res['filename'])
+		hashes = self.hash(file)
+		if len(res['md5'])>0 and res['md5']!=hashes['md5']:
+			return False
+		if len(res['sha1'])>0 and res['sha1']!=hashes['sha1']:
+			return False
+		if len(res['sha256'])>0 and res['sha256']!=hashes['sha256']:
+			return False
+		UpqDB().query("UPDATE file set md5='%s', sha1='%s', sha256='%s' WHERE fid=%d" %
+			(hashes['md5'], hashes['sha1'], hashes['sha256'], fid))
 		return True
 
 	def hash(self, filename):

@@ -88,7 +88,6 @@ class Extract_metadata(UpqJob):
 			self.msg("fid not found")
 			return False
 		id=self.enqueue_job()
-		self.msg("Job queued %s %s" % (id, self))
 		return True
 	def getMapIdx(self, usync, filename):
 		mapcount = usync.GetMapCount()
@@ -125,25 +124,6 @@ class Extract_metadata(UpqJob):
 				self.getCid(data['Type']),
 				fid
 			))
-	def moveFile(self, source ,prefix, subdir, fid, status=1):
-		"""
-		move file to destination, makes path relative, updates db
-		source = absolute filename
-		prefix = UpqConfig().data['file']
-		subdir = games|maps (willl be stored in db, too)
-		"""
-		dstfile=os.path.join(prefix, subdir, os.path.basename(source))
-		if source!=dstfile:
-			if os.path.exists(dstfile):
-				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, filepath))
-				raise Exception(self.msgstr)
-			shutil.move(source, dstfile)
-			UpqDB().query("UPDATE file SET path='%s', status=%d WHERE fid=%d" %(subdir,status, fid))
-			self.logger.debug("moved file to (abs)%s %s:(rel)%s" %(source, prefix,subdir))
-		try:
-			os.chmod(dstfile, int("0444",8))
-		except OSError:
-			pass
 
 	def run(self):
 		fid=int(self.jobdata['fid'])
@@ -163,9 +143,9 @@ class Extract_metadata(UpqJob):
 		os.environ["SPRING_DATADIR"]=tmpdir
 		os.environ["HOME"]=tmpdir
 		usync = unitsync.Unitsync(libunitsync)
+		usync.Init(True,1)
 		version = usync.GetSpringVersion();
 		self.logger.debug("using unitsync version %s" %(version))
-		usync.Init(True,1)
 
 		usync.RemoveAllArchives()
 		usync.AddArchive(filename)
@@ -182,7 +162,7 @@ class Extract_metadata(UpqJob):
 			idx=self.getGameIdx(usync,filename)
 			if idx<0:
 				self.logger.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
-				self.moveFile(filepath, UpqConfig().paths['broken'], "", fid, 3) # see upqdb for status description
+				self.append_job("movefile", { status: 3 }) #mark file as broken
 				return False
 			self.logger.debug("Extracting data from "+filename)
 			archivepath=usync.GetArchivePath(filename)+filename
@@ -195,8 +175,7 @@ class Extract_metadata(UpqJob):
 		else:
 			data['sdp']= self.getSDPName(usync, filename)
 		self.insertData(data, fid)
-		self.moveFile(filepath,UpqConfig().paths['files'], moveto, fid)
-		self.enqueue_newjob("upload", {"fid": fid})
+		self.append_job("movefile", {"subdir": moveto})
 		self.cleandir(tmpdir)
 		return True
 
