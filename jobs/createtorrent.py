@@ -34,7 +34,6 @@ class Createtorrent(UpqJob):
 			self.msg("fid not found")
 			return False
 		id=self.enqueue_job()
-		self.msg("Job queued %s %s" % (id, self))
 		return True
 	def run(self):
 		fid=int(self.jobdata['fid'])

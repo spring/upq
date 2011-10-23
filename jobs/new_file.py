@@ -37,7 +37,6 @@ class New_file(UpqJob):
 			self.msg("Either file or fid has to be set!")
 			return False
 		id=self.enqueue_job()
-		self.msg("Enqueued job")
 		return True
 
 	def run(self):
