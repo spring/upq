@@ -57,10 +57,12 @@ class Movefile(UpqJob):
 		res=results.first()
 		if self.jobdata.has_key('status'):
 			status=self.jobdata['status']
+			del self.jobdata['status'] #delete param, as its only used in this job
 		else:
 			status=1
 		if self.jobdata.has_key('subdir'):
 			subdir=self.jobdata['subdir']
+			del self.jobdata['subdir'] #delete param, as its only used in this job
 		else:
 			subdir=""
 		if status==1:
