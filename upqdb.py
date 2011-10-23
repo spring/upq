@@ -136,9 +136,8 @@ class UpqDB():
 		self.tables['upqueue']=Table('upqueue', self.meta,
 			Column('jobid', INTEGER(display_width=11), primary_key=True, nullable=False, autoincrement=True),
 			Column('jobname', VARCHAR(length=255), nullable=False),
-			Column('state', VARCHAR(length=32), nullable=False),
+			Column('state', INTEGER(display_width=10)), # 0 = finished, 1 = running, 2 = new, 3 = broken/failed
 			Column('jobdata', TEXT(), nullable=False),
-			Column('result', INTEGER(display_width=1)),
 			Column('result_msg', VARCHAR(length=255)),
 			Column('ctime', TIMESTAMP(timezone=False)),
 			Column('start_time', TIMESTAMP(timezone=False)),
