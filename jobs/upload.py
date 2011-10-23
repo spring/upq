@@ -71,17 +71,16 @@ GROUP by m.mid"% fid)
                 return False
             try:
                 f=open(srcfilename,"rb")
-#springfiles has only python 2.6.4 installed no tls avaiable there :-(
-#                ftp = ftplib.FTP_TLS()
+                ftp = ftplib.FTP_TLS()
                 #set global timeout
                 socket.setdefaulttimeout(30)
                 ftp = ftplib.FTP()
                 self.logger.debug("connecting to "+host)
                 ftp.connect(host,port)
-#                if (res['ftp_ssl']):
-#                    ftp.auth(username, password)
-#                else:
-                ftp.login(username, password)
+                if (res['ftp_ssl']):
+                    ftp.auth(username, password)
+                else:
+                    ftp.login(username, password)
                 ftp.set_pasv(passive) #set passive mode
                 if (len(cwddir)>0):
                     self.logger.debug("cd into "+cwddir)
