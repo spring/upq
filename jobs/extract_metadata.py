@@ -182,7 +182,7 @@ class Extract_metadata(UpqJob):
 			data['sdp']=""
 			self.logger.error("Incompatible Spring unitsync.dll detected, not extracting sdp name");
 		else:
-			data['sdp']= self.getSDPName(usync, filename)
+			data['sdp']= self.getSDPName(usync, os.path.join("games", filename))
 		self.insertData(data, fid)
 		self.append_job("movefile", {"subdir": moveto})
 		err=usync.GetNextError()
@@ -295,6 +295,9 @@ class Extract_metadata(UpqJob):
 		return res
 	def getSDPName(self, usync, filename):
 		archiveh=usync.OpenArchive(filename)
+		if archiveh==0:
+			self.logger.error("getSDPName(): OpenArchive(%s) failed" % filename)
+			return ""
 		pos=0
 		files = []
 		#get a list of all files
@@ -302,17 +305,18 @@ class Extract_metadata(UpqJob):
 			name=ctypes.create_string_buffer(1024)
 			size=ctypes.c_int(1024)
 			res=usync.FindFilesArchive(archiveh, pos, name, ctypes.byref(size))
-			if res<0:
-				self.logger.error("FindFilesArchive returned invalid archive for %s" % (filename))
+			if res==0: #last file
 				break
 			fileh=usync.OpenArchiveFile(archiveh, name.value)
 			if fileh<0:
-				self.logger.error("Invalid handle for %s %s %s" % (name.value, fileh,  ""+usync.GetNextError()))
+				self.logger.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  ""+usync.GetNextError()))
 				break
 			files.append(name.value)
 			pos=pos+1
 		m=hashlib.md5()
 		files.sort(cmp = lambda a, b: cmp(a.lower(), b.lower()))
+		if len(files)<=0:
+			self.logger.error("Zero files found!")
 		i=0
 		for f in files:
 			# ignore directory entries
