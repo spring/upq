@@ -97,6 +97,8 @@ unitsync=/home/abma/local/spring/master/lib/libunitsync.so
 maps-path=maps
 ; directory where to move games to, relative to datadir
 games-path=games
+;keep the temporary directory?
+;keeptemp=yes
 
 [job notify]
 enabled = true

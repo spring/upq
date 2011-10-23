@@ -151,11 +151,11 @@ class Extract_metadata(UpqJob):
 
 		os.environ["SPRING_DATADIR"]=tmpdir
 		os.environ["HOME"]=tmpdir
+		os.environ["SPRING_LOG_SECTIONS"]="unitsync,ArchiveScanner,VFS"
 		usync = unitsync.Unitsync(libunitsync)
 		usync.Init(True,1)
-		version = usync.GetSpringVersion();
+		version = usync.GetSpringVersion()
 		self.logger.debug("using unitsync version %s" %(version))
-
 		usync.RemoveAllArchives()
 		usync.AddArchive(filename)
 		usync.AddAllArchives(filename)
@@ -185,8 +185,13 @@ class Extract_metadata(UpqJob):
 			data['sdp']= self.getSDPName(usync, filename)
 		self.insertData(data, fid)
 		self.append_job("movefile", {"subdir": moveto})
-		self.cleandir(tmpdir)
-
+		err=usync.GetNextError()
+		while not err==None:
+			self.logger.error(err)
+			err=usync.GetNextError()
+		usync.UnInit()
+		if not self.jobcfg.has_key('keeptemp'):
+			self.cleandir(tmpdir)
 		return True
 
 	springcontent = [ 'bitmaps.sdz', 'springcontent.sdz', 'maphelper.sdz', 'cursors.sdz' ]
