@@ -34,7 +34,7 @@ class UpqJob(object):
         self.thread  = "T-none-0"
         self.jobid   = -1
         self.msgstr  = ""
-        self.result  = None
+        self.result  = False
         self.finished= threading.Event()
 
     def check(self):

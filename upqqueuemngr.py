@@ -57,7 +57,6 @@ class UpqQueueMngr():
                 job.notify(res)
             except Exception, e:
                 job.msgstr += "Error in job %s %s %s" % (job.__module__, str(e), traceback.format_exc(100))
-                job.result=False
             job.result=res
             self.logger.info("(%s:%d,%s) finished: %s, %s", job.jobname, job.jobid, thread_id, str(res),job.msgstr)
             queue.task_done(job)
