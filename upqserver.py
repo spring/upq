@@ -35,7 +35,7 @@ class UpqServer(SocketServer.ThreadingMixIn, SocketServer.UnixStreamServer):
 
             returns  : list of alive, unqueued jobs
         """
-        results=upqdb.UpqDB().query("SELECT * FROM upqueue WHERE state = 1 OR state = 2")
+        results=upqdb.UpqDB().query("SELECT * FROM upqueue WHERE status = 1 OR status = 2")
         jobs = []
         for res in results:
             job=res['jobname']
