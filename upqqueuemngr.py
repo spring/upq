@@ -133,8 +133,7 @@ class UpqQueueMngr():
             params={ "syslog": "", "mail": "user@server1,user@server2" }
         """
         # parse first word to find job
-        uc = upqconfig.UpqConfig()
-        jobs = uc.jobs
+        jobs = upqconfig.UpqConfig().jobs
         try:
             if jobs.has_key(jobname):
                 upqjob_class = module_loader.load_module(jobname)
