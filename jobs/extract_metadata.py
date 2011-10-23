@@ -125,6 +125,13 @@ class Extract_metadata(UpqJob):
 				self.getCid(data['Type']),
 				fid
 			))
+		if data['Type']=="Map":
+			self.logger.debug("Updating start positions")
+			UpqDB().query("DELETE from file_startpos WHERE fid=%d" % (fid))
+			id=0
+			for pos in data['StartPos']:
+				UpqDB().insert("file_startpos", { "fid": fid, "id":id, "x": pos['x'], "z": pos['z'] })
+				id=id+1
 		self.msg("Updated %s '%s' version '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version']))
 
 	def run(self):
