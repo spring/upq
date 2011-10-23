@@ -8,7 +8,7 @@
 
 #
 # Verify_remote_file: check the integrity of a file on a mirror by comparing
-# the result of the PHP-script "deamon.php" with the stored hash in the DB
+# the result of the PHP-script "daemon.php" with the stored hash in the DB
 # 
 
 #
@@ -30,7 +30,7 @@ class Verify_remote_file(upqjob.UpqJob):
     def run(self):
         # get files hash from DB
         fmfid=int(self.jobdata['mfid'])
-        result = upqdb.UpqDB().query("SELECT md5, fid, url_prefix, url_deamon, path \
+        result = upqdb.UpqDB().query("SELECT md5, fid, url_prefix, url_daemon, path \
 			FROM mirror AS m \
 			LEFT JOIN mirror_file as f ON m.mid=f.mid \
 			WHERE mfid=%d "%fmfid)

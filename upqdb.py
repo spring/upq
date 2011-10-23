@@ -77,7 +77,7 @@ class UpqDB():
 			Column('ftp_ssl', INTEGER(display_width=4)),
 			Column('ftp_port', INTEGER(display_width=4)),
 			Column('url_prefix', VARCHAR(length=64)), # prefix to files
-			Column('url_deamon', VARCHAR(length=64)), # absolute url to daemon.php
+			Column('url_daemon', VARCHAR(length=64)), # absolute url to daemon.php
 			Column('mirror_size', INTEGER(display_width=11)), # maximum size of mirror
 			Column('bandwidth_limit', INTEGER(display_width=11)), # upload speed limit in kb/s
 			Column('status', INTEGER(display_width=4))) # 0=inactive, 1=active
