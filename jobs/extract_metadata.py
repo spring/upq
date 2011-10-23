@@ -263,11 +263,7 @@ class Extract_metadata(UpqJob):
 		res=[]
 		for i in range (1, gamearchivecount): # get depends for file, idx=0 is filename itself
 			deps=os.path.basename(usync.GetPrimaryModArchiveList(i))
-			if not deps in self.springcontent and not deps.endswith(".sdp"): #FIXME: .sdp is returned wrong by unitsync
-				if deps in self.springnames:
-					depend=self.springnames[deps]
-				else:
-					depend=deps
+			if not deps in self.springcontent
 				res.append(depend)
 		return res
 
@@ -374,18 +370,4 @@ class Extract_metadata(UpqJob):
 		version="" #TODO: add support
 		res['Version']=version
 		return res
-
-	springnames={}
-	def createdict(self,usync,gamescount, mapcount):
-		#create dict with springnames[filename]=springname
-		for i in range(0, gamescount):
-			springname=usync.GetPrimaryModName(i)
-			filename=usync.GetPrimaryModArchive(i)
-			self.springnames[filename]=springname
-		for i in range(0, mapcount):
-			maparchivecount = usync.GetMapArchiveCount(usync.GetMapName(i)) # initialization for GetMapArchiveName()
-			filename = os.path.basename(usync.GetMapArchiveName(0))
-			self.logger.debug( "["+str(i) +"/"+ str(mapcount)+ "] extracting data from "+filename)
-			springname = usync.GetMapName(i)
-			self.springnames[filename]=springname
 
