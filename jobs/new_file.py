@@ -55,6 +55,7 @@ class New_file(UpqJob):
 				self.msg("fid not found in db!")
 				return False
 			fid=self.jobdata['fid']
+			self.msg("File alread known, Filename: %s Size: %d" % (res['filename'], res['size']))
 		else: # file doesn't exist in db, add it
 			filename=self.jobdata['file']
 			filesize=os.path.getsize(filename)
@@ -71,6 +72,7 @@ class New_file(UpqJob):
 					"timestamp": UpqDB().now()
 				})
 			self.jobdata['fid']=fid
+			self.msg("Filename: %s Size: %d" % (filename, filesize))
 		self.append_job("upload") #reverse order
 		self.append_job("extract_metadata")
 		self.append_job("createtorrent")

@@ -115,6 +115,7 @@ class Extract_metadata(UpqJob):
 				id=row['fid']
 			try:
 				UpqDB().insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
+				self.msg("Added %s '%s' version '%s' to the mirror-system" % (data['Type'], data['Name'], data['Version']))
 			except UpqDBIntegrityError:
 				pass
 		UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s WHERE fid=%s" %(
@@ -124,6 +125,7 @@ class Extract_metadata(UpqJob):
 				self.getCid(data['Type']),
 				fid
 			))
+		self.msg("Updated %s '%s' version '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version']))
 
 	def run(self):
 		fid=int(self.jobdata['fid'])
@@ -177,6 +179,7 @@ class Extract_metadata(UpqJob):
 		self.insertData(data, fid)
 		self.append_job("movefile", {"subdir": moveto})
 		self.cleandir(tmpdir)
+
 		return True
 
 	springcontent = [ 'bitmaps.sdz', 'springcontent.sdz', 'maphelper.sdz', 'cursors.sdz' ]
@@ -263,7 +266,7 @@ class Extract_metadata(UpqJob):
 		res=[]
 		for i in range (1, gamearchivecount): # get depends for file, idx=0 is filename itself
 			deps=os.path.basename(usync.GetPrimaryModArchiveList(i))
-			if not deps in self.springcontent
+			if not deps in self.springcontent:
 				res.append(depend)
 		return res
 

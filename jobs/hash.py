@@ -51,6 +51,7 @@ class Hash(UpqJob):
 			return False
 		UpqDB().query("UPDATE file set md5='%s', sha1='%s', sha256='%s' WHERE fid=%d" %
 			(hashes['md5'], hashes['sha1'], hashes['sha256'], fid))
+		self.msg("md5: %s sha1: %s sha256: %s" % (hashes['md5'], hashes['sha1'], hashes['sha256']))
 		return True
 
 	def hash(self, filename):
