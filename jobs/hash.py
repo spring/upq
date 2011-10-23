@@ -28,26 +28,29 @@ class Hash(UpqJob):
 		results = UpqDB().query("SELECT fid, filename,path FROM file WHERE fid=%d " % int(self.jobdata['fid']))
 		res=results.first()
 		filename = os.path.join(UpqConfig().paths['files'], res['path'], res['filename'])
-		if os.path.exists(filename):
-			self.enqueue_job()
-			return True
-		self.logger.error("file %d doesn't exist: %s"%(res['fid'], filename))
-		return False
+		if not os.path.exists(filename):
+			self.logger.error("file %d doesn't exist: %s"%(res['fid'], filename))
+			return False
+		self.enqueue_job()
+		return True
 
 	def run(self):
 		"""
 			class Hash must be initialized with fileid!
 		"""
 		fid = int(self.jobdata['fid'])
-		results = UpqDB().query("SELECT path, filename, md5, sha1, sha256  FROM file WHERE fid=%d  " % int(fid))
+		results = UpqDB().query("SELECT filename, path, md5, sha1, sha256  FROM file WHERE fid=%d  " % int(fid))
 		res=results.first()
-		file = os.path.join(UpqConfig().paths['files'], res['path'], res['filename'])
-		hashes = self.hash(file)
-		if len(res['md5'])>0 and res['md5']!=hashes['md5']:
+		filename = os.path.join(UpqConfig().paths['files'], res['path'], res['filename'])
+		if not os.path.exists(filename):
+			self.msg("File %s doesn't exist" % (filename))
 			return False
-		if len(res['sha1'])>0 and res['sha1']!=hashes['sha1']:
+		hashes = self.hash(filename)
+		if res['md5']!=None  and res['md5']!=hashes['md5']:
 			return False
-		if len(res['sha256'])>0 and res['sha256']!=hashes['sha256']:
+		if res['sha1']!=None and res['sha1']!=hashes['sha1']:
+			return False
+		if res['sha256']!=None and res['sha256']!=hashes['sha256']:
 			return False
 		UpqDB().query("UPDATE file set md5='%s', sha1='%s', sha256='%s' WHERE fid=%d" %
 			(hashes['md5'], hashes['sha1'], hashes['sha256'], fid))
