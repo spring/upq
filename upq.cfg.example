@@ -126,3 +126,4 @@ concurrent = 1
 rpcurl = http://springfiles.com/xmlrpc.php
 username = upq
 password = upq
+maxrequests = 10

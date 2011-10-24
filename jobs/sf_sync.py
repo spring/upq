@@ -59,6 +59,24 @@ class Sf_sync(UpqJob):
 			data[value]=res[value]
 		return data
 
+
+	def rpc_call_sync(self, proxy, username, password, data):
+		"""
+			make the xml-rpc call
+		"""
+		try:
+			#TODO: limit count of requests ~3000 at once at start are to many...
+			rpcres=proxy.springfiles.sync(username, password, data)
+			for rpc in rpcres:
+				fid=rpc['fid']
+				url=rpc['url'] #description url
+				#UpqDB().query("UPDATE .... =%s WHERE fid=%d" % (url, fid))
+		except Exception, e:
+			self.msg("xmlrpc  springfiles.sync() error: %s" %(e))
+			return False
+		self.logger.debug("received from springfiles: %s", rpcres) # fixme: res should contain a http url with the created node, it should be stored to the file
+
+
 	def run(self):
 		if self.jobdata.has_key('fid'): #fid set, add change to db
 			fid=int(self.jobdata['fid'])
@@ -86,28 +104,35 @@ class Sf_sync(UpqJob):
 				except Exception, e:
 						self.msg("xmlrpc springfiles.getlastsyncid() error: %s"%(e))
 						return False
-			results=UpqDB().query("SELECT fid, command FROM sf_sync WHERE sid>%d ORDER BY sid " %(sid)) #get all changes from db
+			results=UpqDB().query("SELECT sid, fid, command FROM sf_sync WHERE sid>%d ORDER BY sid " %(sid)) #get all changes from db
 			lastfid=-1
 			lastcmd=-1
-			for res in results:
+			requests = []
+			for res in results: #fixme: use yield
 				data = {}
-				data['fid']=res['fid']
 				if lastfid==res['fid'] and lastcmd==res['command']: #skip if the same command was already done before
 					continue
+
 				lastfid=res['fid']
 				lastcmd=res['command']
+
 				if res['command']==1: # delete
 					data['command']="delete"
 				elif res['command']==0: # update
-					data['metadata']=self.getmetadata(data['fid'])
+					metadata=self.getmetadata(res['fid'])
+					for name in metadata: #merge result into data dict
+						data[name]=metadata[name]
 					data['command']="update"
 				else:
 					self.logger.error("unknown command %d for fid %d", res['command'], res['fid'])
 					continue
-				try:
-					res=proxy.springfiles.sync(username, password, data)
-				except Exception, e:
-					self.msg("xmlrpc  springfiles.sync() error: %s" %(e))
-					return False
-				self.logger.debug(res) # fixme: res should contain a http url with the created node, it should be stored to the file
-		return True
+				data['fid']=res['fid']
+				data['sid']=res['sid']
+				requests.append(data)
+				if len(data)>self.jobcfg['maxrequests']: #more then maxrequests queued, flush them
+					if not self.rpc_call_sync(proxy, username, password, requests):
+						return False
+					requests = []
+			if len(requests)>0: #update remaining requests
+				res=self.rpc_call_sync(proxy, username, password, requests)
+			return res
