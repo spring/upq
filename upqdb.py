@@ -142,6 +142,11 @@ class UpqDB():
 			Column('ctime', TIMESTAMP(timezone=False)),
 			Column('start_time', TIMESTAMP(timezone=False)),
 			Column('end_time', TIMESTAMP(timezone=False)))
+		self.tables['sf_sync']=Table('sf_sync', self.meta,
+			Column('sid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
+			Column('command', INTEGER(display_width=10), nullable=False, autoincrement=False), #0=update 1=delete
+			Column('fid', INTEGER(display_width=10), nullable=False, autoincrement=False)) #file id which was changed
+
 		try:
 			self.meta.create_all(self.engine)
 		except:

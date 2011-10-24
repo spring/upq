@@ -46,7 +46,7 @@ enabled = true
 concurrent = 3
 # notify_fail =
 # notify_success =
-subjobs = movefile hash createtorrent extract_metadata upload
+subjobs = movefile hash createtorrent extract_metadata upload sf_sync
 
 [job archive_file]
 enabled = true
@@ -120,3 +120,9 @@ concurrent = 1
 enabled = true
 concurrent = 1
 
+[job sf_sync]
+enabled = true
+concurrent = 1
+rpcurl = http://springfiles.com/xmlrpc.php
+username = upq
+password = upq
