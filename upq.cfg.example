@@ -92,7 +92,7 @@ concurrent = 2
 
 [job extract_metadata]
 enabled = true
-concurrent = 2
+concurrent = 1
 unitsync=/home/abma/local/spring/master/lib/libunitsync.so
 ; directory where to move maps to, relative to datadir
 maps-path=maps
