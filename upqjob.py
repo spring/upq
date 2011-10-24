@@ -27,10 +27,12 @@ class UpqJob(object):
     def __init__(self, jobname, jobdata):
         self.jobname = jobname
         self.jobcfg  = UpqConfig().jobs[jobname] #settings from config-fule
-        if self.jobcfg.has_key('subjobs'):
+        if jobdata.has_key('subjobs'): # use runtime subjobs if set
+            jobdata['subjobs'] = jobdata['subjobs']
+        elif self.jobcfg.has_key('subjobs'): # next subjobs from config
             jobdata['subjobs'] = self.jobcfg['subjobs']
-        elif not jobdata.has_key('subjobs'):
-            jobdata['subjobs'] = []
+        else:
+            jobdata['subjobs'] = [] # no subjobs defined, initialize empty
         self.jobdata = jobdata #runtime parameters, these are stored into database and restored on re-run
         self.logger  = log.getLogger("upq")
         self.thread  = "T-none-0"
