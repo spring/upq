@@ -36,7 +36,7 @@ class New_file(UpqJob):
 		elif not 'fid' in self.jobdata:
 			self.msg("Either file or fid has to be set!")
 			return False
-		id=self.enqueue_job()
+		self.enqueue_job()
 		return True
 
 	def run(self):
@@ -58,6 +58,7 @@ class New_file(UpqJob):
 			self.msg("File alread known, Filename: %s Size: %d" % (res['filename'], res['size']))
 		else: # file doesn't exist in db, add it
 			filename=self.jobdata['file']
+			del self.jobdata['file']
 			filesize=os.path.getsize(filename)
 			if 'uid' in self.jobdata:
 				uid=self.jobdata['uid']

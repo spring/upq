@@ -5,3 +5,6 @@
 /.pydevproject
 /.settings
 /www/config.php
+/tmp
+/files
+/metadata
