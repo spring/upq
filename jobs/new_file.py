@@ -73,10 +73,5 @@ class New_file(UpqJob):
 				})
 			self.jobdata['fid']=fid
 			self.msg("Filename: %s Size: %d" % (filename, filesize))
-		self.append_job("upload") #reverse order
-		self.append_job("extract_metadata")
-		self.append_job("createtorrent")
-		self.append_job("hash")
-		self.append_job("movefile")
 		return True
 

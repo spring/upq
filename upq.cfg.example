@@ -44,8 +44,9 @@ enabled = true
 # number of max. concurrent executions of this job, 0 means the main server will
 # handle it syncroniously (connection blocking!)
 concurrent = 3
-#notify_fail =
-#notify_success =
+# notify_fail =
+# notify_success =
+subjobs = movefile hash createtorrent extract_metadata upload
 
 [job archive_file]
 enabled = true

@@ -110,6 +110,10 @@ class UpqConfig():
                     for name, value in self.config.items(section):
                         if name=="concurrent":
                             self.jobs[job]['concurrent'] = self.config.getint(section, "concurrent")
+                        elif name=="subjobs":
+                            subjobs=value.strip().split(" ")
+                            subjobs.reverse()
+                            self.jobs[job]['subjobs'] = subjobs
                         else:
                             self.jobs[job][name]=value
 
