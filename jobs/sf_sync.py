@@ -87,9 +87,15 @@ class Sf_sync(UpqJob):
 						self.msg("xmlrpc springfiles.getlastsyncid() error: %s"%(e))
 						return False
 			results=UpqDB().query("SELECT fid, command FROM sf_sync WHERE sid>%d ORDER BY sid " %(sid)) #get all changes from db
+			lastfid=-1
+			lastcmd=-1
 			for res in results:
 				data = {}
 				data['fid']=res['fid']
+				if lastfid==res['fid'] and lastcmd==res['command']: #skip if the same command was already done before
+					continue
+				lastfid=res['fid']
+				lastcmd=res['command']
 				if res['command']==1: # delete
 					data['command']="delete"
 				elif res['command']==0: # update
@@ -103,5 +109,5 @@ class Sf_sync(UpqJob):
 				except Exception, e:
 					self.msg("xmlrpc  springfiles.sync() error: %s" %(e))
 					return False
-				self.logger.debug(res)
+				self.logger.debug(res) # fixme: res should contain a http url with the created node, it should be stored to the file
 		return True
