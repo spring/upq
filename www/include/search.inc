@@ -65,6 +65,8 @@ function search($req){
 	_file_mirror_createquery($query,$vars, $logical,"t.tag LIKE BINARY '%s'", $req, array('tag'));
 	_file_mirror_createquery($query,$vars, $logical,"f.filename LIKE BINARY '%s'", $req, array('filename'));
 	_file_mirror_createquery($query,$vars, $logical,"c.name LIKE BINARY '%s'", $req, array('category'));
+	_file_mirror_createquery($query,$vars, $logical,"f.name LIKE BINARY '%s'", $req, array('name'));
+	_file_mirror_createquery($query,$vars, $logical,"f.version LIKE BINARY '%s'", $req, array('version'));
 	_file_mirror_createquery($query,$vars, $logical,"CONCAT(f.name,' ',f.version) LIKE BINARY '%s' OR f.name LIKE BINARY '%s'",$req,  array('springname','springname'));
 	if($query!="")
 		$query=" AND (".$query.")";
@@ -147,7 +149,6 @@ function search($req){
 
 		//additional metadata
 		$res[$i]['size']=intval($res[$i]['size']);
-//		$res[$i]['description']=_file_mirror_getlink($res[$i]['fid']);
 		if ($res[$i]['version']=="")
 			$res[$i]['springname']=$res[$i]['name'];
 		else
@@ -156,8 +157,5 @@ function search($req){
 		unset($res[$i]['path']);
 		unset($res[$i]['torrent_file']);
 	}
-	$count=count($res);
-	if ($count<>1)
-		watchdog("error in request: ", $req);
 	return $res;
 }
