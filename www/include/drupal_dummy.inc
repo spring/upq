@@ -98,6 +98,7 @@ function db_result($result) {
 
 function watchdog($msg, $arr=array()){
 	return;
+	print $msg;
 	if (sizeof($arr)>0)
 		print_r($arr);
 	echo "\n";
