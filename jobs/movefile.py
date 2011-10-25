@@ -16,34 +16,7 @@ import shutil
 
 class Movefile(UpqJob):
 
-	def moveFile(self, source , subdir, fid, status=1):
-		"""
-		move file to destination, makes path relative, updates db
-		source = absolute filename
-		prefix = UpqConfig().data['file']
-		subdir = games|maps (will be stored in db, too)
-		"""
-		if status==1: # see upqdb for status description
-			prefix=UpqConfig().paths['files']
-		elif status==3:
-			prefix=UpqConfig().paths['broken']
-		else:
-			self.logger.error("moveFile(): unknown status %d" % (status));
-			return False
-		filename=os.path.basename(source)
-		dstfile=os.path.join(prefix, subdir, filename)
-		if source!=dstfile:
-			if os.path.exists(dstfile):
-				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, filepath))
-				return False
-			shutil.move(source, dstfile)
-			UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%d" %(subdir,status, filename, fid))
-			self.logger.debug("moved file to (abs)%s %s:(rel)%s" %(source, prefix,subdir))
-		try:
-			os.chmod(dstfile, int("0444",8))
-		except OSError:
-			pass
-		return True
+
 	def run(self):
 		"""
 			moves a file to a different directory
@@ -79,5 +52,20 @@ class Movefile(UpqJob):
 		if not os.path.exists(filename):
 			self.logger.error("File doesn't exist: %s" % (filename));
 			return False
-		return self.moveFile(filename, subdir, fid, status)
-
+		source=filename
+		filename=os.path.basename(source)
+		dstfile=os.path.join(prefix, subdir, filename)
+		if source!=dstfile:
+			if os.path.exists(dstfile):
+				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, filepath))
+				return False
+			shutil.move(source, dstfile)
+			UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%d" %(subdir,status, filename, fid))
+			self.logger.debug("moved file to (abs)%s %s:(rel)%s" %(source, prefix,subdir))
+		elif filename!=source: #file is already in the destination dir, make filename relative
+			UpqDB().query("UPDATE file SET filename='%s' WHERE fid=%d" %(filename, fid))
+		try:
+			os.chmod(dstfile, int("0444",8))
+		except OSError:
+			pass
+		return True
