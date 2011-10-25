@@ -68,11 +68,8 @@ class Sf_sync(UpqJob):
 		"""
 		try:
 			rpcres=proxy.springfiles.sync(username, password, data)
-			self.logger.debug("called springfiles.sync with: %s" %(data))
-			for rpc in rpcres:
-				fid=rpc['fid']
-				url=rpc['url'] #description url
-				#UpqDB().query("UPDATE .... =%s WHERE fid=%d" % (url, fid)) ##TODO
+			for rpc in rpcres: #set description url received from springfiles
+				UpqDB().query("UPDATE file SET descriptionuri='%s' WHERE fid=%d" % (rpc['url'], rpc['fid']))
 		except Exception, e:
 			self.msg("xmlrpc  springfiles.sync() error: %s" %(e))
 			return False

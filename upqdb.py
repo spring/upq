@@ -104,6 +104,7 @@ class UpqDB():
 			Column('version', VARCHAR(length=256)), #spring version of this file
 			Column('cid', INTEGER(display_width=11)), #category of this file: game/map
 			Column('sdp', VARCHAR(length=1024)), #for this file
+			Column('descriptionuri', VARCHAR(length=1024)),
 			Column('metadata', TEXT()))
 		self.tables['image_file']=Table('image_file', self.meta,
 			Column('iid', INTEGER(display_width=10), nullable=False), #id of the image
