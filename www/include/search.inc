@@ -22,7 +22,7 @@ function _file_mirror_createquery(&$query, &$vars, $logical,$condition, $request
 	if($query=="") $logical="";
 
 	$query.=" ".$logical." ".$condition;
-	$data=str_replace("_","\_",$data); // escape _ as it is a wildcard in sql
+	$data=str_replace(array("_", "?", "*"),array("\_", "_", "%"),$data); // escape _ as it is a wildcard in sql
 	foreach($data as $val) //append values to vars (will be used to replace %s/%d in mysql query)
 		array_push($vars, $val);
 }
@@ -67,7 +67,7 @@ function search($req){
 	_file_mirror_createquery($query,$vars, $logical,"c.name LIKE BINARY '%s'", $req, array('category'));
 	_file_mirror_createquery($query,$vars, $logical,"f.name LIKE BINARY '%s'", $req, array('name'));
 	_file_mirror_createquery($query,$vars, $logical,"f.version LIKE BINARY '%s'", $req, array('version'));
-	_file_mirror_createquery($query,$vars, $logical,"CONCAT(f.name,' ',f.version) LIKE BINARY '%s' OR f.name LIKE BINARY '%s'",$req,  array('springname','springname'));
+	_file_mirror_createquery($query,$vars, $logical,"( CONCAT(f.name,' ',f.version) LIKE BINARY '%s' OR f.name LIKE BINARY '%s' )",$req,  array('springname','springname'));
 	if($query!="")
 		$query=" AND (".$query.")";
 	$result=db_query("SELECT
