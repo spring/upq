@@ -55,7 +55,7 @@ class New_file(UpqJob):
 				self.msg("fid not found in db!")
 				return False
 			fid=self.jobdata['fid']
-			self.msg("File alread known, Filename: %s Size: %d" % (res['filename'], res['size']))
+			self.msg("File already known, Filename: %s Size: %d" % (res['filename'], res['size']))
 		else: # file doesn't exist in db, add it
 			filename=self.jobdata['file']
 			del self.jobdata['file']
