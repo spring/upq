@@ -91,45 +91,45 @@ class Sf_sync(UpqJob):
 					return False
 			self.updatefile(fid, command)
 
-			username=self.jobcfg['username']
-			password=self.jobcfg['password']
-			proxy = ServerProxy(self.jobcfg['rpcurl'])
-			if self.jobdata.has_key('sid'): #sid set, update to springfiles requested
-				sid=int(self.jobdata['sid'])
-			else: #sid not set, request from springfiles
-				try:
-					sid=int(proxy.springfiles.getlastsyncid(username, password))
-					self.logger.debug("Fetched sid from springfiles: %d" % (sid));
-				except Exception, e:
-						self.msg("xmlrpc springfiles.getlastsyncid() error: %s"%(e))
-						return False
-			results=UpqDB().query("SELECT sid, fid, command FROM sf_sync WHERE sid>%d ORDER BY sid " %(sid)) #get all changes from db
-			lastfid=-1
-			lastcmd=-1
-			requests = []
-			for res in results: #fixme: use yield
-				data = {}
-				if lastfid==res['fid'] and lastcmd==res['command']: #skip if the same command was already done before
-					continue
+		username=self.jobcfg['username']
+		password=self.jobcfg['password']
+		proxy = ServerProxy(self.jobcfg['rpcurl'])
+		if self.jobdata.has_key('sid'): #sid set, update to springfiles requested
+			sid=int(self.jobdata['sid'])
+		else: #sid not set, request from springfiles
+			try:
+				sid=int(proxy.springfiles.getlastsyncid(username, password))
+				self.logger.debug("Fetched sid from springfiles: %d" % (sid));
+			except Exception, e:
+					self.msg("xmlrpc springfiles.getlastsyncid() error: %s"%(e))
+					return False
+		results=UpqDB().query("SELECT sid, fid, command FROM sf_sync WHERE sid>%d ORDER BY sid " %(sid)) #get all changes from db
+		lastfid=-1
+		lastcmd=-1
+		requests = []
+		for res in results: #fixme: use yield
+			data = {}
+			if lastfid==res['fid'] and lastcmd==res['command']: #skip if the same command was already done before
+				continue
 
-				lastfid=res['fid']
-				lastcmd=res['command']
+			lastfid=res['fid']
+			lastcmd=res['command']
 
-				if res['command']==1: # delete
-					data['command']="delete"
-				elif res['command']==0: # update
-					data['metadata']=self.getmetadata(res['fid'])
-					data['command']="update"
-				else:
-					self.logger.error("unknown command %d for fid %d", res['command'], res['fid'])
-					continue
-				data['fid']=res['fid']
-				data['sid']=res['sid']
-				requests.append(data)
-				if len(data)>self.jobcfg['maxrequests']: #more then maxrequests queued, flush them
-					if not self.rpc_call_sync(proxy, username, password, requests):
-						return False
-					requests = []
-			if len(requests)>0: #update remaining requests
-				 return self.rpc_call_sync(proxy, username, password, requests)
-			return True
+			if res['command']==1: # delete
+				data['command']="delete"
+			elif res['command']==0: # update
+				data['metadata']=self.getmetadata(res['fid'])
+				data['command']="update"
+			else:
+				self.logger.error("unknown command %d for fid %d", res['command'], res['fid'])
+				continue
+			data['fid']=res['fid']
+			data['sid']=res['sid']
+			requests.append(data)
+			if len(data)>self.jobcfg['maxrequests']: #more then maxrequests queued, flush them
+				if not self.rpc_call_sync(proxy, username, password, requests):
+					return False
+				requests = []
+		if len(requests)>0: #update remaining requests
+			 return self.rpc_call_sync(proxy, username, password, requests)
+		return True
