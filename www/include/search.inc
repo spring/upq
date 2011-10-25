@@ -5,28 +5,26 @@
 * @param vars data for query, for example "Zero-K v0.51"
 * @param logical how the queries are assigned, AND/OR
 * @param condition SQL condition, for example "LIKE filename '%s'" or "filename='%s'"
-* @param data data from the xml-rpc request, if empty string, then don't change query + vars
+* @param request the request array
+* @param values values that are used from the request array (i.e.  $request[$values[0]], $request[$values[1], ...])
 */
 
-function _file_mirror_createquery(&$query, &$vars, $logical,$condition, $data){
-	if($query=="") $logical="";
-	if(!is_array($data)){
-		if (strlen($data)<=0) //don't use as condition, if string is empty
+function _file_mirror_createquery(&$query, &$vars, $logical,$condition, $request, $values=array()){
+	$data=array();
+	foreach($values as $val){ //if values are fine, push into data array
+		if (!array_key_exists($val, $request)) //check if key exists in request
 			return;
-	} else {
-		while(list($name, $value)=each($data)){ //don't use as condition, if one string is empty
-			if (strlen($value)<=0){
-				return;
-			}
-		}
+		if (strlen($request[$val])<=0) //empty values are ignored
+			return;
+		array_push($data, $request[$val]);
 	}
+
+	if($query=="") $logical="";
+
 	$query.=" ".$logical." ".$condition;
-	$data=str_replace("_","\_",$data);
-	if (is_array($data)){
-		foreach($data as $val)
-			array_push($vars, $val);
-	}else
-		array_push($vars, $data);
+	$data=str_replace("_","\_",$data); // escape _ as it is a wildcard in sql
+	foreach($data as $val) //append values to vars (will be used to replace %s/%d in mysql query)
+		array_push($vars, $val);
 }
 
 function _file_mirror_gettorrent($filename){
@@ -64,14 +62,10 @@ function search($req){
 	}else{
 		$logical="AND";
 	}
-	if (array_key_exists('tag', $req))
-		_file_mirror_createquery($query,$vars, $logical,'t.tag LIKE BINARY "%s"', $req['tag']);
-	if (array_key_exists('filename', $req))
-		_file_mirror_createquery($query,$vars, $logical,'f.filename LIKE BINARY "%s"', $req['filename']);
-	if (array_key_exists('category', $req))
-		_file_mirror_createquery($query,$vars, $logical,'c.name LIKE BINARY "%s"', $req['category']);
-	if (array_key_exists('springname', $req))
-		_file_mirror_createquery($query,$vars, $logical,"CONCAT(f.name,' ',f.version) LIKE BINARY '%s' OR f.name LIKE BINARY '%s'", array($req['springname'],$req['springname']));
+	_file_mirror_createquery($query,$vars, $logical,"t.tag LIKE BINARY '%s'", $req, array('tag'));
+	_file_mirror_createquery($query,$vars, $logical,"f.filename LIKE BINARY '%s'", $req, array('filename'));
+	_file_mirror_createquery($query,$vars, $logical,"c.name LIKE BINARY '%s'", $req, array('category'));
+	_file_mirror_createquery($query,$vars, $logical,"CONCAT(f.name,' ',f.version) LIKE BINARY '%s' OR f.name LIKE BINARY '%s'",$req,  array('springname','springname'));
 	if($query!="")
 		$query=" AND (".$query.")";
 	$result=db_query("SELECT
@@ -85,7 +79,8 @@ function search($req){
 		LOWER(c.name) as category,
 		f.size as size,
 		f.timestamp as timestamp,
-		f.torrent as torrent_file
+		f.torrent as torrent_file,
+		f.descriptionuri as description
 		FROM file as f
 		LEFT JOIN categories as c ON f.cid=c.cid
 		LEFT JOIN mirror_file as m ON f.fid=m.fid
