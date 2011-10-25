@@ -379,7 +379,7 @@ class Extract_metadata(UpqJob):
 		res['Width'] = usync.GetMapWidth(idx)
 
 		res['Gravity'] = usync.GetMapGravity(idx)
-		res['FileName'] = usync.GetMapFileName(idx)
+		res['MapFileName'] = usync.GetMapFileName(idx)
 		res['MapMinHeight'] = usync.GetMapMinHeight(mapname)
 		res['MapMaxHeight'] = usync.GetMapMaxHeight(mapname)
 
