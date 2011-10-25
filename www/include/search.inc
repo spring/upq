@@ -10,9 +10,16 @@
 
 function _file_mirror_createquery(&$query, &$vars, $logical,$condition, $data){
 	if($query=="") $logical="";
-
-	if($data=="")
-		return;
+	if(!is_array($data)){
+		if (strlen($data)<=0) //don't use as condition, if string is empty
+			return;
+	} else {
+		while(list($name, $value)=each($data)){ //don't use as condition, if one string is empty
+			if (strlen($value)<=0){
+				return;
+			}
+		}
+	}
 	$query.=" ".$logical." ".$condition;
 	$data=str_replace("_","\_",$data);
 	if (is_array($data)){
