@@ -65,17 +65,17 @@ class Sf_sync(UpqJob):
 			make the xml-rpc call
 		"""
 		try:
-			#TODO: limit count of requests ~3000 at once at start are to many...
 			rpcres=proxy.springfiles.sync(username, password, data)
+			self.logger.debug("called springfiles.sync with: %s" %(data))
 			for rpc in rpcres:
 				fid=rpc['fid']
 				url=rpc['url'] #description url
-				#UpqDB().query("UPDATE .... =%s WHERE fid=%d" % (url, fid))
+				#UpqDB().query("UPDATE .... =%s WHERE fid=%d" % (url, fid)) ##TODO
 		except Exception, e:
 			self.msg("xmlrpc  springfiles.sync() error: %s" %(e))
 			return False
-		self.logger.debug("received from springfiles: %s", rpcres) # fixme: res should contain a http url with the created node, it should be stored to the file
-
+		self.logger.debug("received from springfiles: %s", rpcres)
+		return True
 
 	def run(self):
 		if self.jobdata.has_key('fid'): #fid set, add change to db
@@ -119,9 +119,7 @@ class Sf_sync(UpqJob):
 				if res['command']==1: # delete
 					data['command']="delete"
 				elif res['command']==0: # update
-					metadata=self.getmetadata(res['fid'])
-					for name in metadata: #merge result into data dict
-						data[name]=metadata[name]
+					data['metadata']=self.getmetadata(res['fid'])
 					data['command']="update"
 				else:
 					self.logger.error("unknown command %d for fid %d", res['command'], res['fid'])
@@ -134,5 +132,5 @@ class Sf_sync(UpqJob):
 						return False
 					requests = []
 			if len(requests)>0: #update remaining requests
-				res=self.rpc_call_sync(proxy, username, password, requests)
-			return res
+				 return self.rpc_call_sync(proxy, username, password, requests)
+			return True
