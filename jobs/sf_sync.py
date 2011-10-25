@@ -17,6 +17,7 @@ from upqdb import UpqDB
 from upqconfig import UpqConfig
 from xmlrpclib import ServerProxy
 
+import json
 import os
 
 class Sf_sync(UpqJob):
@@ -53,10 +54,11 @@ class Sf_sync(UpqJob):
 		results=UpqDB().query("SELECT CONCAT(m.url_prefix, f.path) as url FROM mirror_file f LEFT JOIN mirror m ON f.mid=m.mid WHERE f.fid=%d" % (fid))
 		for res in results:
 			data['mirror'].append(res['url'])
-		results=UpqDB().query("SELECT f.filename, f.size, f.timestamp, f.md5, f.name, f.version, c.name as category FROM file f LEFT JOIN categories c ON f.cid=c.cid WHERE f.fid=%d" %(fid))
+		results=UpqDB().query("SELECT f.filename, f.size, f.timestamp, f.md5, f.name, f.version, c.name as category, f.metadata FROM file f LEFT JOIN categories c ON f.cid=c.cid WHERE f.fid=%d" %(fid))
 		res=results.first()
 		for value in ["filename", "size", "timestamp", "md5", "name", "version", "category"]:
 			data[value]=res[value]
+		data['metadata']=json.loads(res['metadata'])
 		return data
 
 

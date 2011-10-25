@@ -23,6 +23,7 @@ import base64
 import tempfile
 import gzip
 import hashlib
+import json
 
 unitsyncpath=os.path.join(UpqConfig().paths['jobs_dir'],'unitsync')
 sys.path.append(unitsyncpath)
@@ -118,20 +119,21 @@ class Extract_metadata(UpqJob):
 				self.msg("Added %s '%s' version '%s' to the mirror-system" % (data['Type'], data['Name'], data['Version']))
 			except UpqDBIntegrityError:
 				pass
-		UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s WHERE fid=%s" %(
+		metadata=data.copy()
+		del metadata['Depends'] #remove redundant entries
+		del metadata['sdp']
+		del metadata['Version']
+		del metadata['Name']
+		metadata=json.dumps(metadata)
+		metadata=metadata.replace("'","\\'")
+		UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s' WHERE fid=%s" %(
 				data['Name'],
 				data['Version'],
 				data['sdp'],
 				self.getCid(data['Type']),
+				metadata,
 				fid
 			))
-		if data['Type']=="Map":
-			self.logger.debug("Updating start positions")
-			UpqDB().query("DELETE from file_startpos WHERE fid=%d" % (fid))
-			id=0
-			for pos in data['StartPos']:
-				UpqDB().insert("file_startpos", { "fid": fid, "id":id, "x": pos['x'], "z": pos['z'] })
-				id=id+1
 		self.msg("Updated %s '%s' version '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version']))
 
 	def run(self):

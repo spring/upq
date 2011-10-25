@@ -103,8 +103,8 @@ class UpqDB():
 			Column('name', VARCHAR(length=256)), #spring name of this file
 			Column('version', VARCHAR(length=256)), #spring version of this file
 			Column('cid', INTEGER(display_width=11)), #category of this file: game/map
-			Column('sdp', VARCHAR(length=1024))) #for this file
-
+			Column('sdp', VARCHAR(length=1024)), #for this file
+			Column('metadata', TEXT()))
 		self.tables['image_file']=Table('image_file', self.meta,
 			Column('iid', INTEGER(display_width=10), nullable=False), #id of the image
 			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
@@ -128,11 +128,6 @@ class UpqDB():
 			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=False),
 			Column('depends_fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=False), #id of other file, if null(couldn't be resolved), use depends_string
 			Column('depends_string', VARCHAR(length=64), nullable=False))
-		self.tables['file_startpos']=Table('file_startpos', self.meta, #startpos of a file with category=map
-			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=False),
-			Column('id', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=False),
-			Column('x', INTEGER(display_width=10), nullable=False),
-			Column('z', INTEGER(display_width=10), nullable=False))
 		self.tables['upqueue']=Table('upqueue', self.meta,
 			Column('jobid', INTEGER(display_width=11), primary_key=True, nullable=False, autoincrement=True),
 			Column('jobname', VARCHAR(length=255), nullable=False),
