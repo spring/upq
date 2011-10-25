@@ -25,7 +25,7 @@ class New_file(UpqJob):
 	def check(self):
 		if 'file' in self.jobdata :
 			self.jobdata['filename']=os.path.basename(self.jobdata['file'])
-			result=UpqDB().query("SELECT * from file where filename LIKE '%s'" % (self.jobdata['filename']))
+			result=UpqDB().query("SELECT * from file where filename LIKE '%s'" % ('%%'+self.jobdata['filename']))
 			res=result.first()
 			if res!=None:
 				self.msg("File %s already exists: fid: %s"%(self.jobdata['file'], res['fid']))
