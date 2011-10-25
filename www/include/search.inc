@@ -45,7 +45,6 @@ function _get_metadata($fid){
 
 function search($req){
 	global $config;
-
 	if (!is_array($req))
 		return "Invalid request";
 	$res="";

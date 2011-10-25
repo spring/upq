@@ -25,8 +25,8 @@ function main($argv){
 if (array_key_exists('argv', $_SERVER))
 	main($_SERVER['argv']);
 else
-	if ($_SERVER['REQUEST_METHOD']=="POST"){
-//		json_search($callbacks); //TODO FIXME
+	if ($_SERVER['REQUEST_METHOD']=="GET"){
+		echo json_encode(json_search($_REQUEST));
 	} else {
 		echo file_get_contents("readme.html");
 		return;
