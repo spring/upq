@@ -58,7 +58,10 @@ class Sf_sync(UpqJob):
 		res=results.first()
 		for value in ["filename", "size", "timestamp", "md5", "name", "version", "category"]:
 			data[value]=res[value]
-		data['metadata']=json.loads(res['metadata'])
+		if res['metadata']!=None and len(res['metadata'])>0:
+			data['metadata']=json.loads(res['metadata'])
+		else:
+			data['metadata']=[]
 		return data
 
 
@@ -103,28 +106,38 @@ class Sf_sync(UpqJob):
 			except Exception, e:
 					self.msg("xmlrpc springfiles.getlastsyncid() error: %s"%(e))
 					return False
-		results=UpqDB().query("SELECT sid, fid, command FROM sf_sync WHERE sid>%d ORDER BY sid " %(sid)) #get all changes from db
+		if sid>0:
+			results=UpqDB().query("SELECT fid, command FROM sf_sync WHERE sid>%d ORDER BY sid " %(sid)) #get all changes from db
+		else:
+			results=UpqDB().query("SELECT fid FROM file WHERE status=1 ORDER BY fid") #full sync, get all fids
+			self.logger.debug("springfiles returned %d, doing full sync" % (sid))
 		lastfid=-1
 		lastcmd=-1
 		requests = []
+		maxsid=UpqDB().query("SELECT MAX(sid) as sid FROM sf_sync").first()['sid']
 		for res in results: #fixme: use yield
 			data = {}
-			if lastfid==res['fid'] and lastcmd==res['command']: #skip if the same command was already done before
-				continue
 
-			lastfid=res['fid']
-			lastcmd=res['command']
-
-			if res['command']==1: # delete
-				data['command']="delete"
-			elif res['command']==0: # update
-				data['metadata']=self.getmetadata(res['fid'])
+			if sid==0: #full sync, all commands are update
 				data['command']="update"
+				data['metadata']=self.getmetadata(res['fid'])
 			else:
-				self.logger.error("unknown command %d for fid %d", res['command'], res['fid'])
-				continue
+				if lastfid==res['fid'] and lastcmd==res['command']: #skip if the same command was already done before
+					continue
+				lastfid=res['fid']
+				lastcmd=data['command']
+				if res['command']==1: # delete
+					data['command']="delete"
+				elif res['command']==0: # update
+					data['metadata']=self.getmetadata(res['fid'])
+					data['command']="update"
+				else:
+					self.logger.error("unknown command %d for fid %d", res['command'], res['fid'])
+					continue
+
+			self.logger.debug("adding sid %d to requests" % res['fid']);
 			data['fid']=res['fid']
-			data['sid']=res['sid']
+			data['sid']=maxsid
 			requests.append(data)
 			if len(data)>self.jobcfg['maxrequests']: #more then maxrequests queued, flush them
 				if not self.rpc_call_sync(proxy, username, password, requests):
