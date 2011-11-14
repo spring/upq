@@ -47,4 +47,6 @@ class Test(UpqJob):
 #		sleep(random.uniform (0, 3))
 #		pprint.pprint("%d - %s - test ****" % (self.jobid, self.thread))
 		self.msg("finished '%s'" % self.jobdata)
+		if self.jobdata.has_key('fail'): return False
+
 		return self.jobdata

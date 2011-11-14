@@ -18,6 +18,7 @@ import operator
 import quopri
 import email
 import log
+import copy
 import upqconfig
 from upqjob import UpqJob
 from upqqueuemngr import UpqQueueMngr
@@ -37,16 +38,20 @@ class Notify(UpqJob):
                 log.getLogger().debug("notify syslog")
                 self.syslog(self.jobdata['success'], msg)
             elif key == "retry":
-                log.getLogger().debug("notify retry, value='%s'", value)
-                #job = self.jobdata['job']
-                job = UpqJob()
-                job.__dict__ = self.jobdata['job']
-                try:
-                    job.retry += 1
-                except AttributeError:
-                    job.retry = 1
-                if not job.retry > value:
-                    UpqQueueMngr().enqueue_job(job)
+                log.getLogger().debug("notify retry:%s", value)
+                if self.jobdata['job']['retries'] >= int(value):
+                    log.getLogger().info("Tried %d times, no more retries.", self.jobdata['job']['retries'])
+                    return False
+                else:
+                    # recreate job
+                    retry_job = UpqQueueMngr().new_job(self.jobdata['job']['jobname'], self.jobdata['job']['jobdata'])
+                    for key in self.jobdata['job'].keys():
+                        # copy data to allow release of old job resources
+                        setattr(retry_job, key, copy.deepcopy(self.jobdata['job'][key]))
+
+                    retry_job.retries += 1
+                    log.getLogger().info("retrying job '%s' for the %d. time", retry_job.jobname, retry_job.retries)
+                    retry_job.jobid = UpqQueueMngr().enqueue_job(retry_job)
         return True
 
     def success(self, jobname, msg):
