@@ -64,7 +64,7 @@ class UpqJob(object):
         """
         Put this job into the active queue
         """
-        self.jobid = UpqQueueMngr().enqueue_job(self)
+        UpqQueueMngr().enqueue_job(self)
 
     def enqueue_newjob(self, jobname, params):
         """
@@ -72,7 +72,7 @@ class UpqJob(object):
             { "mail": "user@server.com",user1@server.com", "syslog" }
         """
         job=UpqQueueMngr().new_job(jobname, params)
-        self.jobid = UpqQueueMngr().enqueue_job(job)
+        UpqQueueMngr().enqueue_job(job)
 
     def __setstate__(self, dict):
         # this is used to unpickle a job

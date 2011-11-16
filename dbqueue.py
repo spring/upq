@@ -36,7 +36,7 @@ class DBQueue(Queue, object):
         upqdb.UpqDB().query(query)
         super(DBQueue, self).task_done()
 
-    """ returns id of job """
+    """ returns id of job and sets job.jobid to it """
     def put(self, job, block=True, timeout=None):
         if job.jobid == -1:
             # add job to DB in state "new"

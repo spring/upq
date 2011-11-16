@@ -51,7 +51,7 @@ class Notify(UpqJob):
 
                     retry_job.retries += 1
                     log.getLogger().info("retrying job '%s' for the %d. time", retry_job.jobname, retry_job.retries)
-                    retry_job.jobid = UpqQueueMngr().enqueue_job(retry_job)
+                    UpqQueueMngr().enqueue_job(retry_job)
         return True
 
     def success(self, jobname, msg):
