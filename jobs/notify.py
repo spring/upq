@@ -19,6 +19,7 @@ import quopri
 import email
 import log
 import copy
+import time
 import upqconfig
 from upqjob import UpqJob
 from upqqueuemngr import UpqQueueMngr
@@ -38,20 +39,23 @@ class Notify(UpqJob):
                 log.getLogger().debug("notify syslog")
                 self.syslog(self.jobdata['success'], msg)
             elif key == "retry":
-                log.getLogger().debug("notify retry:%s", value)
-                if self.jobdata['job']['retries'] >= int(value):
-                    log.getLogger().info("Tried %d times, no more retries.", self.jobdata['job']['retries'])
-                    return False
-                else:
-                    # recreate job
-                    retry_job = UpqQueueMngr().new_job(self.jobdata['job']['jobname'], self.jobdata['job']['jobdata'])
-                    for key in self.jobdata['job'].keys():
-                        # copy data to allow release of old job resources
-                        setattr(retry_job, key, copy.deepcopy(self.jobdata['job'][key]))
-
-                    retry_job.retries += 1
-                    log.getLogger().info("retrying job '%s' for the %d. time", retry_job.jobname, retry_job.retries)
-                    UpqQueueMngr().enqueue_job(retry_job)
+                self._retrywait(value, 0)
+            elif key == "retrywait":
+                try:
+                    # value looks like this:
+                    # retries|time e.g.: 3|1h  or  4|30m  or  1|10s
+                    tries,waittime = value.split('|')
+                    tries = int(tries)
+                    mul1  = int(waittime[:-1])
+                    mul2 = waittime[-1:]
+                    if    mul2 == "s": multi = 1
+                    elif  mul2 == "m": multi = 60
+                    elif  mul2 == "h": multi = 3600
+                    else: raise Exception()
+                except:
+                    log.getLogger().error("notify retrywait:%s", value)
+                    raise ValueError("retrywait -> tries|time -> int|int<s|m|h>")
+                self._retrywait(tries, mul1*multi)
         return True
 
     def success(self, jobname, msg):
@@ -83,3 +87,23 @@ class Notify(UpqJob):
 
     def syslog(self, err, msg):
         syslog.syslog(msg)
+
+    def _retrywait(self, tries, waittime):
+        """
+        redo job 'tries' (int) times, waiting 'waittime' (int) seconds before each run
+        """
+        if waittime: log.getLogger().info("Waiting %d seconds before retry.", waittime)
+        time.sleep(waittime)
+        if self.jobdata['job']['retries'] >= tries:
+                    log.getLogger().info("Tried %d times, no more retries.", self.jobdata['job']['retries'])
+                    return False
+        else:
+            # recreate job
+            retry_job = UpqQueueMngr().new_job(self.jobdata['job']['jobname'], self.jobdata['job']['jobdata'])
+            for key in self.jobdata['job'].keys():
+                # copy data to allow release of old job resources
+                setattr(retry_job, key, copy.deepcopy(self.jobdata['job'][key]))
+
+            retry_job.retries += 1
+            log.getLogger().info("retrying job '%s' for the %d. time", retry_job.jobname, retry_job.retries)
+            UpqQueueMngr().enqueue_job(retry_job)
