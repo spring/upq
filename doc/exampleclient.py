@@ -8,7 +8,7 @@ if len(sys.argv) < 2:
 	print "Usage: "+sys.argv[0]+" FilenameToSearchFor"
 	exit(0)
 
-proxy = ServerProxy('http://localhost/upq/xmlrpc.php')
+proxy = ServerProxy('http://springfiles.com/xmlrpc.php')
 searchstring = {
 #	"category" : "Spring Maps",
 	"logical" : "or",
