@@ -118,7 +118,7 @@ function search($req){
 			}
 		}
 		//search + add mirrors to file
-		$result=db_query('SELECT CONCAT(m.url_prefix,"/",f.path) as url
+		$result=db_query('SELECT CONCAT(m.url_prefix,"/",mf.path) as url
 			FROM mirror_file as mf
 			LEFT JOIN mirror as m ON mf.mid=m.mid
 			LEFT JOIN file as f ON f.fid=mf.fid
