@@ -24,7 +24,7 @@ import tempfile
 import gzip
 import hashlib
 import json
-
+import gc
 unitsyncpath=os.path.join(UpqConfig().paths['jobs_dir'],'unitsync')
 sys.path.append(unitsyncpath)
 
@@ -143,6 +143,7 @@ class Extract_metadata(UpqJob):
 		self.msg("Updated %s '%s' version '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version']))
 
 	def run(self):
+		gc.collect()
 		fid=int(self.jobdata['fid'])
 		results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % fid)
 		res=results.first()
@@ -258,6 +259,7 @@ class Extract_metadata(UpqJob):
 			im.save(tmp)
 			shutil.move(tmp,outfile)
 			self.logger.debug("[created] " +outfile +" ok")
+		del data
 
 	def dumpmap(self, usync, springname, outpath, filename, idx):
 		metalmap = outpath + '/' + filename + ".metalmap" + ".jpg"
