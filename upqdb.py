@@ -12,7 +12,7 @@
 import log
 import module_loader
 
-from sqlalchemy import create_engine, Index, Table, Column, Integer, String,DateTime,PickleType, MetaData, ForeignKey, Sequence
+from sqlalchemy import create_engine, Index, Table, Column, Integer, String,DateTime,PickleType, MetaData, ForeignKey, Sequence, UniqueConstraint
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import insert
 from sqlalchemy.exc import IntegrityError
@@ -87,7 +87,8 @@ class UpqDB():
 			Column('mid', INTEGER(display_width=4)), # mirror id
 			Column('path', VARCHAR(length=64)), # relative to (mfid.url_prefix) path
 			Column('lastcheck', DATETIME(timezone=False)), # last time checksum/existence was checked
-			Column('status', INTEGER(display_width=4))) # 0=inactive, 1 = active, 2 = marked for recheck, 3 = broken
+			Column('status', INTEGER(display_width=4)), # 0=inactive, 1 = active, 2 = marked for recheck, 3 = broken
+			UniqueConstraint('fid', 'mid'))
 		self.tables['file']=Table('file', self.meta, #all known files
 			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True), #primary key of file
 			Column('uid', INTEGER(display_width=10), nullable=False), # owner uid of file
@@ -97,13 +98,13 @@ class UpqDB():
 			Column('status', INTEGER(display_width=11), nullable=False), # 0=inactive, 1 = active, 2 = marked for recheck, 3 = broken
 			Column('timestamp', TIMESTAMP(timezone=False)),
 			Column('torrent', VARCHAR(length=64)), # path to torrent file
-			Column('md5', CHAR(length=32)),
+			Column('md5', CHAR(length=32), unique=True),
 			Column('sha1', CHAR(length=40)),
 			Column('sha256', CHAR(length=64)),
 			Column('name', VARCHAR(length=256)), #spring name of this file
 			Column('version', VARCHAR(length=256)), #spring version of this file
 			Column('cid', INTEGER(display_width=11)), #category of this file: game/map
-			Column('sdp', VARCHAR(length=1024)), #for this file
+			Column('sdp', VARCHAR(length=32),unique=True), #for this file
 			Column('descriptionuri', VARCHAR(length=1024)),
 			Column('metadata', TEXT()))
 		self.tables['image_file']=Table('image_file', self.meta,
