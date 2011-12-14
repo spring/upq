@@ -124,8 +124,14 @@ class Extract_metadata(UpqJob):
 		del metadata['sdp']
 		del metadata['Version']
 		del metadata['Name']
-		metadata=json.dumps(metadata)
-		metadata=metadata.replace("'","\\'")
+		try:
+			metadata=json.dumps(metadata)
+			metadata=metadata.replace("'","\\'")
+			metadata=metadata.replace("%", "%%")
+		except:	
+			metadata=""
+			self.msg("error encoding metadata")
+			pass
 		UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s' WHERE fid=%s" %(
 				data['Name'],
 				data['Version'],
@@ -180,11 +186,7 @@ class Extract_metadata(UpqJob):
 			gamearchivecount=usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath)
 			moveto=self.jobcfg['games-path']
-		if version=="0.82.7":
-			data['sdp']=""
-			self.logger.error("Incompatible Spring unitsync.dll detected, not extracting sdp name");
-		else:
-			data['sdp']= self.getSDPName(usync, os.path.join("games", filename))
+		data['sdp']= self.getSDPName(usync, os.path.join("games", filename))
 		self.insertData(data, fid)
 		self.append_job("movefile", {"subdir": moveto})
 		err=usync.GetNextError()
