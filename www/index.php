@@ -2,7 +2,7 @@
 <body>
 <table>
 Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 10 Results are returned at max.
-<form action="user.php" method="get">
+<form action="<?php echo $_SERVER["REQUEST_URI"] ?>" method="get">
 	<tr>
 		<tr><td>Springname:</td>
 		<td><input type="text" name="springname" value="<?php if (array_key_exists('springname', $_REQUEST)) echo $_REQUEST['springname']; ?>"></td>
