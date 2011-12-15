@@ -13,6 +13,7 @@
 from upqjob import UpqJob
 import ftplib
 from upqdb import UpqDB,UpqDBIntegrityError
+from upqconfig import UpqConfig
 import os.path
 import socket
 
@@ -27,42 +28,31 @@ class Upload(UpqJob):
         #TODO: check files with the same path (or use path from files?)
         #TODO: always spawn upload job for all mirrors + recheck md5
 
-        fid=int(self.jobdata['fid'])
-        #search for files which have a different md5 as local one + mark inactive
-        results=UpqDB().query("""SELECT m.fmfid as fid FROM files as f \
-LEFT JOIN file_mirror_files as m ON f.fid=m.fid \
-LEFT JOIN filehash as h ON f.fid=h.fid \
-WHERE f.fid=%d \
-AND h.md5!=m.md5 \
-AND CHAR_LENGTH(h.md5)>0""" % (fid))
-        for res in results:
-        #hash has changed, mark file as inactive
-            UpqDB().query("UPDATE file_mirror_files SET active=0 WHERE fmfid=%d AND md5<>'%s' AND CHAR_LENGTH(md5)>0" % (res['fmfid'], res['md5']))
-            self.logger.warning("Invalid md5 detected : %d %s" %(res['fmfid'], res['md5']) )
         self.enqueue_job()
         return True
 
     def run(self):
         fid=int(self.jobdata['fid'])
-        results = UpqDB().query("SELECT filepath, filesize, md5 FROM files f LEFT JOIN filehash h ON f.fid=h.fid where f.fid=%d "% (fid))
+        results = UpqDB().query("SELECT filename, path, size, md5 FROM file where fid=%d AND status=1"% (fid))
         if results.rowcount!=1:
             self.msg("Wrong result count with fid %d" % fid)
             return False
         res=results.first()
-        srcfilename=self.jobcfg['path']+res['filepath']
-        dstfilename=res['filepath'][len(self.jobcfg['prefix']):]
-        filesize=res['filesize']
+        srcfilename=os.path.join(UpqConfig().paths['files'], res['path'], res['filename'])
+        dstfilename=os.path.join(res['path'], res['filename'])
+        filesize=res['size']
         md5=res['md5']
         #uploads a fid to all mirrors
-        results = UpqDB().query("SELECT m.fmid, ftp_url, ftp_user, ftp_pass, ftp_dir, ftp_port, ftp_passive, ftp_ssl \
-FROM file_mirror as m \
-LEFT JOIN file_mirror_files as f ON m.fmid=f.fmid \
-WHERE m.active=1 \
-AND m.dynamic=1 \
-AND m.fmid not in ( \
-SELECT fmid FROM file_mirror_files WHERE fid=%d AND active=1\
+        results = UpqDB().query("SELECT m.mid, ftp_url, ftp_user, ftp_pass, ftp_dir, ftp_port, ftp_passive, ftp_ssl \
+FROM mirror as m \
+LEFT JOIN mirror_file as f ON m.mid=f.mid \
+WHERE m.status=1 \
+AND m.status=1 \
+AND f.status = 1 \
+AND m.mid not in ( \
+	SELECT mid FROM mirror_file WHERE fid=%d AND status=1\
 ) \
-GROUP by m.fmid"% fid)
+GROUP by m.mid"% fid)
         uploadcount=0
         for res in results:
             host=res['ftp_url']
@@ -71,25 +61,19 @@ GROUP by m.fmid"% fid)
             password=res['ftp_pass']
             passive=int(res['ftp_passive'])>1
             cwddir=res['ftp_dir']
-            res2=UpqDB().query("SELECT fmfid,fid FROM file_mirror_files WHERE md5='%s' AND fmid='%d' AND active=1" % (md5, res['fmid']))
-            row=res2.first()
-            if not row==None:
-                self.msg("File %s with md5 already detected on file mirror %s, not uploading!"%(row['fmfid'], res['fmid']))
-                continue
             if not os.path.isfile(srcfilename):
                 self.msg("File doesn't exist: " + srcfilename)
                 return False
             try:
                 f=open(srcfilename,"rb")
-#springfiles has only python 2.6.4 installed no tls avaiable there :-(
-#                ftp = ftplib.FTP_TLS()
+                ftp = ftplib.FTP_TLS()
                 #set global timeout
                 socket.setdefaulttimeout(30)
                 ftp = ftplib.FTP()
                 self.logger.debug("connecting to "+host)
                 ftp.connect(host,port)
 #                if (res['ftp_ssl']):
-#                    ftp.auth(username, password)
+#                   ftp.auth(username, password)
 #                else:
                 ftp.login(username, password)
                 ftp.set_pasv(passive) #set passive mode
@@ -114,13 +98,11 @@ GROUP by m.fmid"% fid)
                 ftp.quit()
                 f.close()
                 try: #upload succeed, mark in db as uploaded
-                    id=UpqDB().insert("file_mirror_files", {"fmid":res['fmid'],"fid":fid, "path":dstfilename, "size":filesize, "active":1, "changed":UpqDB().now()})
+                    id=UpqDB().insert("mirror_file", {"mid":res['mid'],"fid":fid, "path":dstfilename, "status":1})
                 except UpqDBIntegrityError:
-                    #TODO: archive file that gets overwritten/deleted
-                    UpqDB().query("DELETE FROM file_mirror_files WHERE path='%s' AND fmid=%d"%(dstfilename, res['fmid']))
-                    id=UpqDB().insert("file_mirror_files", {"fmid":res['fmid'],"fid":fid, "path":dstfilename, "size":filesize, "active":1, "changed":UpqDB().now()})
+					self.logger("file already uploaded: mfid=%d" % (id))
                 self.logger.debug("inserted into db as %d", id)
-                self.enqueue_newjob("verify_remote_file", {"fmfid": id})
+                self.enqueue_newjob("verify_remote_file", {"mfid": id})
             except ftplib.all_errors, e:
                 self.logger.error("Ftp-Error (%s) %s failed %s" % (host, srcfilename,e))
             except Exception, e:

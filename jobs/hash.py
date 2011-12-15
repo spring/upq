@@ -17,48 +17,44 @@ import os.path
 from upqjob import UpqJob
 from upqdb import UpqDB
 from upqdb import UpqDBIntegrityError
+from upqconfig import UpqConfig
 
 class Hash(UpqJob):
 	"""
 		requirements to run hash:
 			file is in db + file has to exist
 	"""
-	#TODO: allow recheck hash if last check of hash is older than one year (time taken from config)
 	def check(self):
-		results = UpqDB().query("SELECT filepath,md5 FROM files as f LEFT JOIN filehash as h ON f.fid=h.fid WHERE f.fid=%d " % int(self.jobdata['fid']))
-		if results.rowcount > 1:
-			self.msg("Integry check failed, more than 1 file to hash in result")
+		results = UpqDB().query("SELECT fid, filename,path FROM file WHERE fid=%d " % int(self.jobdata['fid']))
+		res=results.first()
+		filename = os.path.join(UpqConfig().paths['files'], res['path'], res['filename'])
+		if not os.path.exists(filename):
+			self.logger.error("file %d doesn't exist: %s"%(res['fid'], filename))
 			return False
-		for res in results:
-			if len(res['md5']) > 0: #md5 already present, don't hash again
-				self.msg("MD5 already present: " + res['md5'])
-				return False
-			self.enqueue_job()
-			if not os.path.isfile(self.jobcfg['path'] + res['filepath']):
-				self.msg("File not found " + self.jobcfg['path'] + res['filepath'])
-				return False;
-			return True
-		self.msg("File not found")
-		return False
+		self.enqueue_job()
+		return True
 
 	def run(self):
 		"""
 			class Hash must be initialized with fileid!
 		"""
 		fid = int(self.jobdata['fid'])
-		results = UpqDB().query("SELECT * FROM files f LEFT JOIN filehash h ON f.fid=h.fid WHERE f.fid=%d  " % int(fid))
-		for res in results:
-			if not os.path.isabs(res['filepath']):
-				file = os.path.join(self.jobcfg['path'], res['filepath'])
-			else:
-				file=res['filepath']
-			hashes = self.hash(file)
-
-			try:
-				UpqDB().insert("filehash", { "fid": fid, "md5": hashes['md5'], "sha1": hashes['sha1'], "sha256": hashes['sha256'] })
-			except UpqDBIntegrityError:
-				self.msg("Hash already exists in db, not updating")
-		self.enqueue_newjob("extract_metadata",{"fid": fid})
+		results = UpqDB().query("SELECT filename, path, md5, sha1, sha256  FROM file WHERE fid=%d  " % int(fid))
+		res=results.first()
+		filename = os.path.join(UpqConfig().paths['files'], res['path'], res['filename'])
+		if not os.path.exists(filename):
+			self.msg("File %s doesn't exist" % (filename))
+			return False
+		hashes = self.hash(filename)
+		if res['md5']!=None  and res['md5']!=hashes['md5']:
+			return False
+		if res['sha1']!=None and res['sha1']!=hashes['sha1']:
+			return False
+		if res['sha256']!=None and res['sha256']!=hashes['sha256']:
+			return False
+		UpqDB().query("UPDATE file set md5='%s', sha1='%s', sha256='%s' WHERE fid=%d" %
+			(hashes['md5'], hashes['sha1'], hashes['sha256'], fid))
+		self.msg("md5: %s sha1: %s sha256: %s" % (hashes['md5'], hashes['sha1'], hashes['sha256']))
 		return True
 
 	def hash(self, filename):

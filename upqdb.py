@@ -12,7 +12,7 @@
 import log
 import module_loader
 
-from sqlalchemy import create_engine, Index, Table, Column, Integer, String,DateTime,PickleType, MetaData, ForeignKey, Sequence
+from sqlalchemy import create_engine, Index, Table, Column, Integer, String,DateTime,PickleType, MetaData, ForeignKey, Sequence, UniqueConstraint
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import insert
 from sqlalchemy.exc import IntegrityError
@@ -64,8 +64,8 @@ class UpqDB():
 			tbl=Table(t, meta, autoload=True)
 		pprint.pprint(meta.tables)
 		"""
-		self.tables['file_mirror']=Table('file_mirror', self.meta,
-			Column('fmid', INTEGER(display_width=10),  primary_key=True, nullable=False, autoincrement=True),
+		self.tables['mirror']=Table('mirror', self.meta, #table with file mirrors
+			Column('mid', INTEGER(display_width=10),  primary_key=True, nullable=False, autoincrement=True),
 			Column('title', VARCHAR(length=64)),
 			Column('description', TEXT()),
 			Column('country', VARCHAR(length=64)),
@@ -76,82 +76,74 @@ class UpqDB():
 			Column('ftp_passive', INTEGER(display_width=4)),
 			Column('ftp_ssl', INTEGER(display_width=4)),
 			Column('ftp_port', INTEGER(display_width=4)),
-			Column('url_prefix', VARCHAR(length=64)),
-			Column('url_deamon', VARCHAR(length=64)),
-			Column('uid', INTEGER(display_width=4)),
-			Column('mirror_size', INTEGER(display_width=11)),
-			Column('fill', BIGINT(display_width=20)),
-			Column('bandwidth_limit', INTEGER(display_width=11)),
-			Column('active', INTEGER(display_width=4)),
-			Column('flat', INTEGER(display_width=4)),
-			Column('dynamic', INTEGER(display_width=4)),
-			Column('mbw', BIGINT(display_width=20)),
-			Column('mbw_month', INTEGER(display_width=4)),
-			Column('tbw', BIGINT(display_width=20)),
-			Column('created', DATETIME(timezone=False)),
-			Column('changed', DATETIME(timezone=False)),
-			Column('lastupload', DATETIME(timezone=False),  nullable=False))
-		self.tables['file_mirror_files']=Table('file_mirror_files', self.meta,
-			Column('fmfid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
-			Column('fmid', INTEGER(display_width=4)),
+			Column('url_prefix', VARCHAR(length=64)), # prefix to files
+			Column('url_daemon', VARCHAR(length=64)), # absolute url to daemon.php
+			Column('mirror_size', INTEGER(display_width=11)), # maximum size of mirror
+			Column('bandwidth_limit', INTEGER(display_width=11)), # upload speed limit in kb/s
+			Column('status', INTEGER(display_width=4))) # 0=inactive, 1=active
+		self.tables['mirror_file']=Table('mirror_file', self.meta, #table with files on file mirrors
+			Column('mfid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
 			Column('fid', INTEGER(display_width=8)),
-			Column('path', VARCHAR(length=64)),
-			Column('size', INTEGER(display_width=11), nullable=False),
-			Column('md5', VARCHAR(length=64)),
-			Column('md5check', DATETIME(timezone=False)),
-			Column('active', INTEGER(display_width=4)),
-			Column('changed', DATETIME(timezone=False)))
-		self.tables['file_mirror_paths']=Table('file_mirror_paths', self.meta,
-			Column('fmpid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
-			Column('fmid', INTEGER(display_width=4)),
-			Column('path', VARCHAR(length=64), nullable=False)),
-		self.tables['filehash']=Table('filehash', self.meta,
-			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=False),
-			Column('md5', CHAR(length=32)),
-			Column('sha1', CHAR(length=40)),
-			Column('sha256', CHAR(length=64)))
-		self.tables['files']=Table('files', self.meta,
-			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
-			Column('uid', INTEGER(display_width=10), nullable=False ),
-			Column('filename', VARCHAR(length=255), nullable=False),
-			Column('filepath', VARCHAR(length=255), nullable=False),
-			Column('filemime', VARCHAR(length=255), nullable=False),
-			Column('filesize', INTEGER(display_width=10), nullable=False, ),
-			Column('status', INTEGER(display_width=11), nullable=False),
+			Column('mid', INTEGER(display_width=4)), # mirror id
+			Column('path', VARCHAR(length=64)), # relative to (mfid.url_prefix) path
+			Column('lastcheck', DATETIME(timezone=False)), # last time checksum/existence was checked
+			Column('status', INTEGER(display_width=4)), # 0=inactive, 1 = active, 2 = marked for recheck, 3 = broken
+			UniqueConstraint('fid', 'mid'))
+		self.tables['file']=Table('file', self.meta, #all known files
+			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True), #primary key of file
+			Column('uid', INTEGER(display_width=10), nullable=False), # owner uid of file
+			Column('filename', VARCHAR(length=255), nullable=False), # filename (without path)
+			Column('path', VARCHAR(length=255), nullable=False), # relative path where file is (without filename!)
+			Column('size', INTEGER(display_width=11), nullable=False), # file size
+			Column('status', INTEGER(display_width=11), nullable=False), # 0=inactive, 1 = active, 2 = marked for recheck, 3 = broken
 			Column('timestamp', TIMESTAMP(timezone=False)),
-			Column('origname', VARCHAR(length=255), nullable=False))
-		self.tables['springdata_archives']=Table('springdata_archives', self.meta,
-			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=False),
-			Column('name', VARCHAR(length=256)),
-			Column('version', VARCHAR(length=256)),
-			Column('cid', INTEGER(display_width=11)),
-			Column('sdp', VARCHAR(length=1024)))
-		self.tables['springdata_archivetags']=Table('springdata_archivetags', self.meta,
+			Column('torrent', VARCHAR(length=64)), # path to torrent file
+			Column('md5', CHAR(length=32), unique=True),
+			Column('sha1', CHAR(length=40)),
+			Column('sha256', CHAR(length=64)),
+			Column('name', VARCHAR(length=256)), #spring name of this file
+			Column('version', VARCHAR(length=256)), #spring version of this file
+			Column('cid', INTEGER(display_width=11)), #category of this file: game/map
+			Column('sdp', VARCHAR(length=32),unique=True), #for this file
+			Column('descriptionuri', VARCHAR(length=1024)),
+			Column('metadata', TEXT()))
+		self.tables['image_file']=Table('image_file', self.meta,
+			Column('iid', INTEGER(display_width=10), nullable=False), #id of the image
+			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
+			Column('filename', VARCHAR(length=255), nullable=False))
+		self.tables['image']=Table('image', self.meta,
+			Column('iid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
+			Column('md5', CHAR(length=32))) #md5 = path
+
+		self.tables['tag_file']=Table('tag_file', self.meta,
 			Column('fid', INTEGER(display_width=10), nullable=False, autoincrement=False),
+			Column('tid', INTEGER(display_width=10)))
+		self.tables['tag']=Table('tag', self.meta,
+			Column('tid', INTEGER(display_width=10), nullable=False, autoincrement=False),
 			Column('tag', VARCHAR(length=256), unique=True))
-		Index('idx_fid_tag', self.tables['springdata_archivetags'].c.fid, self.tables['springdata_archivetags'].c.tag)
-		self.tables['springdata_categories']=Table('springdata_categories', self.meta,
+#		Index('idx_fid_tag', self.tables['tag'].c.fid, self.tables['tag'].c.tag)
+
+		self.tables['categories']=Table('categories', self.meta, # file categories
 			Column('cid', INTEGER(display_width=11), primary_key=True, nullable=False, autoincrement=True),
 			Column('name', VARCHAR(length=24), nullable=False))
-		self.tables['springdata_depends']=Table('springdata_depends', self.meta,
+		self.tables['file_depends']=Table('file_depends', self.meta,
 			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=False),
-			Column('depends', INTEGER(display_width=10), primary_key=True, nullable=False),
+			Column('depends_fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=False), #id of other file, if null(couldn't be resolved), use depends_string
 			Column('depends_string', VARCHAR(length=64), nullable=False))
-		self.tables['springdata_startpos']=Table('springdata_startpos', self.meta,
-			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=False),
-			Column('id', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=False),
-			Column('x', INTEGER(display_width=10), nullable=False),
-			Column('z', INTEGER(display_width=10), nullable=False))
 		self.tables['upqueue']=Table('upqueue', self.meta,
 			Column('jobid', INTEGER(display_width=11), primary_key=True, nullable=False, autoincrement=True),
 			Column('jobname', VARCHAR(length=255), nullable=False),
-			Column('state', VARCHAR(length=32), nullable=False),
+			Column('status', INTEGER(display_width=10)), # 0 = finished, 1 = running, 2 = new, 3 = broken/failed
 			Column('jobdata', TEXT(), nullable=False),
-			Column('result', INTEGER(display_width=1)),
 			Column('result_msg', VARCHAR(length=255)),
 			Column('ctime', TIMESTAMP(timezone=False)),
 			Column('start_time', TIMESTAMP(timezone=False)),
 			Column('end_time', TIMESTAMP(timezone=False)))
+		self.tables['sf_sync']=Table('sf_sync', self.meta,
+			Column('sid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
+			Column('command', INTEGER(display_width=10), nullable=False, autoincrement=False), #0=update 1=delete
+			Column('fid', INTEGER(display_width=10), nullable=False, autoincrement=False)) #file id which was changed
+
 		try:
 			self.meta.create_all(self.engine)
 		except:

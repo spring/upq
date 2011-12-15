@@ -1,5 +1,11 @@
 <?php
 
+if(!mysql_connect($config['db_host'], $config['db_user'], $config['db_pass']))
+	die("mysql error: ".mysql_error());
+
+if(!mysql_select_db($config['db_db']))
+	die("mysql error: ".mysql_error());
+
 //drupal dummy functions to make xmlrp*.inc work
 
 function check_plain($text) {
@@ -69,7 +75,7 @@ function db_query($query) {
   return _db_query($query);
 }
 
-function _db_query($query, $debug = 0) {
+function _db_query($query) {
   $result = mysql_query($query);
   if (!mysql_errno()) {
     return $result;
@@ -88,5 +94,18 @@ function db_result($result) {
     return $array[0];
   }
   return FALSE;
+}
+
+function watchdog($msg, $arr=array()){
+	return;
+	print $msg;
+	if (sizeof($arr)>0)
+		print_r($arr);
+	echo "\n";
+}
+
+function db_fetch_array($result){
+	if ($result)
+		return mysql_fetch_array($result, MYSQL_ASSOC);
 }
 

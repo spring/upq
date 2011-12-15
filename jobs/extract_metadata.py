@@ -23,14 +23,12 @@ import base64
 import tempfile
 import gzip
 import hashlib
-
+import json
+import gc
 unitsyncpath=os.path.join(UpqConfig().paths['jobs_dir'],'unitsync')
-metalinkpath=os.path.join(UpqConfig().paths['jobs_dir'],'metalink')
 sys.path.append(unitsyncpath)
-sys.path.append(metalinkpath)
 
 import unitsync
-import metalink
 
 class Extract_metadata(UpqJob):
 
@@ -38,17 +36,16 @@ class Extract_metadata(UpqJob):
 		setup temporary directory.
 		creates <tempdir>/games and symlinks archive file into that directory
 	"""
-	def setupdir(self, fid, filepath):
+	def setupdir(self, filepath):
 		if not os.path.exists(filepath):
 			self.msg("error setting up temp dir, file doesn't exist %s" %(filepath))
 			raise Exception(self.msgstr)
-		temppath=tempfile.mkdtemp(dir=self.jobcfg['temppath'])
+		temppath=tempfile.mkdtemp(dir=UpqConfig().paths['tmp'])
 		archivetmp=os.path.join(temppath, "games")
 		os.mkdir(archivetmp)
-		srcfile=os.path.join(self.jobcfg['datadir'], filepath)
 		self.tmpfile=os.path.join(archivetmp, os.path.basename(filepath))
-		self.logger.debug("symlinking %s %s" % (srcfile,self.tmpfile))
-		os.symlink(srcfile,self.tmpfile)
+		self.logger.debug("symlinking %s %s" % (filepath,self.tmpfile))
+		os.symlink(filepath,self.tmpfile)
 		return temppath
 
 	def savedelete(self,file):
@@ -73,6 +70,7 @@ class Extract_metadata(UpqJob):
 		self.savedelete(os.path.join(temppath,"cache","CACHEDIR.TAG"))
 		self.savedelete(os.path.join(temppath,"cache"))
 		self.savedelete(os.path.join(temppath,"unitsync.log"))
+		self.savedelete(os.path.join(temppath,".springrc"))
 		self.savedelete(temppath)
 		if os.path.exists(temppath):
 			dirList=os.listdir(temppath)
@@ -85,13 +83,12 @@ class Extract_metadata(UpqJob):
 			self.msg("no id specified")
 			return False
 
-		results=UpqDB().query("SELECT * FROM files WHERE fid=%d" % int(self.jobdata['fid']))
+		results=UpqDB().query("SELECT * FROM file WHERE fid=%d AND status=1" % int(self.jobdata['fid']))
 		res=results.first()
 		if res == None:
 			self.msg("fid not found")
 			return False
 		id=self.enqueue_job()
-		self.msg("Job queued %s %s" % (id, self))
 		return True
 	def getMapIdx(self, usync, filename):
 		mapcount = usync.GetMapCount()
@@ -111,64 +108,63 @@ class Extract_metadata(UpqJob):
 
 	def insertData(self, data, fid):
 		for depend in data['Depends']:
-			res=UpqDB().query("SELECT fid FROM springdata_archives WHERE CONCAT(name,' ',version)='%s'" % (depend))
+			res=UpqDB().query("SELECT fid FROM files WHERE CONCAT(name,' ',version)='%s'" % (depend))
 			row=res.first()
 			if not row:
 				id=0
 			else:
 				id=row['fid']
 			try:
-				UpqDB().insert("springdata_depends", {"fid":fid, "depends_string": depend, "depends": id})
+				UpqDB().insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
+				self.msg("Added %s '%s' version '%s' to the mirror-system" % (data['Type'], data['Name'], data['Version']))
 			except UpqDBIntegrityError:
 				pass
+		metadata=data.copy()
+		del metadata['Depends'] #remove redundant entries
+		del metadata['sdp']
+		del metadata['Version']
+		del metadata['Name']
 		try:
-			cid=self.getCid(data['Type'])
-			UpqDB().insert("springdata_archives", {"fid": fid, "name": data['Name'], "version": data['Version'], "cid": cid, "sdp": data['sdp']})
-		except UpqDBIntegrityError:
-			UpqDB().query("UPDATE springdata_archives SET name='%s', version='%s', cid=%s WHERE fid=%s" %(data['Name'],data['Version'],cid, fid))
+			metadata=json.dumps(metadata)
+			metadata=metadata.replace("'","\\'")
+			metadata=metadata.replace("%", "%%")
+		except:	
+			metadata=""
+			self.msg("error encoding metadata")
 			pass
-		#TODO: add additional data
-	#move file to destination, makes path relative, updates db
-	def moveFile(self, filepath,prefix, moveto, fid):
-		dstfile=os.path.join(prefix,moveto)
-		if filepath!=dstfile:
-			if os.path.exists(dstfile):
-				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, filepath))
-				raise Exception(self.msgstr)
-			shutil.move(filepath, dstfile)
-		UpqDB().query("UPDATE files SET filepath='%s', filename='%s' WHERE fid=%d" %(moveto,os.path.basename(moveto), fid))
-		try:
-			os.chmod(dstfile, int("0444",8))
-		except OSError:
-			pass
-		self.logger.debug("moved file to (abs)%s (rel)%s" %(dstfile, moveto))
+		UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s' WHERE fid=%s" %(
+				data['Name'],
+				data['Version'],
+				data['sdp'],
+				self.getCid(data['Type']),
+				metadata,
+				fid
+			))
+		self.msg("Updated %s '%s' version '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version']))
 
 	def run(self):
+		gc.collect()
 		fid=int(self.jobdata['fid'])
-		results=UpqDB().query("SELECT * FROM files WHERE fid=%d" % fid)
+		results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % fid)
 		res=results.first()
 		#filename of the archive to be scanned
-		filename=os.path.basename(res['filepath']) # relative filename
+		filename=res['filename'] # filename only (no path info)
+		filepath=os.path.join(UpqConfig().paths['files'], res['path'], res['filename']) # absolute filename
 		libunitsync=self.jobcfg['unitsync']
-		outputpath=self.jobcfg['outputpath']
-		if os.path.isabs(res['filepath']):
-			filepath=res['filepath']
-		else:
-			filepath=os.path.join(self.jobcfg['datadir'],res['filepath']) # absolute filename
+		metadatapath=UpqConfig().paths['metadata']
+
 		if not os.path.exists(filepath):
 			self.msg("File doesn't exist: %s" %(filepath))
 			return False
-		tmpdir=self.setupdir(fid, filepath) #temporary directory for unitsync
+		tmpdir=self.setupdir(filepath) #temporary directory for unitsync
 
-		outputpath = os.path.abspath(outputpath)
 		os.environ["SPRING_DATADIR"]=tmpdir
-#		os.environ["SPRING_ISOLATED"]="true"
+		os.environ["HOME"]=tmpdir
+		os.environ["SPRING_LOG_SECTIONS"]="unitsync,ArchiveScanner,VFS"
 		usync = unitsync.Unitsync(libunitsync)
-		version = usync.GetSpringVersion();
-		self.logger.debug("using unitsync version %s" %(version))
-
 		usync.Init(True,1)
-
+		version = usync.GetSpringVersion()
+		self.logger.debug("using unitsync version %s" %(version))
 		usync.RemoveAllArchives()
 		usync.AddArchive(filename)
 		usync.AddAllArchives(filename)
@@ -177,29 +173,30 @@ class Extract_metadata(UpqJob):
 		if idx>=0: #file is map
 			archivepath=usync.GetArchivePath(filename)+filename
 			springname = usync.GetMapName(idx)
-			self.dumpmap(usync, springname, outputpath, filename,idx)
+			self.dumpmap(usync, springname, metadatapath, filename,idx)
 			data=self.getMapData(usync, filename, idx)
-			moveto=os.path.join(self.jobcfg['maps-path'], filename)
+			moveto=self.jobcfg['maps-path']
 		else: # file is a game
 			idx=self.getGameIdx(usync,filename)
 			if idx<0:
-				self.msg("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
+				self.logger.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
+				self.append_job("movefile", { "status": 3 }) #mark file as broken
 				return False
 			self.logger.debug("Extracting data from "+filename)
 			archivepath=usync.GetArchivePath(filename)+filename
 			gamearchivecount=usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath)
-			moveto=os.path.join(self.jobcfg['games-path'], filename)
-		self.create_torrent(archivepath, outputpath +"/" +filename+".torrent")
-		if version=="0.82.7":
-			data['sdp']=""
-			self.logger.error("Incompatible Spring unitsync.dll detected, not extracting sdp name");
-		else:
-			data['sdp']= self.getSDPName(usync, filename)
+			moveto=self.jobcfg['games-path']
+		data['sdp']= self.getSDPName(usync, os.path.join("games", filename))
 		self.insertData(data, fid)
-		self.moveFile(filepath,self.jobcfg['datadir'], moveto, fid)
-		self.enqueue_newjob("upload", {"fid": fid})
-		self.cleandir(tmpdir)
+		self.append_job("movefile", {"subdir": moveto})
+		err=usync.GetNextError()
+		while not err==None:
+			self.logger.error(err)
+			err=usync.GetNextError()
+		usync.UnInit()
+		if not self.jobcfg.has_key('keeptemp'):
+			self.cleandir(tmpdir)
 		return True
 
 	springcontent = [ 'bitmaps.sdz', 'springcontent.sdz', 'maphelper.sdz', 'cursors.sdz' ]
@@ -262,6 +259,7 @@ class Extract_metadata(UpqJob):
 			im.save(tmp)
 			shutil.move(tmp,outfile)
 			self.logger.debug("[created] " +outfile +" ok")
+		del data
 
 	def dumpmap(self, usync, springname, outpath, filename, idx):
 		metalmap = outpath + '/' + filename + ".metalmap" + ".jpg"
@@ -286,11 +284,7 @@ class Extract_metadata(UpqJob):
 		res=[]
 		for i in range (1, gamearchivecount): # get depends for file, idx=0 is filename itself
 			deps=os.path.basename(usync.GetPrimaryModArchiveList(i))
-			if not deps in self.springcontent and not deps.endswith(".sdp"): #FIXME: .sdp is returned wrong by unitsync
-				if deps in self.springnames:
-					depend=self.springnames[deps]
-				else:
-					depend=deps
+			if not deps in self.springcontent:
 				res.append(depend)
 		return res
 
@@ -307,6 +301,9 @@ class Extract_metadata(UpqJob):
 		return res
 	def getSDPName(self, usync, filename):
 		archiveh=usync.OpenArchive(filename)
+		if archiveh==0:
+			self.logger.error("getSDPName(): OpenArchive(%s) failed" % filename)
+			return ""
 		pos=0
 		files = []
 		#get a list of all files
@@ -314,17 +311,18 @@ class Extract_metadata(UpqJob):
 			name=ctypes.create_string_buffer(1024)
 			size=ctypes.c_int(1024)
 			res=usync.FindFilesArchive(archiveh, pos, name, ctypes.byref(size))
-			if res<0:
-				self.logger.error("FindFilesArchive returned invalid archive for %s" % (filename))
+			if res==0: #last file
 				break
 			fileh=usync.OpenArchiveFile(archiveh, name.value)
 			if fileh<0:
-				self.logger.error("Invalid handle for %s %s %s", (name.value,fileh,  usync.GetNextError()))
+				self.logger.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  ""+usync.GetNextError()))
 				break
 			files.append(name.value)
 			pos=pos+1
 		m=hashlib.md5()
 		files.sort(cmp = lambda a, b: cmp(a.lower(), b.lower()))
+		if len(files)<=0:
+			self.logger.error("Zero files found!")
 		i=0
 		for f in files:
 			# ignore directory entries
@@ -341,11 +339,12 @@ class Extract_metadata(UpqJob):
 		return m.hexdigest()
 	""" returns the category id specified by name"""
 	def getCid(self, name):
-		try:
-			cid=UpqDB().insert("springdata_categories", {"name": name})
-		except UpqDBIntegrityError:
-			res=UpqDB().query("SELECT cid from springdata_categories WHERE name='%s'" % name)
-			cid=res.first()['cid']
+		result=UpqDB().query("SELECT cid from categories WHERE name='%s'" % name)
+		res=result.first()
+		if res:
+			cid=res['cid']
+		else:
+			cid=UpqDB().insert("categories", {"name": name})
 		return cid
 
 	def getGameData(self, usync, idx, gamesarchivecount, archivename):
@@ -384,7 +383,7 @@ class Extract_metadata(UpqJob):
 		res['Width'] = usync.GetMapWidth(idx)
 
 		res['Gravity'] = usync.GetMapGravity(idx)
-		res['FileName'] = usync.GetMapFileName(idx)
+		res['MapFileName'] = usync.GetMapFileName(idx)
 		res['MapMinHeight'] = usync.GetMapMinHeight(mapname)
 		res['MapMaxHeight'] = usync.GetMapMaxHeight(mapname)
 
@@ -396,46 +395,4 @@ class Extract_metadata(UpqJob):
 		version="" #TODO: add support
 		res['Version']=version
 		return res
-
-	springnames={}
-	def createdict(self,usync,gamescount, mapcount):
-		#create dict with springnames[filename]=springname
-		for i in range(0, gamescount):
-			springname=usync.GetPrimaryModName(i)
-			filename=usync.GetPrimaryModArchive(i)
-			self.springnames[filename]=springname
-		for i in range(0, mapcount):
-			maparchivecount = usync.GetMapArchiveCount(usync.GetMapName(i)) # initialization for GetMapArchiveName()
-			filename = os.path.basename(usync.GetMapArchiveName(0))
-			self.logger.debug( "["+str(i) +"/"+ str(mapcount)+ "] extracting data from "+filename)
-			springname = usync.GetMapName(i)
-			self.springnames[filename]=springname
-
-	def create_torrent(self, filename, output):
-		if os.path.isdir(filename):
-			self.logger.debug("[skip] " +filename + "is a directory, can't create torrent")
-			return
-		if os.path.isfile(output):
-			self.logger.debug("[skip] " +output + " already exists, skipping...")
-			return
-		metalink._opts = { 'overwrite': False }
-		filesize=os.path.getsize(filename)
-		torrent = metalink.Torrent(filename)
-		m = metalink.Metafile()
-		m.hashes.filename=filename
-		m.scan_file(filename, True, 255, 1)
-		m.hashes.get_multiple('ed2k')
-		torrent_options = {'files':[[metalink.encode_text(filename), int(filesize)]],
-			'piece length':int(m.hashes.piecelength),
-			'pieces':m.hashes.pieces,
-			'encoding':'UTF-8',
-			}
-		data=torrent.create(torrent_options)
-		tmp=".tmp.torrent"
-		f=open(tmp,"wb")
-		f.write(data)
-		f.close()
-		shutil.move(tmp,output)
-		os.chmod(output, int("0444",8))
-		self.logger.debug("[created] " +output +" ok")
 

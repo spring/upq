@@ -8,7 +8,7 @@
 
 #
 # Verify_remote_file: check the integrity of a file on a mirror by comparing
-# the result of the PHP-script "deamon.php" with the stored hash in the DB
+# the result of the PHP-script "daemon.php" with the stored hash in the DB
 # 
 
 #
@@ -29,24 +29,23 @@ class Verify_remote_file(upqjob.UpqJob):
     
     def run(self):
         # get files hash from DB
-        fmfid=int(self.jobdata['fmfid'])
-        result = upqdb.UpqDB().query("SELECT fid, url_prefix, url_deamon, path FROM file_mirror_files AS f  LEFT JOIN file_mirror as m ON m.fmid=f.fmid WHERE fmfid=%d "%fmfid)
+        fmfid=int(self.jobdata['mfid'])
+        result = upqdb.UpqDB().query("SELECT md5, mf.fid, url_prefix, url_daemon, mf.path \
+			FROM mirror AS m \
+			LEFT JOIN mirror_file as mf ON m.mid=mf.mid \
+			LEFT JOIN file as f ON f.fid=mf.fid \
+			WHERE mfid=%d "%fmfid)
         res = result.first()
 
         if not res:
             self.msg("File with jobdata='%s' not found in DB."%(self.jobdata))
             return False
 
-        script_url = res['url_prefix']+"/"+res['url_deamon']
+        script_url = res['url_prefix']+"/"+res['url_daemon']
         params     = urllib.urlencode({'p': res['path']})
         hash_url   = script_url+"?%s"%params
         file_path  = res['path']
 
-        result = upqdb.UpqDB().query("SELECT md5 FROM filehash WHERE fid=%d" %  int(res['fid']))
-        res = result.first()
-        if not res:
-            self.msg("File md5 with jobdata='%s' not found in DB."%(self.jobdata))
-            return False
         md5 = res['md5']
         # retrieve md5 hash from deamon.php on remote mirror server
         self.logger.debug("retrieving '%s'", hash_url)
@@ -59,13 +58,13 @@ class Verify_remote_file(upqjob.UpqJob):
         
         if res['md5'] == hash:
             #TODO add notify job here
-            upqdb.UpqDB().query("UPDATE file_mirror_files SET md5='%s', md5check=NOW(), active=1 WHERE fmfid=%d" %(res['md5'], fmfid))
+            upqdb.UpqDB().query("UPDATE mirror_file SET lastcheck=NOW(), status=1 WHERE mfid=%d" %(fmfid))
             self.msg('Remote hash matches hash in DB.')
             return True
         else:
             if len(hash)==32:
                 #TODO: delete from db to allow re-upload
-                query="UPDATE file_mirror_files SET md5='%s', active=0 WHERE fmfid=%s " %(hash, fmfid)
+                query="UPDATE mirror_file SET status=0 WHERE mfid=%s " %(hash, fmfid)
                 upqdb.UpqDB().query(query)
                 self.msg('Remote hash does NOT match hash in DB.')
             else:

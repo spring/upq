@@ -27,6 +27,16 @@ class UpqConfig():
         except:
             if default!=None:
                 obj[value]=default
+    def setpath(self, obj, section, value, default, directory=True):
+        try:
+            obj[value]=os.path.abspath(self.config.get(section, value))
+        except:
+            if default!=None:
+                self.setstr(obj, section, value, os.path.abspath(default))
+        if directory and not os.path.exists(obj[value]):
+            os.mkdir(obj[value])
+            self.conf_log("created '%s' because it didn't exist." % (obj[value]))
+
     def setbool(self,obj, section, value, default):
         try:
             obj[value]=self.config.getboolean(section, value)
@@ -74,10 +84,16 @@ class UpqConfig():
         self.setint(self.daemon, "daemon", "gid", None)
 
         self.paths = {}
-        self.setstr(self.paths, "paths", "jobs_dir", "./jobs")
-        self.setstr(self.paths, "paths", "socket", "/var/run/upq-incoming.sock")
+        self.setpath(self.paths, "paths", "jobs_dir", "jobs")
+        self.setpath(self.paths, "paths", "socket", "/var/run/upq-incoming.sock", False)
+
+        self.setpath(self.paths, "paths", "uploads", "uploads")
+        self.setpath(self.paths, "paths", "files", "files")
+        self.setpath(self.paths, "paths", "metadata", "metadata")
+        self.setpath(self.paths, "paths", "broken", "paths")
+        self.setpath(self.paths, "paths", "tmp", "tmp")
+
         self.setint(self.paths, "paths", "socket_chmod", 660)
-        self.paths['jobs_dir']=os.path.abspath(self.paths['jobs_dir'])
 
         self.db = {}
         self.setstr(self.db, "db", "url", "sqlite:///var/lib/upq/upq.db")
@@ -94,6 +110,10 @@ class UpqConfig():
                     for name, value in self.config.items(section):
                         if name=="concurrent":
                             self.jobs[job]['concurrent'] = self.config.getint(section, "concurrent")
+                        elif name=="subjobs":
+                            subjobs=value.strip().split(" ")
+                            subjobs.reverse()
+                            self.jobs[job]['subjobs'] = subjobs
                         else:
                             self.jobs[job][name]=value
 
