@@ -42,11 +42,18 @@ class Test(UpqJob):
 		pprint.pprint("%d - %s - test *" % (self.jobid, self.thread))
 		sleep(random.uniform(0, 3))
 		pprint.pprint("%d - %s - test **" % (self.jobid, self.thread))
-		sleep(random.uniform (0, 3))
-		self.enqueue_newjob("test2", {})
-		self.enqueue_newjob("test2", {})
-		pprint.pprint("%d - %s - test ***" % (self.jobid, self.thread))
-		sleep(random.uniform (0, 3))
-		pprint.pprint("%d - %s - test ****" % (self.jobid, self.thread))
-		self.msg("finished '%s'" % self.jobdata)
-		return self.jobdata
+#		sleep(random.uniform (0, 3))
+#		pprint.pprint("%d - %s - test ***" % (self.jobid, self.thread))
+#		sleep(random.uniform (0, 3))
+#		pprint.pprint("%d - %s - test ****" % (self.jobid, self.thread))
+
+		# fail as often as given on cmd line ($ ./upq-cli.py test fail:4)
+		if self.jobdata.has_key('fail'):
+			self.jobdata['fail'] = int(self.jobdata['fail'])
+			if self.jobdata['fail'] > 0:
+				self.jobdata['fail'] -= 1
+				self.msg("finished FAIL '%s'" % self.jobdata)
+				return False
+
+		self.msg("finished SUCCESS '%s'" % self.jobdata)
+		return True

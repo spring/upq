@@ -36,7 +36,7 @@ enabled = true
 # number of max. concurrent executions of this job, 0 means the main server will
 # handle it syncroniously (connection blocking!)
 concurrent = 3
-notify_fail =
+notify_fail = retry:3
 notify_success =
 
 [job archive_file]
@@ -65,7 +65,7 @@ prefix = sites/default/files/
 enabled = true
 concurrent = 100
 notify_success = syslog mail:test@example.org
-notify_fail = syslog mail:test@example.org
+notify_fail = retrywait:2|1h syslog
 
 [job remote_md5]
 enabled = true

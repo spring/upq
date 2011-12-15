@@ -16,7 +16,6 @@
 import threading
 
 import log
-import module_loader
 from upqqueuemngr import UpqQueueMngr
 import json
 from upqconfig import UpqConfig
@@ -25,8 +24,11 @@ from upqconfig import UpqConfig
 
 class UpqJob(object):
     def __init__(self, jobname, jobdata):
+        # if you add attributes to the cUpqJob class that should be carried over
+        # through a restart/reschedule, add it to notify_job.jobdata['job']
+        # in notify(), if and only if it is (JSON)-serializable!
         self.jobname = jobname
-        self.jobcfg  = UpqConfig().jobs[jobname] #settings from config-fule
+        self.jobcfg  = UpqConfig().jobs[jobname] #settings from config-file
         self.jobdata = jobdata #runtime parameters, these are stored into database and restored on re-run
         self.logger  = log.getLogger("upq")
         self.thread  = "T-none-0"
@@ -34,6 +36,7 @@ class UpqJob(object):
         self.msgstr  = ""
         self.result  = None
         self.finished= threading.Event()
+        self.retries = 0
 
     def check(self):
         """
@@ -50,6 +53,8 @@ class UpqJob(object):
     def run(self):
         """
         Do the actual job work, save result in self.result.
+        Returning boolean indicates success or failure for notification system.
+
         Overwrite this method in your job class.
         """
         # Save result in self.result.
@@ -59,7 +64,7 @@ class UpqJob(object):
         """
         Put this job into the active queue
         """
-        self.jobid=UpqQueueMngr().enqueue_job(self)
+        UpqQueueMngr().enqueue_job(self)
 
     def enqueue_newjob(self, jobname, params):
         """
@@ -75,7 +80,6 @@ class UpqJob(object):
         self.logger = log.getLogger("upq")
 
     def msg(self, msg):
-        self.logger.debug(msg)
         self.msgstr+=str(msg)
 
     def notify(self, succeed):
@@ -86,17 +90,25 @@ class UpqJob(object):
         if succeed:
             if self.jobcfg['notify_success']:
                 params = UpqQueueMngr().getParams(self.jobcfg['notify_success'])
-                params['msg'] = self.msgstr
                 params['success'] = True
         else:
             if self.jobcfg['notify_fail']:
                 params = UpqQueueMngr().getParams(self.jobcfg['notify_fail'])
-                params['msg'] = self.msgstr
                 params['success'] = False
         if params:
-            job=UpqQueueMngr().new_job("notify", params)
-            if isinstance(job, UpqJob):
-                UpqQueueMngr().enqueue_job(job)
+            notify_job = UpqQueueMngr().new_job("notify", params)
+            if isinstance(notify_job, UpqJob):
+                # data of this job carried over to Notify job
+                # DEBUG
+                self.result = "tolles resultat"
+                notify_job.jobdata['job'] = {"jobname": self.jobname,
+                                  "jobcfg" : self.jobcfg,
+                                  "jobdata": self.jobdata,
+                                  "jobid"  : self.jobid,
+                                  "msgstr" : self.msgstr,
+                                  "result" : self.result,
+                                  "retries": self.retries}
+                UpqQueueMngr().enqueue_job(notify_job)
 
     def __str__(self):
         return "Job: "+self.jobname +" id:"+ str(self.jobid)+" jobdata:"+json.dumps(self.jobdata) +" thread: "+self.thread
