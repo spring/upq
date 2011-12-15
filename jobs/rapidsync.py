@@ -7,13 +7,6 @@ from upqjob import UpqJob
 from upqdb import UpqDB
 
 class Rapidsync(UpqJob):
-	def getTag(self, name):
-		result=UpqDB().query("SELECT tid FROM WHERE tag='%s'" % (name))
-		res=res.first()
-		if res:
-			res['tid']
-		else
-			return res=UpqDB().insert("tag", {'tag': name})
 	def run(self):
 		repos=self.fetchListing(self.getcfg('mainrepo', "http://repos.caspring.org/repos.gz"))
 		i=0
@@ -28,19 +21,16 @@ class Rapidsync(UpqJob):
 						"name"=sdp[3],
 				}
 				"""
-				res=UpqDB().query("SELECT * FROM file f \
-					LEFT JOIN tag_file tf ON f.fid=tf.fid
-					LEFT JOIN tag t ON t.tid=tf.tid
-					WHERE BINARY CONCAT(name,' ',version)='%s'" % (sdp[3]))
+				#check if file is already known
+				res=UpqDB().query("SELECT f.fid FROM file f \
+					LEFT JOIN tag t ON t.fid=f.fid \
+					WHERE sdp='%s'" % (sdp[1]))
 				row=res.first()
-				if row: #is already known
+				if row: #file is already known
 					#delete tag from existing files
 					UpqDB().query("DELETE FROM tag WHERE tag='%s'" % (sdp[0]))
 					#insert updated tag
-					UpqDB().query("INSERT INTO springdata_archivetags (fid, tag) VALUES (%s, '%s')" % (row['fid'], sdp[0]))
-					#check if sdp is set, if not update
-					if len(row['sdp'])<=0:
-						UpqDB().query("UPDATE springdata_archives SET sdp='%s' WHERE fid='%s'" % (repo[1] +"/packages/" + sdp[1] + ".sdp", row['fid']))
+					UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (row['fid'], sdp[0]))
 				else:
 					#TODO: add somehow to db without fid (download by rapid + create it?)
 					if i<5: #limit output

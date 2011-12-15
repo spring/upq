@@ -114,15 +114,10 @@ class UpqDB():
 		self.tables['image']=Table('image', self.meta,
 			Column('iid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
 			Column('md5', CHAR(length=32))) #md5 = path
-
-		self.tables['tag_file']=Table('tag_file', self.meta,
-			Column('fid', INTEGER(display_width=10), nullable=False, autoincrement=False),
-			Column('tid', INTEGER(display_width=10)))
 		self.tables['tag']=Table('tag', self.meta,
-			Column('tid', INTEGER(display_width=10), nullable=False, autoincrement=False),
+			Column('tid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
+			Column('fid', INTEGER(display_width=10)),
 			Column('tag', VARCHAR(length=256), unique=True))
-#		Index('idx_fid_tag', self.tables['tag'].c.fid, self.tables['tag'].c.tag)
-
 		self.tables['categories']=Table('categories', self.meta, # file categories
 			Column('cid', INTEGER(display_width=11), primary_key=True, nullable=False, autoincrement=True),
 			Column('name', VARCHAR(length=24), nullable=False))

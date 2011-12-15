@@ -86,8 +86,7 @@ function search($req){
 		FROM file as f
 		LEFT JOIN categories as c ON f.cid=c.cid
 		LEFT JOIN mirror_file as m ON f.fid=m.fid
-		LEFT JOIN tag_file as tf ON tf.fid=f.fid
-		LEFT JOIN tag as t ON  tf.tid=t.tid
+		LEFT JOIN tag as t ON  f.fid=t.fid
 		WHERE c.cid>0
 		$query
 		ORDER BY f.fid DESC
@@ -133,8 +132,7 @@ function search($req){
 
 		//add tags
 		$res[$i]['tags']=array();
-		$result=db_query('SELECT tag FROM {tag_file} f
-			LEFT JOIN tag t ON t.tid=f.tid
+		$result=db_query('SELECT tag FROM {tag} t
 			WHERE fid=%d', array($res[$i]['fid']));
 		while($row = db_fetch_array($result)){
 			$res[$i]['tags'][]=$row['tag'];
