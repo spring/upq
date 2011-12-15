@@ -3,18 +3,17 @@
 <table>
 Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 10 Results are returned at max.
 <form action="<?php echo $_SERVER["REQUEST_URI"] ?>" method="get">
+
+<?php
+	foreach (array('springname', 'filename', 'tag', 'sdp') as $val) {
+	?>
 	<tr>
-		<tr><td>Springname:</td>
-		<td><input type="text" name="springname" value="<?php if (array_key_exists('springname', $_REQUEST)) echo $_REQUEST['springname']; ?>"></td>
+		<tr><td><?php echo $val; ?>:</td>
+		<td><input type="text" name="<?php echo $val; ?>" value="<?php if (array_key_exists($val, $_REQUEST)) echo $_REQUEST[$val]; ?>"></td>
 	</tr>
-	<tr>
-		<td>Filename:</td>
-		<td><input type="text" name="filename" value="<?php if (array_key_exists('filename', $_REQUEST)) echo $_REQUEST['filename']; ?>"></td>
-	</tr>
-	<tr>
-		<tr><td>Tag:</td>
-		<td><input type="text" name="tag" value="<?php if (array_key_exists('tag', $_REQUEST)) echo $_REQUEST['tag']; ?>"></td>
-	</tr>
+	<?
+	}
+?>
 	<tr>
 	<td colspan="2" align="center"><input type="submit"></td>
 	</tr>
