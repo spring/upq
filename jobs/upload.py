@@ -61,11 +61,6 @@ GROUP by m.mid"% fid)
             password=res['ftp_pass']
             passive=int(res['ftp_passive'])>1
             cwddir=res['ftp_dir']
-            res2=UpqDB().query("SELECT mfid,fid FROM mirror_file WHERE md5='%s' AND mid='%d' AND active=1" % (md5, res['mid']))
-            row=res2.first()
-            if not row==None:
-                self.msg("File %s with md5 already detected on file mirror %s, not uploading!"%(row['mfid'], res['mid']))
-                continue
             if not os.path.isfile(srcfilename):
                 self.msg("File doesn't exist: " + srcfilename)
                 return False
@@ -77,10 +72,10 @@ GROUP by m.mid"% fid)
                 ftp = ftplib.FTP()
                 self.logger.debug("connecting to "+host)
                 ftp.connect(host,port)
-                if (res['ftp_ssl']):
-                    ftp.auth(username, password)
-                else:
-                    ftp.login(username, password)
+#                if (res['ftp_ssl']):
+#                   ftp.auth(username, password)
+#                else:
+                ftp.login(username, password)
                 ftp.set_pasv(passive) #set passive mode
                 if (len(cwddir)>0):
                     self.logger.debug("cd into "+cwddir)
