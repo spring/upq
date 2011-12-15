@@ -109,7 +109,7 @@ from = root@localhost
 [job rapidsync]
 enabled = true
 concurrent = 1
-mainrepo=http://repos.caspring.org/repos.gz
+mainrepo=http://repos.springrts.com/repos.gz
 temppath=/tmp
 
 [job createtorrent]
