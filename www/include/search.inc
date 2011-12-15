@@ -154,6 +154,7 @@ function search($req){
 		unset($res[$i]['fid']);
 		unset($res[$i]['path']);
 		unset($res[$i]['torrent_file']);
+		ksort($res[$i]);
 	}
 	return $res;
 }
