@@ -12,6 +12,10 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 		<td><input type="text" name="filename" value="<?php if (array_key_exists('filename', $_REQUEST)) echo $_REQUEST['filename']; ?>"></td>
 	</tr>
 	<tr>
+		<tr><td>Tag:</td>
+		<td><input type="text" name="tag" value="<?php if (array_key_exists('tag', $_REQUEST)) echo $_REQUEST['tag']; ?>"></td>
+	</tr>
+	<tr>
 	<td colspan="2" align="center"><input type="submit"></td>
 	</tr>
 </form>
