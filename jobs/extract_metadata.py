@@ -162,30 +162,34 @@ class Extract_metadata(UpqJob):
                         self.logger.error("OpenArchive(%s) failed" % filename)
                         return False
 		return archiveh
+	def saveImage(self, image, size):
+		""" store a image, called with an Image object, returns the filename """
+		m = hashlib.md5()
+		m.update(image.tostring())
+		if (size[0]>1024): # shrink if to big
+			image.resize((1024, (1024/size[0])*size[1]))
+		else:
+			image.resize((size[0], size[1]))
+		#use md5 as filename, so it can be reused
+		filename=m.hexdigest()+".jpg"
+		absname=os.path.join(UpqConfig().paths['metadata'], filename)
+		image.save(absname)
+		self.logger.info("Wrote " + absname)
+		return filename
 
-	def createSplashImages(self, usync,archiveh, filelist, outputdir):
+	def createSplashImages(self, usync, archiveh, filelist):
 		res = []
 		count=0
-		m = hashlib.md5()
 		for f in filelist:
 			if f.lower().startswith('bitmaps/loadpictures'):
 				self.logger.info("Reading %s" % (f))
 				buf=self.getFile(usync, archiveh, f)
-				m.update(buf)
 				ioobj=StringIO.StringIO()
 				ioobj.write(buf)
 				ioobj.seek(0)
 #				print "" + str(len(buf)) +  ioobj.getvalue()
-
 				im=Image.open(ioobj)
-				size=im.size
-				im.resize((1024, (size[0]/1024)*size[1]))
-				#use md5 as filename, so it can be reused
-				filename=m.hexdigest()+".jpg"
-				absname=os.path.join(outputdir,filename)
-				im.save(absname)
-				self.logger.info("Wrote " + absname)
-				res.append(filename)
+				self.saveImage(im, im.size)
 				count=count+1
 		return res
 
@@ -227,7 +231,7 @@ class Extract_metadata(UpqJob):
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath)
 			moveto=self.jobcfg['games-path']
 		data['sdp']=sdp
-		data['splash']=self.createSplashImages(usync, archiveh, filelist, metadatapath)
+		data['splash']=self.createSplashImages(usync, archiveh, filelist)
 		self.insertData(data, fid)
 		self.append_job("movefile", {"subdir": moveto})
 		err=usync.GetNextError()
@@ -273,16 +277,9 @@ class Extract_metadata(UpqJob):
 			return
 		data=ctypes.string_at(usync.GetMinimap(mapname, 0), 1024*1024*2)
 		im = Image.frombuffer("RGB", (1024, 1024), data, "raw", "BGR;16")
-		im=im.resize(size)
-		tmp=".tmp.jpg" # first create tmp file
-		im.save(tmp)
-		shutil.move(tmp,outfile) # rename to dest
-		self.logger.debug("[created] " +outfile +" ok")
+		return self.saveImage(im, size)
 
-	def createMapInfoImage(self, usync, mapname, maptype, byteperpx, decoder,decoderparm, outfile, size):
-		if os.path.isfile(outfile):
-			self.logger.debug("[skip] " +outfile + " already exists, skipping...")
-			return
+	def createMapInfoImage(self, usync, mapname, maptype, byteperpx, decoder,decoderparm, size):
 		width = ctypes.pointer(ctypes.c_int())
 		height = ctypes.pointer(ctypes.c_int())
 		usync.GetInfoMapSize(mapname, maptype, width, height)
@@ -294,31 +291,25 @@ class Extract_metadata(UpqJob):
 		if (ret<>0):
 			im = Image.frombuffer(decoder, (width, height), data, "raw", decoderparm)
 			im=im.convert("L")
-			im=im.resize(size)
-			tmp=".tmp.jpg"
-			im.save(tmp)
-			shutil.move(tmp,outfile)
-			self.logger.debug("[created] " +outfile +" ok")
+			res=self.saveImage(im, size)
 		del data
+		return res
 
 	def dumpmap(self, usync, springname, outpath, filename, idx):
 		metalmap = outpath + '/' + filename + ".metalmap" + ".jpg"
 		heightmap = outpath + '/' + filename + ".heightmap" + ".jpg"
 		mapimage = outpath + '/' + filename + ".jpg"
-		if os.path.isfile(metalmap) and os.path.isfile(heightmap) and os.path.isfile(mapimage):
-			self.logger.debug("[skip] " +metalmap + " already exists, skipping...")
-			self.logger.debug("[skip] " +heightmap + " already exists, skipping...")
-			self.logger.debug("[skip] " +mapimage + " already exists, skipping...")
+		mapwidth=float(usync.GetMapWidth(idx))
+		mapheight=float(usync.GetMapHeight(idx))
+		if mapwidth>mapheight:
+			scaledsize=(1024, int(((mapheight/mapwidth) * 1024)))
 		else:
-			mapwidth=float(usync.GetMapWidth(idx))
-			mapheight=float(usync.GetMapHeight(idx))
-			if mapwidth>mapheight:
-				scaledsize=(1024, int(((mapheight/mapwidth) * 1024)))
-			else:
-				scaledsize=(int(((mapwidth/mapheight) * 1024)), 1024)
-			self.createMapImage(usync,springname,mapimage, scaledsize)
-			self.createMapInfoImage(usync,springname, "height",2, "RGB","BGR;15", heightmap, scaledsize)
-			self.createMapInfoImage(usync,springname, "metal",1, "L","L;I", metalmap, scaledsize)
+			scaledsize=(int(((mapwidth/mapheight) * 1024)), 1024)
+		res = []
+		res.append(self.createMapImage(usync,springname,mapimage, scaledsize))
+		res.append(self.createMapInfoImage(usync,springname, "height",2, "RGB","BGR;15", heightmap, scaledsize))
+		res.append(self.createMapInfoImage(usync,springname, "metal",1, "L","L;I", metalmap, scaledsize))
+		return res
 
 	def getGameDepends(self, usync, idx, gamearchivecount, game):
 		res=[]
