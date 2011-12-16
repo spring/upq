@@ -167,9 +167,11 @@ class Extract_metadata(UpqJob):
 		m = hashlib.md5()
 		m.update(image.tostring())
 		if (size[0]>1024): # shrink if to big
-			image.resize((1024, (1024/size[0])*size[1]))
+			sizey=int((1024.0/size[0])*size[1])
+			self.logger.debug("image to big %dx%d, resizing... to %dx%d" % (size[0], size[1], 1024, sizey))
+			image=image.resize((1024, sizey))
 		else:
-			image.resize((size[0], size[1]))
+			image=image.resize((size[0], size[1]))
 		#use md5 as filename, so it can be reused
 		filename=m.hexdigest()+".jpg"
 		absname=os.path.join(UpqConfig().paths['metadata'], filename)
@@ -189,7 +191,7 @@ class Extract_metadata(UpqJob):
 				ioobj.seek(0)
 #				print "" + str(len(buf)) +  ioobj.getvalue()
 				im=Image.open(ioobj)
-				self.saveImage(im, im.size)
+				res.append(self.saveImage(im, im.size))
 				count=count+1
 		return res
 
