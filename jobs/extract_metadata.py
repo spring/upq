@@ -25,6 +25,8 @@ import gzip
 import hashlib
 import json
 import gc
+import StringIO
+
 unitsyncpath=os.path.join(UpqConfig().paths['jobs_dir'],'unitsync')
 sys.path.append(unitsyncpath)
 
@@ -141,23 +143,8 @@ class Extract_metadata(UpqJob):
 				fid
 			))
 		self.msg("Updated %s '%s' version '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version']))
-
-	def run(self):
-		gc.collect()
-		fid=int(self.jobdata['fid'])
-		results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % fid)
-		res=results.first()
-		#filename of the archive to be scanned
-		filename=res['filename'] # filename only (no path info)
-		filepath=os.path.join(UpqConfig().paths['files'], res['path'], res['filename']) # absolute filename
+	def initUnitSync(self, tmpdir, filename):
 		libunitsync=self.jobcfg['unitsync']
-		metadatapath=UpqConfig().paths['metadata']
-
-		if not os.path.exists(filepath):
-			self.msg("File doesn't exist: %s" %(filepath))
-			return False
-		tmpdir=self.setupdir(filepath) #temporary directory for unitsync
-
 		os.environ["SPRING_DATADIR"]=tmpdir
 		os.environ["HOME"]=tmpdir
 		os.environ["SPRING_LOG_SECTIONS"]="unitsync,ArchiveScanner,VFS"
@@ -168,6 +155,58 @@ class Extract_metadata(UpqJob):
 		usync.RemoveAllArchives()
 		usync.AddArchive(filename)
 		usync.AddAllArchives(filename)
+		return usync
+	def openArchive(self, usync, filename):
+                archiveh=usync.OpenArchive(filename)
+                if archiveh==0:
+                        self.logger.error("OpenArchive(%s) failed" % filename)
+                        return False
+		return archiveh
+
+	def createSplashImages(self, usync,archiveh, filelist, outputdir):
+		res = []
+		count=0
+		m = hashlib.md5()
+		for f in filelist:
+			if f.lower().startswith('bitmaps/loadpictures'):
+				self.logger.info("Reading %s" % (f))
+				buf=self.getFile(usync, archiveh, f)
+				m.update(buf)
+				ioobj=StringIO.StringIO()
+				ioobj.write(buf)
+				ioobj.seek(0)
+#				print "" + str(len(buf)) +  ioobj.getvalue()
+
+				im=Image.open(ioobj)
+				size=im.size
+				im.resize((1024, (size[0]/1024)*size[1]))
+				#use md5 as filename, so it can be reused
+				filename=m.hexdigest()+".jpg"
+				absname=os.path.join(outputdir,filename)
+				im.save(absname)
+				self.logger.info("Wrote " + absname)
+				res.append(filename)
+				count=count+1
+		return res
+
+	def run(self):
+		gc.collect()
+		fid=int(self.jobdata['fid'])
+		results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % fid)
+		res=results.first()
+		#filename of the archive to be scanned
+		filename=res['filename'] # filename only (no path info)
+		filepath=os.path.join(UpqConfig().paths['files'], res['path'], res['filename']) # absolute filename
+		metadatapath=UpqConfig().paths['metadata']
+
+		if not os.path.exists(filepath):
+			self.msg("File doesn't exist: %s" %(filepath))
+			return False
+		tmpdir=self.setupdir(filepath) #temporary directory for unitsync
+		usync=self.initUnitSync(tmpdir, filename)
+		archiveh=self.openArchive(usync, os.path.join("games",filename))
+		filelist=self.getFileList(usync, archiveh)
+		sdp = self.getSDPName(usync, archiveh)
 
 		idx=self.getMapIdx(usync,filename)
 		if idx>=0: #file is map
@@ -187,7 +226,8 @@ class Extract_metadata(UpqJob):
 			gamearchivecount=usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath)
 			moveto=self.jobcfg['games-path']
-		data['sdp']= self.getSDPName(usync, os.path.join("games", filename))
+		data['sdp']=sdp
+		data['splash']=self.createSplashImages(usync, archiveh, filelist, metadatapath)
 		self.insertData(data, fid)
 		self.append_job("movefile", {"subdir": moveto})
 		err=usync.GetNextError()
@@ -299,26 +339,35 @@ class Extract_metadata(UpqJob):
 			res.append({ "UnitName": usync.GetUnitName(i),
 				"FullUnitName": usync.GetFullUnitName(i)})
 		return res
-	def getSDPName(self, usync, filename):
-		archiveh=usync.OpenArchive(filename)
-		if archiveh==0:
-			self.logger.error("getSDPName(): OpenArchive(%s) failed" % filename)
-			return ""
-		pos=0
+	def getFileList(self, usync, archiveh):
+		""" returns a list of all files in an archive """
 		files = []
-		#get a list of all files
-		while True:
-			name=ctypes.create_string_buffer(1024)
-			size=ctypes.c_int(1024)
-			res=usync.FindFilesArchive(archiveh, pos, name, ctypes.byref(size))
-			if res==0: #last file
-				break
-			fileh=usync.OpenArchiveFile(archiveh, name.value)
-			if fileh<0:
-				self.logger.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  ""+usync.GetNextError()))
-				break
-			files.append(name.value)
-			pos=pos+1
+		pos=0
+                #get a list of all files
+                while True:
+                        name=ctypes.create_string_buffer(1024)
+                        size=ctypes.c_int(1024)
+                        res=usync.FindFilesArchive(archiveh, pos, name, ctypes.byref(size))
+                        if res==0: #last file
+                                break
+                        fileh=usync.OpenArchiveFile(archiveh, name.value)
+                        if fileh<0:
+                                self.logger.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  ""+usync.GetNextError()))
+                                break
+                        files.append(name.value)
+                        pos=pos+1
+		return files
+	def getFile(self, usync, archivehandle, filename):
+		""" returns the content of an archive"""
+		fileh=usync.OpenArchiveFile(archivehandle, filename)
+		size=usync.SizeArchiveFile(archivehandle, fileh)
+		buf = ctypes.create_string_buffer(size)
+		bytes=usync.ReadArchiveFile(archivehandle, fileh, buf, size)
+		usync.CloseArchiveFile(archivehandle, fileh)
+		return ctypes.string_at(buf,size)
+
+	def getSDPName(self, usync, archiveh):
+		files=self.getFileList(usync, archiveh)
 		m=hashlib.md5()
 		files.sort(cmp = lambda a, b: cmp(a.lower(), b.lower()))
 		if len(files)<=0:
@@ -327,13 +376,9 @@ class Extract_metadata(UpqJob):
 		for f in files:
 			# ignore directory entries
 			if f[-1] == '/': continue
-			fileh=usync.OpenArchiveFile(archiveh, f)
-			size=usync.SizeArchiveFile(archiveh, fileh)
-			buf = ctypes.create_string_buffer(size)
-			bytes=usync.ReadArchiveFile(archiveh, fileh, buf, size)
-			usync.CloseArchiveFile(archiveh, fileh)
+			content = self.getFile(usync, archiveh, f)
 			m.update(hashlib.md5(f.lower()).digest())
-			m.update(hashlib.md5(ctypes.string_at(buf,size)).digest())
+			m.update(hashlib.md5(content).digest())
 			i=i+1
 		self.logger.debug("SDP %s" % m.hexdigest())
 		return m.hexdigest()
