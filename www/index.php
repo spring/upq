@@ -9,7 +9,7 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 	?>
 	<tr>
 		<tr><td><?php echo $val; ?>:</td>
-		<td><input type="text" name="<?php echo $val; ?>" value="<?php if (array_key_exists($val, $_REQUEST)) echo $_REQUEST[$val]; ?>"></td>
+		<td><input type="text" name="<?php echo $val; ?>" value="<?php if (array_key_exists($val, $_REQUEST)) echo htmlentities($_REQUEST[$val]); ?>"></td>
 	</tr>
 <?
 	}
