@@ -191,9 +191,13 @@ class Extract_metadata(UpqJob):
 				ioobj.write(buf)
 				ioobj.seek(0)
 #				print "" + str(len(buf)) +  ioobj.getvalue()
-				im=Image.open(ioobj)
-				res.append(self.saveImage(im, im.size))
-				count=count+1
+				try:
+					im=Image.open(ioobj)
+					res.append(self.saveImage(im, im.size))
+					count=count+1
+				except:
+					self.logger.error("Invalid image %s" % (f))
+					pass
 		return res
 
 	def run(self):
