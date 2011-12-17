@@ -176,6 +176,7 @@ class Extract_metadata(UpqJob):
 		filename=m.hexdigest()+".jpg"
 		absname=os.path.join(UpqConfig().paths['metadata'], filename)
 		image.save(absname)
+		os.chmod(absname,int("0644",8))
 		self.logger.info("Wrote " + absname)
 		return filename
 
