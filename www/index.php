@@ -11,13 +11,17 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 		<tr><td><?php echo $val; ?>:</td>
 		<td><input type="text" name="<?php echo $val; ?>" value="<?php if (array_key_exists($val, $_REQUEST)) echo $_REQUEST[$val]; ?>"></td>
 	</tr>
-	<?
+<?
 	}
+	foreach (array('images', 'metadata') as $val){
 ?>
 	<tr>
-		<td>images</td>
-		<td><input type="checkbox" name="images" <?php if (array_key_exists('images', $_REQUEST)) echo 'checked'; ?>></td>
+		<td><?php echo $val; ?></td>
+		<td><input type="checkbox" name="<?php echo $val; ?>" <?php if (array_key_exists($val, $_REQUEST)) echo 'checked'; ?>></td>
 	</tr>
+<?
+	}
+?>
 	<tr>
 	<td colspan="2" align="center"><input type="submit"></td>
 	</tr>

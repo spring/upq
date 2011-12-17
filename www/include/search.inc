@@ -154,13 +154,14 @@ function search($req){
 			$res[$i]['torrent']=_file_mirror_gettorrent($config['metadata'].'/'.$res[$i]['torrent_file']);
 		}
 		$metadata=_get_metadata($res[$i]['metadata']);
-		if (array_key_exists('splash', $metadata))
-			$res[$i]['splash'] = _add_metadata_path($metadata['splash']);
-		if (array_key_exists('mapimages', $metadata))
-			$res[$i]['mapimages'] = _add_metadata_path($metadata['mapimages']);
+		if (array_key_exists('images', $req)){
+			if (array_key_exists('splash', $metadata))
+				$res[$i]['splash'] = _add_metadata_path($metadata['splash']);
+			if (array_key_exists('mapimages', $metadata))
+				$res[$i]['mapimages'] = _add_metadata_path($metadata['mapimages']);
+		}			
 		unset($metadata['splash']);
 		unset($metadata['mapimages']);
-			
 		//links to metadata
 		if(array_key_exists('metadata', $req)){
 			$res[$i]['metadata']=$metadata;
