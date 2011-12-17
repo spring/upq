@@ -218,8 +218,8 @@ class Extract_metadata(UpqJob):
 		if idx>=0: #file is map
 			archivepath=usync.GetArchivePath(filename)+filename
 			springname = usync.GetMapName(idx)
-			self.dumpmap(usync, springname, metadatapath, filename,idx)
 			data=self.getMapData(usync, filename, idx)
+			data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
 			moveto=self.jobcfg['maps-path']
 		else: # file is a game
 			idx=self.getGameIdx(usync,filename)
@@ -273,10 +273,7 @@ class Extract_metadata(UpqJob):
 		return res
 
 	# extracts minimap from given file
-	def createMapImage(self, usync, mapname, outfile, size):
-		if os.path.isfile(outfile):
-			self.logger.debug("[skip] " +outfile + " already exists, skipping...")
-			return
+	def createMapImage(self, usync, mapname, size):
 		data=ctypes.string_at(usync.GetMinimap(mapname, 0), 1024*1024*2)
 		im = Image.frombuffer("RGB", (1024, 1024), data, "raw", "BGR;16")
 		return self.saveImage(im, size)
@@ -298,9 +295,6 @@ class Extract_metadata(UpqJob):
 		return res
 
 	def dumpmap(self, usync, springname, outpath, filename, idx):
-		metalmap = outpath + '/' + filename + ".metalmap" + ".jpg"
-		heightmap = outpath + '/' + filename + ".heightmap" + ".jpg"
-		mapimage = outpath + '/' + filename + ".jpg"
 		mapwidth=float(usync.GetMapWidth(idx))
 		mapheight=float(usync.GetMapHeight(idx))
 		if mapwidth>mapheight:
@@ -308,9 +302,9 @@ class Extract_metadata(UpqJob):
 		else:
 			scaledsize=(int(((mapwidth/mapheight) * 1024)), 1024)
 		res = []
-		res.append(self.createMapImage(usync,springname,mapimage, scaledsize))
-		res.append(self.createMapInfoImage(usync,springname, "height",2, "RGB","BGR;15", heightmap, scaledsize))
-		res.append(self.createMapInfoImage(usync,springname, "metal",1, "L","L;I", metalmap, scaledsize))
+		res.append(self.createMapImage(usync,springname, scaledsize))
+		res.append(self.createMapInfoImage(usync,springname, "height",2, "RGB","BGR;15", scaledsize))
+		res.append(self.createMapInfoImage(usync,springname, "metal",1, "L","L;I", scaledsize))
 		return res
 
 	def getGameDepends(self, usync, idx, gamearchivecount, game):
