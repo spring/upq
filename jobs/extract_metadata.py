@@ -190,7 +190,7 @@ class Extract_metadata(UpqJob):
 				ioobj=StringIO.StringIO()
 				ioobj.write(buf)
 				ioobj.seek(0)
-#				print "" + str(len(buf)) +  ioobj.getvalue()
+				del buf
 				try:
 					im=Image.open(ioobj)
 					res.append(self.saveImage(im, im.size))
@@ -246,6 +246,7 @@ class Extract_metadata(UpqJob):
 			self.logger.error(err)
 			err=usync.GetNextError()
 		usync.UnInit()
+		del usync
 		if not self.jobcfg.has_key('keeptemp'):
 			self.cleandir(tmpdir)
 		return True
@@ -347,6 +348,7 @@ class Extract_metadata(UpqJob):
                                 self.logger.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  ""+usync.GetNextError()))
                                 break
                         files.append(name.value)
+			del name
                         pos=pos+1
 		return files
 	def getFile(self, usync, archivehandle, filename):
@@ -371,6 +373,7 @@ class Extract_metadata(UpqJob):
 			content = self.getFile(usync, archiveh, f)
 			m.update(hashlib.md5(f.lower()).digest())
 			m.update(hashlib.md5(content).digest())
+			del content
 			i=i+1
 		self.logger.debug("SDP %s" % m.hexdigest())
 		return m.hexdigest()
