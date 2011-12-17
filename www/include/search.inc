@@ -38,9 +38,21 @@ function _file_mirror_gettorrent($filename){
 /**
 * return images
 */
-function _get_metadata($fid){
-	$res=db_query("SELECT metadata FROM file WHERE fid=%d", array($fid));
-	return db_fetch_array($res);
+function _get_metadata($row){
+	$meta=json_decode($row, true);
+	if (is_array($meta))
+		return $meta;
+	return array();
+}
+
+function _add_metadata_path($arr){
+	global $config;
+	$res=array();
+	foreach ($arr as $val){
+		$res[] = $config['metadata'].'/'.$val;
+	}
+	return $res;
+	
 }
 
 /**
@@ -82,7 +94,8 @@ function search($req){
 		f.size as size,
 		f.timestamp as timestamp,
 		f.torrent as torrent_file,
-		f.descriptionuri as description
+		f.descriptionuri as description,
+		f.metadata as metadata
 		FROM file as f
 		LEFT JOIN categories as c ON f.cid=c.cid
 		LEFT JOIN mirror_file as m ON f.fid=m.fid
@@ -140,9 +153,19 @@ function search($req){
 		if(array_key_exists('torrent', $req) && (strlen($res[$i]['torrent_file'])>0)){
 			$res[$i]['torrent']=_file_mirror_gettorrent($config['metadata'].'/'.$res[$i]['torrent_file']);
 		}
+		$metadata=_get_metadata($res[$i]['metadata']);
+		if (array_key_exists('splash', $metadata))
+			$res[$i]['splash'] = _add_metadata_path($metadata['splash']);
+		if (array_key_exists('mapimages', $metadata))
+			$res[$i]['mapimages'] = _add_metadata_path($metadata['mapimages']);
+		unset($metadata['splash']);
+		unset($metadata['mapimages']);
+			
 		//links to metadata
 		if(array_key_exists('metadata', $req)){
-			$res[$i]['metadata']=_get_metadata($res[$i]['fid']);
+			$res[$i]['metadata']=$metadata;
+		}else{
+			unset($res[$i]['metadata']);
 		}
 
 		//additional metadata
