@@ -13,7 +13,7 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 	</tr>
 <?
 	}
-	foreach (array('images', 'metadata') as $val){
+	foreach (array('images', 'metadata', 'nosensitive') as $val){
 ?>
 	<tr>
 		<td><?php echo $val; ?></td>
