@@ -39,9 +39,8 @@ function _file_mirror_gettorrent($filename){
 * return images
 */
 function _get_metadata($fid){
-//	db_query();
-	//TODO
-	return array();
+	$res=db_query("SELECT metadata FROM file WHERE fid=%d", array($fid));
+	return db_fetch_array($res);
 }
 
 /**
