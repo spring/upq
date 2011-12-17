@@ -15,6 +15,10 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 	}
 ?>
 	<tr>
+		<td>images</td>
+		<td><input type="checkbox" name="images" <?php if (array_key_exists('images', $_REQUEST)) echo 'checked'; ?>></td>
+	</tr>
+	<tr>
 	<td colspan="2" align="center"><input type="submit"></td>
 	</tr>
 </form>
