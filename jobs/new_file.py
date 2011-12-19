@@ -48,31 +48,14 @@ class New_file(UpqJob):
 			or:
 				fid
 		"""
-		if 'fid' in self.jobdata: # file already exists in db
+		if 'fid' in self.jobdata: # file already exists in db, set filename
 			result=UpqDB().query("SELECT * from file where fid=%s"% (self.jobdata['fid']))
 			res=result.first()
 			if res==None:
 				self.msg("fid not found in db!")
 				return False
-			fid=self.jobdata['fid']
 			self.msg("File already known, Filename: %s Size: %d" % (res['filename'], res['size']))
-		else: # file doesn't exist in db, add it
-			filename=self.jobdata['file']
-			del self.jobdata['file']
-			filesize=os.path.getsize(filename)
-			if 'uid' in self.jobdata:
-				uid=self.jobdata['uid']
-			else:
-				uid=0
-			fid=UpqDB().insert("file", {
-					"uid": uid,
-					"filename": filename,
-					"path": "",
-					"size": filesize,
-					"status": 1,
-					"timestamp": UpqDB().now()
-				})
-			self.jobdata['fid']=fid
-			self.msg("Filename: %s Size: %d" % (filename, filesize))
+			#fixme: calculate filename
+			#self.jobdata['file'] = os.path.join(...)
 		return True
 
