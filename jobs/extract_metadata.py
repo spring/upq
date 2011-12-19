@@ -135,7 +135,8 @@ class Extract_metadata(UpqJob):
 				"path": "",
 				"filename": filename,
 				"timestamp": UpqDB().now(), #fixme: use file timestamp
-				"size": os.path.getsize(filename)
+				"size": os.path.getsize(filename),
+				"status": 1,
 				})
 		else:
 			fid=row['fid']

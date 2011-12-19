@@ -107,7 +107,7 @@ function search($req){
 		WHERE c.cid>0
 		AND f.status=1
 		$query
-		ORDER BY f.fid DESC
+		ORDER BY f.timestamp DESC
 		LIMIT 0,10
 		",
 		$vars

@@ -69,7 +69,7 @@ class Movefile(UpqJob):
 				return False
 			shutil.move(srcfile, dstfile)
 			UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%d" %(subdir, status, filename, fid))
-			self.logger.debug("moved file to (abs)%s %s:(rel)%s" %(source, prefix,subdir))
+			self.logger.debug("moved file to (abs)%s %s:(rel)%s" %(srcfile, prefix,subdir))
 		elif filename!=srcfile: #file is already in the destination dir, make filename relative
 			UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%d" %(subdir, status, filename, fid))
 		try:

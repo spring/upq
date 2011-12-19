@@ -30,6 +30,7 @@ class Download(UpqJob):
 		url=self.jobdata['url']
 		filename=os.path.basename(url)
 		tmpfile=os.path.join(self.getcfg('temppath', '/tmp'), filename)
+		self.jobdata['file']=tmpfile
 #		uid=int(self.jobdata['uid'])
 		self.logger.debug("going to download %s", url)
 		try:
@@ -38,6 +39,5 @@ class Download(UpqJob):
 		except Exception, e:
 			self.msg(e)
 			return False
-		self.jobdata['file']=tmpfile
 		return True
 
