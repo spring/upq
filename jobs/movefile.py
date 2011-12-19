@@ -15,7 +15,19 @@ import os
 import shutil
 
 class Movefile(UpqJob):
-
+	def getFileName(self):
+		""" returns absolute filename """
+		if self.jobdata.has_key('file'):
+			return self.jobdata['file']
+		fid=int(self.jobdata['fid'])
+                results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % fid)
+		if os.path.exists(res['filename']): #filename can be an absolute path
+			filename=res['filename']
+		else:
+			filename = os.path.join(prefix, res['path'], res['filename']) #construct source filename from db
+	def getDstName(self, prefix, srcfile, subdir):
+		""" returns absolute destination filename """
+		return os.path.join(prefix, subdir, os.path.basename(srcfile))
 
 	def run(self):
 		"""
@@ -26,18 +38,13 @@ class Movefile(UpqJob):
 			
 		"""
 		fid=int(self.jobdata['fid'])
+		srcfile=self.getFileName()
 		results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % fid)
 		res=results.first()
+		status=1
 		if self.jobdata.has_key('status'):
 			status=self.jobdata['status']
 			del self.jobdata['status'] #delete param, as its only used in this job
-		else:
-			status=1
-		if self.jobdata.has_key('subdir'):
-			subdir=self.jobdata['subdir']
-			del self.jobdata['subdir'] #delete param, as its only used in this job
-		else:
-			subdir=""
 		if status==1:
 			prefix = UpqConfig().paths['files']
 		elif status==3:
@@ -45,27 +52,29 @@ class Movefile(UpqJob):
 		else:
 			self.logger.error("Invalid status")
 			return False
-		if os.path.exists(res['filename']): #filename can be an absolute path
-			filename=res['filename']
-		else:
-			filename = os.path.join(prefix, res['path'], res['filename']) #construct source filename from db
-		if not os.path.exists(filename):
-			self.logger.error("File doesn't exist: %s" % (filename));
+		subdir=""
+		if self.jobdata.has_key('subdir'):
+			subdir=self.jobdata['subdir']
+			del self.jobdata['subdir'] #delete param, as its only used in this job
+
+		dstfile=self.getDstName(prefix, srcfile, subdir)
+
+		if not os.path.exists(srcfile):
+			self.logger.error("File doesn't exist: %s" % (srcfile));
 			return False
-		source=filename
-		filename=os.path.basename(source)
-		dstfile=os.path.join(prefix, subdir, filename)
-		if source!=dstfile:
+		filename=os.path.basename(srcfile)
+		if srcfile!=dstfile:
 			if os.path.exists(dstfile):
-				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, filepath))
+				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, srcfile))
 				return False
-			shutil.move(source, dstfile)
-			UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%d" %(subdir,status, filename, fid))
+			shutil.move(srcfile, dstfile)
+			UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%d" %(subdir, status, filename, fid))
 			self.logger.debug("moved file to (abs)%s %s:(rel)%s" %(source, prefix,subdir))
-		elif filename!=source: #file is already in the destination dir, make filename relative
-			UpqDB().query("UPDATE file SET filename='%s' WHERE fid=%d" %(filename, fid))
+		elif filename!=srcfile: #file is already in the destination dir, make filename relative
+			UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%d" %(subdir, status, filename, fid))
 		try:
 			os.chmod(dstfile, int("0444",8))
 		except OSError:
 			pass
 		return True
+

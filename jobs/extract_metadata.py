@@ -80,18 +80,6 @@ class Extract_metadata(UpqJob):
 			for fname in dirList:
 				files+=fname
 			self.logger.warn("Didn't clean temp directory %s: %s" % (temppath, files));
-	def check(self):
-		if self.jobdata['fid']<=0:
-			self.msg("no id specified")
-			return False
-
-		results=UpqDB().query("SELECT * FROM file WHERE fid=%d AND status=1" % int(self.jobdata['fid']))
-		res=results.first()
-		if res == None:
-			self.msg("fid not found")
-			return False
-		id=self.enqueue_job()
-		return True
 	def getMapIdx(self, usync, filename):
 		mapcount = usync.GetMapCount()
 		for i in range(0, mapcount):
@@ -108,9 +96,9 @@ class Extract_metadata(UpqJob):
 				return i
 		return -1
 
-	def insertData(self, data, fid):
+	def insertData(self, data, filename):
 		for depend in data['Depends']:
-			res=UpqDB().query("SELECT fid FROM files WHERE CONCAT(name,' ',version)='%s'" % (depend))
+			res=UpqDB().query("SELECT fid FROM file WHERE CONCAT(name,' ',version)='%s'" % (depend))
 			row=res.first()
 			if not row:
 				id=0
@@ -134,15 +122,33 @@ class Extract_metadata(UpqJob):
 			metadata=""
 			self.msg("error encoding metadata")
 			pass
-		UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s' WHERE fid=%s" %(
+		res=UpqDB().query("SELECT fid FROM file WHERE sdp='%s'" % (data['sdp']))
+		row=res.first()
+		if not row:
+			fid=UpqDB().insert("file", {
+				"name": data['Name'],
+				"version": data['Version'],
+				"sdp": data['sdp'],
+				"cid": self.getCid(data['Type']),
+				"metadata": metadata,
+				"uid": 0,
+				"path": "",
+				"filename": filename,
+				"timestamp": UpqDB().now(), #fixme: use file timestamp
+				"size": os.path.getsize(filename)
+				})
+		else:
+			fid=row['fid']
+			UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s' WHERE fid=%s" %(
 				data['Name'],
 				data['Version'],
 				data['sdp'],
 				self.getCid(data['Type']),
 				metadata,
 				fid
-			))
+				))
 		self.msg("Updated %s '%s' version '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version']))
+		return fid
 	def initUnitSync(self, tmpdir, filename):
 		libunitsync=self.jobcfg['unitsync']
 		os.environ["SPRING_DATADIR"]=tmpdir
@@ -202,12 +208,9 @@ class Extract_metadata(UpqJob):
 
 	def run(self):
 		gc.collect()
-		fid=int(self.jobdata['fid'])
-		results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % fid)
-		res=results.first()
 		#filename of the archive to be scanned
-		filename=res['filename'] # filename only (no path info)
-		filepath=os.path.join(UpqConfig().paths['files'], res['path'], res['filename']) # absolute filename
+		filepath=self.jobdata['file']
+		filename=os.path.basename(filepath) # filename only (no path info)
 		metadatapath=UpqConfig().paths['metadata']
 
 		if not os.path.exists(filepath):
@@ -239,7 +242,7 @@ class Extract_metadata(UpqJob):
 			moveto=self.jobcfg['games-path']
 		data['sdp']=sdp
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
-		self.insertData(data, fid)
+		self.jobdata['fid']=self.insertData(data, filepath)
 		self.append_job("movefile", {"subdir": moveto})
 		err=usync.GetNextError()
 		while not err==None:
