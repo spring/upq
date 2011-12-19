@@ -117,6 +117,7 @@ class Extract_metadata(UpqJob):
 		try:
 			metadata=json.dumps(metadata)
 			metadata=metadata.replace("'","\\'")
+			metadata=metadata.replace('"','\\"')
 			metadata=metadata.replace("%", "%%")
 		except:	
 			metadata=""
