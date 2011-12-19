@@ -235,7 +235,8 @@ class Extract_metadata(UpqJob):
 			idx=self.getGameIdx(usync,filename)
 			if idx<0:
 				self.logger.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
-				self.append_job("movefile", { "status": 3 }) #mark file as broken
+				
+				self.enqueue_newjob("movefile", { "status": 3, "path": filepath }) #mark file as broken
 				return False
 			self.logger.debug("Extracting data from "+filename)
 			archivepath=usync.GetArchivePath(filename)+filename

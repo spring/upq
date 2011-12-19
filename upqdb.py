@@ -106,7 +106,8 @@ class UpqDB():
 			Column('cid', INTEGER(display_width=11)), #category of this file: game/map
 			Column('sdp', VARCHAR(length=32),unique=True), #for this file
 			Column('descriptionuri', VARCHAR(length=1024)),
-			Column('metadata', TEXT()))
+			Column('metadata', TEXT()),
+			UniqueConstraint('name', 'version'))
 		self.tables['image_file']=Table('image_file', self.meta,
 			Column('iid', INTEGER(display_width=10), nullable=False), #id of the image
 			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
