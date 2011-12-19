@@ -23,23 +23,14 @@ class my_download(urllib.URLopener):
 
 class Download(UpqJob):
 	"""
-		"download url:$url sdp:$sdp filename:$filename uid:$uid"	
+		"download url:$url"
 	"""
 
-	def check(self):
-		tmp=self.jobcfg['temppath']
-		self.msg(self.jobdata)
-		self.enqueue_job()
-		return True
-
 	def run(self):
-		#temporary disabled, springfiles.com isn't ready for that
-		return True
-		filename=os.path.basename(self.jobdata['filename'])
-		tmpfile=os.path.join(self.jobcfg['temppath'], filename)
-		dstfile=os.path.join(self.jobcfg['downloaddir'], filename)
 		url=self.jobdata['url']
-		uid=int(self.jobdata['uid'])
+		filename=os.path.basename(url)
+		tmpfile=os.path.join(self.getcfg('temppath', '/tmp'), filename)
+#		uid=int(self.jobdata['uid'])
 		self.logger.debug("going to download %s", url)
 		try:
 			filename, headers = my_download().retrieve(url, tmpfile)
@@ -47,9 +38,6 @@ class Download(UpqJob):
 		except Exception, e:
 			self.msg(e)
 			return False
-		#TODO validate somehow?
-		shutil.move(tmpfile, dstfile)
-		self.msg("Downloaded %s (%s bytes)" % (dstfile, os.path.getsize(dstfile)))
-		self.enqueue_newjob("new_file", { "filepath": dstfile, "filename": filename, "uid":uid })
+		self.jobdata['file']=tmpfile
 		return True
 
