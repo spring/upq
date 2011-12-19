@@ -27,6 +27,34 @@ function xmlrpc_search($req){
 	return $res;
 }
 
+/**
+* notify cron job about changes
+*/
+function _run_upq($job){
+        $timeout=5;
+        $sock = @stream_socket_client('unix:///tmp/.upq-incoming.sock', $errno, $errstr, $timeout);
+        if($sock===FALSE){
+                watchdog("filemirror", "error connecting to upq socket $errstr $fid");
+                return;
+        }
+        stream_set_timeout($sock, $timeout);
+        fwrite($sock, "$job\n");
+        $res=fgets($sock);
+        fclose($sock);
+        watchdog("filemirror", "result from upq: $res");
+        return $res;
+}
+
+
+function xmlrpc_upload($req){
+	if (!(array_has_key('url', $req))){
+		return "Error: Url not set in request!";
+	}
+	//FIXME: authentification!
+	$url=urlencode($req['url']);
+	return _run_upq("upload url:$url");
+}
+
 
 function main($argv){
 	$req=array(
@@ -52,6 +80,7 @@ if (array_key_exists('argv', $_SERVER)) {
 	if ($_SERVER['REQUEST_METHOD']=="POST"){
 		$callbacks = array(
 			"springfiles.search" => "xmlrpc_search",
+			"springfiles.upload" => "xmlrpc_upload",
 		);
 		xmlrpc_server($callbacks);
 	} else {
