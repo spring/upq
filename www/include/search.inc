@@ -105,6 +105,7 @@ function search($req){
 		LEFT JOIN mirror_file as m ON f.fid=m.fid
 		LEFT JOIN tag as t ON  f.fid=t.fid
 		WHERE c.cid>0
+		AND f.status=1
 		$query
 		ORDER BY f.fid DESC
 		LIMIT 0,10
