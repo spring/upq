@@ -402,6 +402,9 @@ class Extract_metadata(UpqJob):
 	def getFile(self, usync, archivehandle, filename):
 		""" returns the content of an archive"""
 		fileh=usync.OpenArchiveFile(archivehandle, filename)
+		if (fileh<0):
+			self.logger.error("Couldn't open %s" %(filename))
+			raise Exception("Couldn't open %s" %(filename))
 		size=usync.SizeArchiveFile(archivehandle, fileh)
 		if (size<0):
 			self.logger.error("Error getting size of %s" % (filename))
