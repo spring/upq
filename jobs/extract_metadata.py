@@ -139,7 +139,10 @@ class Extract_metadata(UpqJob):
 		else:
 			results=UpqDB().query("SELECT fid FROM file WHERE sdp='%s'"% (data['sdp']))
 			res=results.first()
-			fid=res['fid']
+			if res:
+				fid=res['fid']
+			else:
+				fid=0
 
 		if fid<=0:
 			fid=UpqDB().insert("file", {
@@ -164,7 +167,7 @@ class Extract_metadata(UpqJob):
 				metadata,
 				fid
 				))
-		self.msg("Updated %s '%s' version '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version']))
+		self.msg("Updated %s '%s' version '%s' sdp '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version'], data['sdp']))
 		return fid
 	def initUnitSync(self, tmpdir, filename):
 		libunitsync=self.jobcfg['unitsync']
@@ -235,6 +238,12 @@ class Extract_metadata(UpqJob):
 				return False
 			prefix=self.getPathByStatus(res['status'])
 			self.jobdata['file']=os.path.join(prefix, res['path'], res['filename'] )
+			if not os.path.exists(self.jobdata['file']):
+				self.logger.error("filepath from db doesn't exist %s" %(self.jobdata['file']))
+				return false
+		else:
+			self.logger.error("Either fid or file has to be set")
+			return False
 		self.enqueue_job()
 		return True
 	def run(self):
