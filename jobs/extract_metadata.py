@@ -79,7 +79,7 @@ class Extract_metadata(UpqJob):
 			files=""
 			for fname in dirList:
 				files+=fname
-			self.logger.warn("Didn't clean temp directory %s: %s" % (temppath, files));
+			self.logger.warn("Didn't clean temp directory %s: %s" % (temppath, files))
 	def getMapIdx(self, usync, filename):
 		mapcount = usync.GetMapCount()
 		for i in range(0, mapcount):
@@ -95,11 +95,24 @@ class Extract_metadata(UpqJob):
 			if filename==gamename:
 				return i
 		return -1
-
 	def escape(self, string):
 		string=string.replace("'","\\'")
 		string=string.replace('"','\\"')
 		string=string.replace("%", "%%")
+		return string
+
+	def decodeString(self, string):
+		try:
+			string=string.decode('utf-8')
+			return string
+		except:
+			pass
+		try:
+			string=string.decode('cp850')
+			return string
+		except:
+			self.logger.error("Error decoding string %s" % (string))	
+			return ""
 		return string
 
 	def insertData(self, data, filename):
@@ -120,12 +133,7 @@ class Extract_metadata(UpqJob):
 		del metadata['sdp']
 		del metadata['Version']
 		del metadata['Name']
-		try:
-			metadata=self.escape(json.dumps(metadata))
-		except:	
-			metadata=""
-			self.msg("error encoding metadata %s" % (metadata))
-			pass
+		metadata=self.escape(json.dumps(metadata))
 		if 'fid' in self.jobdata: # detect already existing files
 			fid=self.jobdata['fid']
 		else:
@@ -243,8 +251,10 @@ class Extract_metadata(UpqJob):
 		usync=self.initUnitSync(tmpdir, filename)
 		archiveh=self.openArchive(usync, os.path.join("games",filename))
 		filelist=self.getFileList(usync, archiveh)
-		sdp = self.getSDPName(usync, archiveh)
-
+		try:
+			sdp = self.getSDPName(usync, archiveh)
+		except:
+			self.movefile(filepath, 3, "")
 		idx=self.getMapIdx(usync,filename)
 		if idx>=0: #file is map
 			archivepath=usync.GetArchivePath(filename)+filename
@@ -358,8 +368,8 @@ class Extract_metadata(UpqJob):
 		res = []
 		count=usync.GetUnitCount()
 		for i in range(0, count):
-			res.append({ "UnitName": usync.GetUnitName(i),
-				"FullUnitName": usync.GetFullUnitName(i)})
+			res.append({ "UnitName": self.decodeString(usync.GetUnitName(i)),
+				"FullUnitName": self.decodeString(usync.GetFullUnitName(i))})
 		return res
 	def getFileList(self, usync, archiveh):
 		""" returns a list of all files in an archive """
@@ -397,8 +407,7 @@ class Extract_metadata(UpqJob):
 		m=hashlib.md5()
 		files.sort(cmp = lambda a, b: cmp(a.lower(), b.lower()))
 		if len(files)<=0:
-			self.logger.error("Zero files found!")
-			return ""
+			raise Exception("Zero files found!")
 		i=0
 		for f in files:
 			# ignore directory entries
@@ -436,7 +445,7 @@ class Extract_metadata(UpqJob):
 
 		res['Type']= "Game"
 		res['Name']= springname
-		res['Description']= usync.GetPrimaryModDescription(idx)
+		res['Description']= self.decodeString(usync.GetPrimaryModDescription(idx))
 		res['Version']= version
 		res['Depends']=self.getGameDepends(usync, idx, gamesarchivecount, archivename)
 		res['Units']=self.getUnits(usync, archivename)
@@ -449,7 +458,7 @@ class Extract_metadata(UpqJob):
 		res['Name'] = mapname
 
 		res['Author'] = usync.GetMapAuthor(idx)
-		res['Description'] = usync.GetMapDescription(idx)
+		res['Description'] = self.decodeString(usync.GetMapDescription(idx))
 		res['Gravity'] = usync.GetMapGravity(idx)
 		res['MaxWind'] = usync.GetMapWindMax(idx)
 		res['MinWind'] = usync.GetMapWindMin(idx)
@@ -484,7 +493,7 @@ class Extract_metadata(UpqJob):
 		dstfile=os.path.join(prefix, subdir, os.path.basename(srcfile))
 		filename=os.path.basename(srcfile)
 		if 'fid' in self.jobdata:
-			fid=self.jobdata['fid']
+			fid=int(self.jobdata['fid'])
 		else:
 			fid=0
 		if srcfile!=dstfile:
