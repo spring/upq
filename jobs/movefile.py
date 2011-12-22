@@ -20,7 +20,8 @@ class Movefile(UpqJob):
 		if self.jobdata.has_key('file'):
 			return self.jobdata['file']
 		fid=int(self.jobdata['fid'])
-                results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % fid)
+		results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % fid)
+		res=results.first()
 		if os.path.exists(res['filename']): #filename can be an absolute path
 			filename=res['filename']
 		else:
@@ -33,14 +34,20 @@ class Movefile(UpqJob):
 		"""
 			moves a file to a different directory
 			parameters:
+				file: absolute filename
+			or	
+				fid:
 				status: status of the file, 0=disabled, 1=active, 2=broken
 				subdir: subdir to move to (usally games|maps)
 			
 		"""
-		fid=int(self.jobdata['fid'])
-		srcfile=self.getFileName()
-		results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % fid)
-		res=results.first()
+		if self.jobdata.has_key('file'):
+			srcfile=self.jobdata['file']
+		else:
+			fid=int(self.jobdata['fid'])
+			srcfile=self.getFileName()
+			results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % fid)
+			res=results.first()
 		status=1
 		if self.jobdata.has_key('status'):
 			status=self.jobdata['status']
@@ -67,8 +74,12 @@ class Movefile(UpqJob):
 			if os.path.exists(dstfile):
 				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, srcfile))
 				return False
-			shutil.move(srcfile, dstfile)
-			UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%d" %(subdir, status, filename, fid))
+			try:
+				shutil.move(srcfile, dstfile)
+			except: #move failed, try to copy
+				shutil.copy(srcfile, dstfile)
+			if fid!=0 :
+				UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%d" %(subdir, status, filename, fid))
 			self.logger.debug("moved file to (abs)%s %s:(rel)%s" %(srcfile, prefix,subdir))
 		elif filename!=srcfile: #file is already in the destination dir, make filename relative
 			UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%d" %(subdir, status, filename, fid))

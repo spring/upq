@@ -28,8 +28,8 @@ class New_file(UpqJob):
 			result=UpqDB().query("SELECT * from file where filename LIKE '%s'" % ('%%'+self.jobdata['filename']))
 			res=result.first()
 			if res!=None:
+				self.jobdata['fid']=res['fid']
 				self.msg("File %s already exists: fid: %s"%(self.jobdata['file'], res['fid']))
-				return False
 			if not os.access(self.jobdata['file'], os.R_OK):
 				self.msg("Can't access %s"% self.jobdata['file'])
 				return False

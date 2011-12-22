@@ -96,6 +96,12 @@ class Extract_metadata(UpqJob):
 				return i
 		return -1
 
+	def escape(self, string):
+		string=string.replace("'","\\'")
+		string=string.replace('"','\\"')
+		string=string.replace("%", "%%")
+		return string
+
 	def insertData(self, data, filename):
 		for depend in data['Depends']:
 			res=UpqDB().query("SELECT fid FROM file WHERE CONCAT(name,' ',version)='%s'" % (depend))
@@ -115,20 +121,17 @@ class Extract_metadata(UpqJob):
 		del metadata['Version']
 		del metadata['Name']
 		try:
-			metadata=json.dumps(metadata)
-			metadata=metadata.replace("'","\\'")
-			metadata=metadata.replace('"','\\"')
-			metadata=metadata.replace("%", "%%")
+			metadata=self.escape(json.dumps(metadata))
 		except:	
 			metadata=""
-			self.msg("error encoding metadata")
+			self.msg("error encoding metadata %s" % (metadata))
 			pass
 		res=UpqDB().query("SELECT fid FROM file WHERE sdp='%s'" % (data['sdp']))
 		row=res.first()
 		if not row:
 			fid=UpqDB().insert("file", {
-				"name": data['Name'],
-				"version": data['Version'],
+				"name": self.escape(data['Name']),
+				"version": self.escape(data['Version']),
 				"sdp": data['sdp'],
 				"cid": self.getCid(data['Type']),
 				"metadata": metadata,
@@ -142,7 +145,7 @@ class Extract_metadata(UpqJob):
 		else:
 			fid=row['fid']
 			UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s' WHERE fid=%s" %(
-				data['Name'],
+				self.escape(data['Name']),
 				data['Version'],
 				data['sdp'],
 				self.getCid(data['Type']),
@@ -236,7 +239,7 @@ class Extract_metadata(UpqJob):
 			if idx<0:
 				self.logger.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
 				
-				self.enqueue_newjob("movefile", { "status": 3, "path": filepath }) #mark file as broken
+				self.enqueue_newjob("movefile", { "status": 3, "file": filepath }) #mark file as broken
 				return False
 			self.logger.debug("Extracting data from "+filename)
 			archivepath=usync.GetArchivePath(filename)+filename
@@ -244,6 +247,9 @@ class Extract_metadata(UpqJob):
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath)
 			moveto=self.jobcfg['games-path']
 		data['sdp']=sdp
+		if (sdp == "") or (data['Name'] == ""): #mark as broken because sdp / name is missing
+			self.enqueue_newjob("movefile", { "status": 3, "file": filepath })
+			return False
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
 		self.jobdata['fid']=self.insertData(data, filepath)
 		self.append_job("movefile", {"subdir": moveto})
@@ -342,25 +348,28 @@ class Extract_metadata(UpqJob):
 		""" returns a list of all files in an archive """
 		files = []
 		pos=0
-                #get a list of all files
-                while True:
-                        name=ctypes.create_string_buffer(1024)
-                        size=ctypes.c_int(1024)
-                        res=usync.FindFilesArchive(archiveh, pos, name, ctypes.byref(size))
-                        if res==0: #last file
-                                break
-                        fileh=usync.OpenArchiveFile(archiveh, name.value)
-                        if fileh<0:
-                                self.logger.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  ""+usync.GetNextError()))
-                                break
-                        files.append(name.value)
+		#get a list of all files
+		while True:
+			name=ctypes.create_string_buffer(1024)
+			size=ctypes.c_int(1024)
+			res=usync.FindFilesArchive(archiveh, pos, name, ctypes.byref(size))
+			if res==0: #last file
+				break
+			fileh=usync.OpenArchiveFile(archiveh, name.value)
+			if fileh<0:
+				self.logger.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  ""+usync.GetNextError()))
+				return []
+			files.append(name.value)
 			del name
-                        pos=pos+1
+			pos=pos+1
 		return files
 	def getFile(self, usync, archivehandle, filename):
 		""" returns the content of an archive"""
 		fileh=usync.OpenArchiveFile(archivehandle, filename)
 		size=usync.SizeArchiveFile(archivehandle, fileh)
+		if (size<0):
+			self.logger.error("Error getting size of %s" % (filename))
+			raise Exception("Error getting size of %s" % (filename))
 		buf = ctypes.create_string_buffer(size)
 		bytes=usync.ReadArchiveFile(archivehandle, fileh, buf, size)
 		usync.CloseArchiveFile(archivehandle, fileh)
@@ -372,11 +381,15 @@ class Extract_metadata(UpqJob):
 		files.sort(cmp = lambda a, b: cmp(a.lower(), b.lower()))
 		if len(files)<=0:
 			self.logger.error("Zero files found!")
+			return ""
 		i=0
 		for f in files:
 			# ignore directory entries
 			if f[-1] == '/': continue
-			content = self.getFile(usync, archiveh, f)
+			try:
+				content = self.getFile(usync, archiveh, f)
+			except:
+				return ""
 			m.update(hashlib.md5(f.lower()).digest())
 			m.update(hashlib.md5(content).digest())
 			del content
