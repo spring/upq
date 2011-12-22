@@ -472,20 +472,6 @@ class Extract_metadata(UpqJob):
 		res['Version']=version
 		return res
 
-	def getFileName(self):
-		""" returns absolute filename """
-		if self.jobdata.has_key('file'):
-			return self.jobdata['file']
-		fid=int(self.jobdata['fid'])
-		results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % fid)
-		res=results.first()
-		if os.path.exists(res['filename']): #filename can be an absolute path
-			filename=res['filename']
-		else:
-			filename = os.path.join(prefix, res['path'], res['filename']) #construct source filename from db
-	def getDstName(self, prefix, srcfile, subdir):
-		""" returns absolute destination filename """
-		return os.path.join(prefix, subdir, os.path.basename(srcfile))
 	def getPathByStatus(self, status):
 		if status==1:
 			return UpqConfig().paths['files']
@@ -495,7 +481,7 @@ class Extract_metadata(UpqJob):
 
 	def movefile(self, srcfile, status, subdir):
 		prefix=self.getPathByStatus(status)
-		dstfile=self.getDstName(prefix, srcfile, subdir)
+		dstfile=os.path.join(prefix, subdir, os.path.basename(srcfile))
 		filename=os.path.basename(srcfile)
 		if 'fid' in self.jobdata:
 			fid=self.jobdata['fid']
@@ -507,8 +493,12 @@ class Extract_metadata(UpqJob):
 				return False
 			try:
 				shutil.move(srcfile, dstfile)
-			except: #move failed, try to copy
+			except: #move failed, try to copy + delete
 				shutil.copy(srcfile, dstfile)
+				try:
+					os.remove(srcfile)
+				except:
+					self.log.warn("Removing src file failed: %s" % (srcfile))
 			if fid>0:
 				UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%s" %(subdir, status, filename, int(fid)))
 			self.logger.debug("moved file to (abs)%s %s:(rel)%s" %(srcfile, prefix,subdir))
