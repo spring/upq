@@ -97,7 +97,6 @@ function search($req){
 		LOWER(c.name) as category,
 		f.size as size,
 		f.timestamp as timestamp,
-		f.torrent as torrent_file,
 		f.descriptionuri as description,
 		f.metadata as metadata
 		FROM file as f
@@ -155,8 +154,9 @@ function search($req){
 		while($row = db_fetch_array($result)){
 			$res[$i]['tags'][]=$row['tag'];
 		}
-		if(array_key_exists('torrent', $req) && (strlen($res[$i]['torrent_file'])>0)){
-			$res[$i]['torrent']=_file_mirror_gettorrent($config['metadata'].'/'.$res[$i]['torrent_file']);
+		$torrent_file=$config['metadata'].'/'.$res[$i]['sdp'];
+		if(array_key_exists('torrent', $req) && file_exists($torrent_file)){
+			$res[$i]['torrent']=_file_mirror_gettorrent($torrent_file);
 		}
 		$metadata=_get_metadata($res[$i]['metadata']);
 		if (array_key_exists('images', $req)){
