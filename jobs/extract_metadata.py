@@ -126,9 +126,14 @@ class Extract_metadata(UpqJob):
 			metadata=""
 			self.msg("error encoding metadata %s" % (metadata))
 			pass
-		res=UpqDB().query("SELECT fid FROM file WHERE sdp='%s'" % (data['sdp']))
-		row=res.first()
-		if not row:
+		if 'fid' in self.jobdata: # detect already existing files
+			fid=self.jobdata['fid']
+		else:
+			results=UpqDB().query("SELECT fid FROM file WHERE sdp='%s'"% (data['sdp']))
+			res=results.first()
+			fid=res['fid']
+
+		if fid<=0:
 			fid=UpqDB().insert("file", {
 				"name": self.escape(data['Name']),
 				"version": self.escape(data['Version']),
@@ -143,7 +148,6 @@ class Extract_metadata(UpqJob):
 				"status": 1,
 				})
 		else:
-			fid=row['fid']
 			UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s' WHERE fid=%s" %(
 				self.escape(data['Name']),
 				data['Version'],
@@ -210,7 +214,21 @@ class Extract_metadata(UpqJob):
 					self.logger.error("Invalid image %s" % (f))
 					pass
 		return res
-
+	def check(self):
+		if 'file' in self.jobdata:
+			if not os.path.exists(self.jobdata['file']):
+				self.logger.error("File %s doesn't exist" % self.jobdata['file'])
+				return False
+		elif 'fid' in self.jobdata:
+			results=UpqDB().query("SELECT filename, path, status FROM file WHERE fid=%s" % (int(self.jobdata['fid'])))
+			res=results.first()
+			if not res:
+				self.logger.error("Fid not found in db")
+				return False
+			prefix=self.getPathByStatus(res['status'])
+			self.jobdata['file']=os.path.join(prefix, res['path'], res['filename'] )
+		self.enqueue_job()
+		return True
 	def run(self):
 		gc.collect()
 		#filename of the archive to be scanned
@@ -238,8 +256,7 @@ class Extract_metadata(UpqJob):
 			idx=self.getGameIdx(usync,filename)
 			if idx<0:
 				self.logger.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
-				
-				self.enqueue_newjob("movefile", { "status": 3, "file": filepath }) #mark file as broken
+				self.movefile(filepath, 3, "")
 				return False
 			self.logger.debug("Extracting data from "+filename)
 			archivepath=usync.GetArchivePath(filename)+filename
@@ -248,11 +265,11 @@ class Extract_metadata(UpqJob):
 			moveto=self.jobcfg['games-path']
 		data['sdp']=sdp
 		if (sdp == "") or (data['Name'] == ""): #mark as broken because sdp / name is missing
-			self.enqueue_newjob("movefile", { "status": 3, "file": filepath })
+			self.movefile(filepath, 3, "")
 			return False
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
 		self.jobdata['fid']=self.insertData(data, filepath)
-		self.append_job("movefile", {"subdir": moveto})
+		self.movefile(filepath, 1, moveto)
 		err=usync.GetNextError()
 		while not err==None:
 			self.logger.error(err)
@@ -454,4 +471,52 @@ class Extract_metadata(UpqJob):
 		version="" #TODO: add support
 		res['Version']=version
 		return res
+
+	def getFileName(self):
+		""" returns absolute filename """
+		if self.jobdata.has_key('file'):
+			return self.jobdata['file']
+		fid=int(self.jobdata['fid'])
+		results=UpqDB().query("SELECT * FROM file WHERE fid=%d" % fid)
+		res=results.first()
+		if os.path.exists(res['filename']): #filename can be an absolute path
+			filename=res['filename']
+		else:
+			filename = os.path.join(prefix, res['path'], res['filename']) #construct source filename from db
+	def getDstName(self, prefix, srcfile, subdir):
+		""" returns absolute destination filename """
+		return os.path.join(prefix, subdir, os.path.basename(srcfile))
+	def getPathByStatus(self, status):
+		if status==1:
+			return UpqConfig().paths['files']
+		elif status==3:
+			return UpqConfig().paths['broken']
+		raise Exception("Unknown status %s" %(status))
+
+	def movefile(self, srcfile, status, subdir):
+		prefix=self.getPathByStatus(status)
+		dstfile=self.getDstName(prefix, srcfile, subdir)
+		filename=os.path.basename(srcfile)
+		if 'fid' in self.jobdata:
+			fid=self.jobdata['fid']
+		else:
+			fid=0
+		if srcfile!=dstfile:
+			if os.path.exists(dstfile):
+				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, srcfile))
+				return False
+			try:
+				shutil.move(srcfile, dstfile)
+			except: #move failed, try to copy
+				shutil.copy(srcfile, dstfile)
+			if fid>0:
+				UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%s" %(subdir, status, filename, int(fid)))
+			self.logger.debug("moved file to (abs)%s %s:(rel)%s" %(srcfile, prefix,subdir))
+		elif filename!=srcfile: #file is already in the destination dir, make filename relative
+			UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%d" %(subdir, status, filename, fid))
+		try:
+			os.chmod(dstfile, int("0444",8))
+		except OSError:
+			pass
+		return True
 
