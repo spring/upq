@@ -96,8 +96,8 @@ class Extract_metadata(UpqJob):
 				return i
 		return -1
 	def escape(self, string):
-		string=string.replace("'","\\'")
-		string=string.replace('"','\\"')
+		string=string.replace("'","''")
+#		string=string.replace('"','\"')
 		string=string.replace("%", "%%")
 		return string
 
@@ -106,16 +106,16 @@ class Extract_metadata(UpqJob):
 			return ""
 		try:
 			string=string.decode('utf-8')
-			return string
+			return self.escape(string)
 		except:
 			pass
 		try:
 			string=string.decode('cp850')
-			return string
+			return self.escape(string)
 		except:
 			self.logger.error("Error decoding string %s" % (string))	
 			return ""
-		return string
+		return self.escape(string)
 
 	def insertData(self, data, filename):
 		for depend in data['Depends']:
@@ -135,7 +135,7 @@ class Extract_metadata(UpqJob):
 		del metadata['sdp']
 		del metadata['Version']
 		del metadata['Name']
-		metadata=self.escape(json.dumps(metadata))
+		metadata=json.dumps(metadata)
 		if 'fid' in self.jobdata: # detect already existing files
 			fid=self.jobdata['fid']
 		else:
