@@ -102,6 +102,8 @@ class Extract_metadata(UpqJob):
 		return string
 
 	def decodeString(self, string):
+		if string is None:
+			return ""
 		try:
 			string=string.decode('utf-8')
 			return string
@@ -185,7 +187,7 @@ class Extract_metadata(UpqJob):
 	def openArchive(self, usync, filename):
                 archiveh=usync.OpenArchive(filename)
                 if archiveh==0:
-                        self.logger.error("OpenArchive(%s) failed" % filename)
+                        self.logger.error("OpenArchive(%s) failed: %s" % (filename, usync.GetNextError()))
                         return False
 		return archiveh
 	def saveImage(self, image, size):
@@ -203,7 +205,7 @@ class Extract_metadata(UpqJob):
 		absname=os.path.join(UpqConfig().paths['metadata'], filename)
 		image.save(absname)
 		os.chmod(absname,int("0644",8))
-		self.logger.info("Wrote " + absname)
+		self.logger.debug("Wrote " + absname)
 		return filename
 
 	def createSplashImages(self, usync, archiveh, filelist):
@@ -211,7 +213,7 @@ class Extract_metadata(UpqJob):
 		count=0
 		for f in filelist:
 			if f.lower().startswith('bitmaps/loadpictures'):
-				self.logger.info("Reading %s" % (f))
+				self.logger.debug("Reading %s" % (f))
 				buf=self.getFile(usync, archiveh, f)
 				ioobj=StringIO.StringIO()
 				ioobj.write(buf)
@@ -264,6 +266,8 @@ class Extract_metadata(UpqJob):
 			sdp = self.getSDPName(usync, archiveh)
 		except:
 			self.movefile(filepath, 3, "")
+			self.msg("couldn't get sdp hash")
+			return False
 		idx=self.getMapIdx(usync,filename)
 		if idx>=0: #file is map
 			archivepath=usync.GetArchivePath(filename)+filename
@@ -292,9 +296,9 @@ class Extract_metadata(UpqJob):
 			return False
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
 		self.jobdata['fid']=self.insertData(data, filepath)
-		self.movefile(filepath, 1, moveto)
 		filepath = self.normalizeFilename(filepath, self.jobdata['fid'], data['Name'], data['Version'])
 		self.jobdata['file']=filepath
+		self.movefile(filepath, 1, moveto)
 		err=usync.GetNextError()
 		while not err==None:
 			self.logger.error(err)
