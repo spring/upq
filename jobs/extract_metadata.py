@@ -269,7 +269,11 @@ class Extract_metadata(UpqJob):
 			archivepath=usync.GetArchivePath(filename)+filename
 			springname = usync.GetMapName(idx)
 			data=self.getMapData(usync, filename, idx)
-			data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
+			try:
+				data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
+			except:
+				self.movefile(filepath, 3, "")
+				return False
 			moveto=self.jobcfg['maps-path']
 		else: # file is a game
 			idx=self.getGameIdx(usync,filename)
@@ -347,8 +351,10 @@ class Extract_metadata(UpqJob):
 			im = Image.frombuffer(decoder, (width, height), data, "raw", decoderparm)
 			im=im.convert("L")
 			res=self.saveImage(im, size)
-		del data
-		return res
+			del data
+			return res
+		self.logger.error("Error creating image")
+		raise Exception("Error creating image")
 
 	def dumpmap(self, usync, springname, outpath, filename, idx):
 		mapwidth=float(usync.GetMapWidth(idx))
@@ -548,6 +554,11 @@ class Extract_metadata(UpqJob):
 				res+="_"
 		dstfile=os.path.join(os.path.dirname(srcfile), res)
 		if srcfile!=dstfile:
+			results=UpqDB().query("SELECT fid FROM file WHERE BINARY filename='%s' AND status=1" % (res))
+			row=results.first()
+			if row or os.path.exists(dstfile):
+				self.logger.error("Error renaming file: %s already exists!" % (dstfile))
+				return srcfile
 			shutil.move(srcfile, dstfile)
 			UpqDB().query("UPDATE file SET filename='%s' WHERE fid=%s" %(res, fid))
 			self.logger.info("Normalized filename to %s "%(dstfile))
