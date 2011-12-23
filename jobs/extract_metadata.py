@@ -240,7 +240,7 @@ class Extract_metadata(UpqJob):
 			self.jobdata['file']=os.path.join(prefix, res['path'], res['filename'] )
 			if not os.path.exists(self.jobdata['file']):
 				self.logger.error("filepath from db doesn't exist %s" %(self.jobdata['file']))
-				return false
+				return False
 		else:
 			self.logger.error("Either fid or file has to be set")
 			return False
@@ -289,13 +289,15 @@ class Extract_metadata(UpqJob):
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
 		self.jobdata['fid']=self.insertData(data, filepath)
 		self.movefile(filepath, 1, moveto)
+		filepath = self.normalizeFilename(filepath, self.jobdata['fid'], data['Name'], data['Version'])
+		self.jobdata['file']=filepath
 		err=usync.GetNextError()
 		while not err==None:
 			self.logger.error(err)
 			err=usync.GetNextError()
 		usync.UnInit()
 		del usync
-		if not self.jobcfg.has_key('keeptemp'):
+		if not 'keeptemp' in  self.jobcfg:
 			self.cleandir(tmpdir)
 		return True
 
@@ -530,4 +532,24 @@ class Extract_metadata(UpqJob):
 		except OSError:
 			pass
 		return True
+	def normalizeFilename(self, srcfile, fid, name, version):
+		""" normalize filename + renames file + updates filename in database """
+		name=name.lower()
+		if len(version)>0:
+			name = name +"-" + version.lower()
+		_, extension = os.path.splitext(srcfile)
+		name += extension
 
+		res=""
+		for c in name:
+			if c in "abcdefghijklmnopqrstuvwxyz-_.01234567890":
+				res+=c
+			else:
+				res+="_"
+		dstfile=os.path.join(os.path.dirname(srcfile), res)
+		if srcfile!=dstfile:
+			shutil.move(srcfile, dstfile)
+			UpqDB().query("UPDATE file SET filename='%s' WHERE fid=%s" %(res, fid))
+			self.logger.info("Normalized filename to %s "%(dstfile))
+		return dstfile
+	
