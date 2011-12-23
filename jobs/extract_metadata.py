@@ -488,8 +488,8 @@ class Extract_metadata(UpqJob):
 		res['MinWind'] = usync.GetMapWindMin(idx)
 		res['TidalStrength'] = usync.GetMapTidalStrength(idx)
 
-		res['Height'] = usync.GetMapHeight(idx)
-		res['Width'] = usync.GetMapWidth(idx)
+		res['Height'] = usync.GetMapHeight(idx) / 512
+		res['Width'] = usync.GetMapWidth(idx) / 512
 
 		res['Gravity'] = usync.GetMapGravity(idx)
 		res['MapFileName'] = usync.GetMapFileName(idx)
