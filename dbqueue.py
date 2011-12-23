@@ -37,7 +37,7 @@ class DBQueue(Queue, object):
             result=0
         else:
              result=1
-        query="UPDATE upqueue SET status=0, end_time=NOW(), result_msg='%s' WHERE jobid = %d" % (msgstr, int(job.jobid))
+        query="UPDATE upqueue SET status=0, end_time=NOW(), result_msg='%s' WHERE jobid = %s" % (msgstr, int(job.jobid))
         UpqDB().query(query)
         super(DBQueue, self).task_done()
 

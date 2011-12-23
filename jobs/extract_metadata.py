@@ -357,7 +357,7 @@ class Extract_metadata(UpqJob):
 			res=self.saveImage(im, size)
 			del data
 			return res
-		self.logger.error("Error creating image")
+		self.msg("Error creating image %s" % (usync.usync.GetNextError()))
 		raise Exception("Error creating image")
 
 	def dumpmap(self, usync, springname, outpath, filename, idx):
