@@ -52,7 +52,7 @@ function xmlrpc_upload($req){
 	}
 	//FIXME: authentification!
 	$url=urlencode($req['url']);
-	return _run_upq("upload url:$url");
+	return _run_upq("download url:$url");
 }
 
 
