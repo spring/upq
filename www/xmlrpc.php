@@ -12,7 +12,7 @@ require("include/search.inc");
 	logs an xml-rpc request to database
 */
 function xml_log($req, $method){
-	db_query("INSERT INTO xmlrpc_log (ip, method, data) VALUES ('%s', '%s', '%s')", array($_SERVER['REMOTE_ADDR'], $method, json_encode($req)));
+	db_query("INSERT INTO xmlrpc_log (ip, method, data, agent) VALUES ('%s', '%s', '%s', '%s')", array($_SERVER['REMOTE_ADDR'], $method, json_encode($req), $_SERVER['HTTP_USER_AGENT']));
 	
 }
 
