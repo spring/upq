@@ -59,9 +59,9 @@ INSTALLATION AND CONFIGURATION
 You can put all of this software wherever you like - probably something like
 /usr/local/upq. The directories for UpqJobs and UpqTasks are configurable.
 
-For Job persistence data is stored in a MySQL DB. It needs a table in some
-database. Configuration is in section "[db]". Just load upq.sql into any db, and
-configure it in upq.cfg. All DB related code is in upqdb.py.
+For Job persistence data is stored in a Database. Configuration is in section
+"[db]". Just edit the section to configure the db and start up upq. Tables
+are created automaticly.
 
 Configuration in upq.cfg is pretty self explanatory. Important: UpqJobs will
 only be loaded if they have a section in upq.cfg!
@@ -75,7 +75,7 @@ and log file ([logging]->logfile).
 
 CREATING NEW JOBS
 -----------------
-The whole point of upqis to be able to easily write and schedule Jobs by just
+The whole point of upq is to be able to easily write and schedule Jobs by just
 deriving from a class and editing an ini-file.
 
 To create a new job do:
@@ -102,28 +102,17 @@ log.py                  logging
 module_loader.py        finds and loads job and task modules
 notify.py               admin notification system
 parseconfig.py          parse upq.cfg
+upqjob.py               Job classes derive from this
 upq.cfg                 [ini]-style configuration file
 upq-cli.py              cmd line client for testing purposes
 upqdb.py                DB tool class, all DB code is in this file
 upq.py                  main(), invoke this with "$ ./upq.py"
 upqqueuemngr.py         queue management
 upqserver.py            socket server & request handler code
-upq.sql                 SQL table
 jobs/                   UpqJob modules reside inside this directory, deployment
-                            location is configurable in upq.cfg
-    archive_file.py     move old versions of maps/mods into archive dir, not yet
-                            implemented (nyi)
-    list_queue.py       list jobs in the queue(s)
-    new_file.py         do something with a new map/mod, nyi
-    upqjob.py           Job classes derive from this
-    verify_local_file.py  check if on-disk files hashes match those stored in DB
-    verify_remote_file.py check integrity of a file on a mirror
-    extract_metadata.py extract metadata from map/mod, nyi
-    hash.py             hash a on-disk file
-    list_queue_t.py     list jobs in the queue(s)
-    mirror_upload.py    upload a file to mirror(s)
-    move_file_to_archive.py move old versions of maps/mods into archive dir, nyi
-    remote_md5.py       retrieve MD5 of a file for a mirror, nyi
+                        location is configurable in upq.cfg, for description
+                        of files in this directory look into the header of
+                        the file
 
 
 BUG / FEATURE REQUESTS

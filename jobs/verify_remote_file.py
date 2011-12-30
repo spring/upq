@@ -6,14 +6,9 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#
 # Verify_remote_file: check the integrity of a file on a mirror by comparing
 # the result of the PHP-script "daemon.php" with the stored hash in the DB
-# 
 
-#
-# call this module with argument "<fmfid>"
-#
 
 import upqjob
 import upqdb
@@ -28,6 +23,9 @@ class Verify_remote_file(upqjob.UpqJob):
 
     
     def run(self):
+        """
+            call this module with argument "<fmfid>"
+        """
         # get files hash from DB
         fmfid=int(self.jobdata['mfid'])
         result = upqdb.UpqDB().query("SELECT md5, mf.fid, url_prefix, url_daemon, mf.path \

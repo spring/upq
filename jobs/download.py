@@ -6,9 +6,7 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#
-# download: downloads a file, adds to db + calls new_file
-#
+# downloads a file
 
 from upqjob import UpqJob
 from upqdb import UpqDB
@@ -31,7 +29,6 @@ class Download(UpqJob):
 		filename=os.path.basename(url)
 		tmpfile=os.path.join(self.getcfg('temppath', '/tmp'), filename)
 		self.jobdata['file']=tmpfile
-#		uid=int(self.jobdata['uid'])
 		self.logger.debug("going to download %s", url)
 		try:
 			filename, headers = my_download().retrieve(url, tmpfile)

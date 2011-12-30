@@ -1,3 +1,15 @@
+# -*- coding: utf-8 -*-
+# This file is part of the "upq" program used on springfiles.com to manage file
+# uploads, mirror distribution etc. It is published under the GPLv3.
+#
+#Copyright (C) 2011 Matthias Ableitner (spring #at# abma #dot# de)
+#
+#You should have received a copy of the GNU General Public License
+#along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# sets tags for already known files taken from the file list of the "rapid"
+# download system
+
 import urllib
 import gzip
 import urlparse
@@ -8,7 +20,7 @@ from upqdb import UpqDB
 
 class Rapidsync(UpqJob):
 	def run(self):
-		repos=self.fetchListing(self.getcfg('mainrepo', "http://repos.caspring.org/repos.gz"))
+		repos=self.fetchListing(self.getcfg('mainrepo', "http://repos.springrts.com/repos.gz"))
 		i=0
 		for repo in repos:
 			sdps=self.fetchListing(repo[1] + "/versions.gz")

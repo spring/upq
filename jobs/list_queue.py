@@ -6,9 +6,7 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#
 # List_queue produces a human readable list of what's in the queues.
-#
 
 import log
 from upqjob import UpqJob

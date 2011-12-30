@@ -6,10 +6,7 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#
 # New_file: handle new files on springfiles.com
-# inserts file into db + forks hash job
-#
 
 from upqjob import UpqJob
 from upqdb import UpqDB
@@ -55,7 +52,5 @@ class New_file(UpqJob):
 				self.msg("fid not found in db!")
 				return False
 			self.msg("File already known, Filename: %s Size: %d" % (res['filename'], res['size']))
-			#fixme: calculate filename
-			#self.jobdata['file'] = os.path.join(...)
 		return True
 

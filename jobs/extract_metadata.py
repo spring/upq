@@ -1,13 +1,12 @@
 # This file is part of the "upq" program used on springfiles.com to manage file
 # uploads, mirror distribution etc. It is published under the GPLv3.
 #
-#Copyright (C) 2011 Daniel Troeder (daniel #at# admin-box #dot# com)
+#Copyright (C) 2011 Matthias Ableitner (spring #at# abma #dot# de)
 #
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#called with fileid, extracts/inserts metadata
-#calls upload
+# extracts metadata from a spring map / game and adds it into the db
 
 from upqjob import UpqJob
 from upqdb import UpqDB,UpqDBIntegrityError
