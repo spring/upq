@@ -103,9 +103,9 @@ GROUP by m.mid"% fid)
 					self.logger("file already uploaded: mfid=%d" % (id))
                 self.logger.debug("inserted into db as %d", id)
                 self.enqueue_newjob("verify_remote_file", {"mfid": id})
-            except ftplib.all_errors, e:
+            except ftplib.all_errors as e:
                 self.logger.error("Ftp-Error (%s) %s failed %s" % (host, srcfilename,e))
-            except Exception, e:
+            except Exception as e:
                 self.logger.error("Upload (%s) %s failed %s" % (host, srcfilename,e));
                 return False
             uploadcount+=1

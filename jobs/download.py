@@ -36,7 +36,7 @@ class Download(UpqJob):
 		try:
 			filename, headers = my_download().retrieve(url, tmpfile)
 			urllib.urlcleanup()
-		except Exception, e:
+		except Exception as e:
 			self.msg(e)
 			return False
 		return True

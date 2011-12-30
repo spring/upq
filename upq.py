@@ -49,7 +49,7 @@ class Upq():
             os.remove(UpqConfig().paths['socket'])
         try:
             server = upqserver.UpqServer(UpqConfig().paths['socket'], upqserver.UpqRequestHandler)
-        except Exception, e:
+        except Exception as e:
            msg="Couldn't create socket %s %s" %(UpqConfig().paths['socket'], e)
            self.logger.error(msg)
            print >>sys.stderr, msg

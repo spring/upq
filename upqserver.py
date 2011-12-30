@@ -71,7 +71,7 @@ class UpqRequestHandler(SocketServer.StreamRequestHandler):
                     logger.debug(msg)
                     self.wfile.write("ERR "+msg+'\n')
                     break
-            except Exception, e:
+            except Exception as e:
                 logger.error("Exception on job: %s" %(traceback.format_exc(100)))
                 self.wfile.write("ERR Exception caught while handling job\n")
             logger.debug("sent: '%s'", uj.msgstr)

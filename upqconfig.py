@@ -67,7 +67,7 @@ class UpqConfig():
         try:
             self.config = ConfigParser.RawConfigParser()
             self.config.read(self.configfile)
-        except Exception,e:
+        except Exception as e:
             print >> sys.stderr, "Couldn't parse %s %s" % (self.configfile, e)
             sys.exit(1)
         self.logging = {}

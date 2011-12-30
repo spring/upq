@@ -73,7 +73,7 @@ class Sf_sync(UpqJob):
 			rpcres=proxy.springfiles.sync(username, password, data)
 			for rpc in rpcres: #set description url received from springfiles
 				UpqDB().query("UPDATE file SET descriptionuri='%s' WHERE fid=%d" % (rpc['url'], rpc['fid']))
-		except Exception, e:
+		except Exception as e:
 			self.msg("xmlrpc  springfiles.sync() error: %s" %(e))
 			return False
 		self.logger.debug("received from springfiles: %s", rpcres)
@@ -103,7 +103,7 @@ class Sf_sync(UpqJob):
 			try:
 				sid=int(proxy.springfiles.getlastsyncid(username, password))
 				self.logger.debug("Fetched sid from springfiles: %d" % (sid));
-			except Exception, e:
+			except Exception as e:
 					self.msg("xmlrpc springfiles.getlastsyncid() error: %s"%(e))
 					return False
 		if sid>0:
