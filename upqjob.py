@@ -29,9 +29,7 @@ class UpqJob(object):
         # in notify(), if and only if it is (JSON)-serializable!
         self.jobname = jobname
         self.jobcfg  = UpqConfig().jobs[jobname] #settings from config-file
-        if jobdata.has_key('subjobs'): # use runtime subjobs if set
-            jobdata['subjobs'] = jobdata['subjobs']
-        elif self.jobcfg.has_key('subjobs'): # next subjobs from config
+        if not jobdata.has_key('subjobs') and self.jobcfg.has_key('subjobs'): # use subjobs from config if not runtime set
             jobdata['subjobs'] = self.jobcfg['subjobs']
         else:
             jobdata['subjobs'] = [] # no subjobs defined, initialize empty
