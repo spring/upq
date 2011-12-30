@@ -44,9 +44,14 @@ enabled = true
 # number of max. concurrent executions of this job, 0 means the main server will
 # handle it syncroniously (connection blocking!)
 concurrent = 3
-notify_fail = retry:3
-notify_success =
-subjobs = movefile hash createtorrent extract_metadata upload sf_sync
+# notify_fail =
+# notify_success =
+subjobs = extract_metadata hash createtorrent upload sf_sync
+
+[job download]
+enabled = true
+concurrent = 1
+subjobs = new_file extract_metadata hash createtorrent upload sf_sync
 
 [job archive_file]
 enabled = true
@@ -73,8 +78,8 @@ prefix = sites/default/files/
 [job test]
 enabled = true
 concurrent = 100
-notify_success = syslog mail:test@example.org
-notify_fail = retrywait:2|1h syslog
+#notify_success = syslog mail:test@example.org
+#notify_fail = syslog mail:test@example.org
 
 [job remote_md5]
 enabled = true
@@ -113,10 +118,6 @@ mainrepo=http://repos.springrts.com/repos.gz
 temppath=/tmp
 
 [job createtorrent]
-enabled = true
-concurrent = 1
-
-[job movefile]
 enabled = true
 concurrent = 1
 
