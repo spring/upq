@@ -154,7 +154,7 @@ function search($req){
 		while($row = db_fetch_array($result)){
 			$res[$i]['tags'][]=$row['tag'];
 		}
-		$torrent_file=$config['metadata'].'/'.$res[$i]['sdp'];
+		$torrent_file='metadata/'.$res[$i]['sdp'].'.torrent';
 		if(array_key_exists('torrent', $req) && file_exists($torrent_file)){
 			$res[$i]['torrent']=_file_mirror_gettorrent($torrent_file);
 		}
