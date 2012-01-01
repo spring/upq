@@ -57,12 +57,11 @@ function _run_upq($job){
 
 function xmlrpc_upload($req){
 	xml_log($req, 'upload');
-	if (!(array_has_key('url', $req))){
+	if (!(array_key_exists('url', $req))){
 		return "Error: Url not set in request!";
 	}
 	//FIXME: authentification!
-	$url=urlencode($req['url']);
-	return _run_upq("download url:$url");
+	return _run_upq("download url:".$req['url']);
 }
 
 
