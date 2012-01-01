@@ -23,6 +23,12 @@ class Download(UpqJob):
 	"""
 		"download url:$url"
 	"""
+	def check(self):
+		if not 'url' in self.jobdata:
+			return False
+		self.enqueue_job()
+		self.msg("Downloading " + self.jobdata['url'])
+		return True
 
 	def run(self):
 		url=self.jobdata['url']
@@ -34,7 +40,7 @@ class Download(UpqJob):
 			filename, headers = my_download().retrieve(url, tmpfile)
 			urllib.urlcleanup()
 		except Exception as e:
-			self.msg(e)
+			self.msg(str(e))
 			return False
 		return True
 
