@@ -34,7 +34,8 @@ class UpqJob(object):
         if jobdata.has_key('subjobs'): #runtime set subjobs are available
             jobdata['subjobs']=jobdata['subjobs'] 
         elif self.jobcfg.has_key('subjobs'):
-            jobdata['subjobs']=self.jobcfg['subjobs']
+            # make copy of subjobs, as we modify them later
+            jobdata['subjobs']=self.jobcfg['subjobs'][:]
         else:
             jobdata['subjobs'] = [] # no subjobs defined, initialize empty
         self.jobdata = jobdata #runtime parameters, these are stored into database and restored on re-run
