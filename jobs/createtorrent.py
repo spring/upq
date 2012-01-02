@@ -49,7 +49,7 @@ class Createtorrent(UpqJob):
 
 		res=self.create_torrent(absfilename, torrent)
 		if res:
-			UpqDB().query("UPDATE file SET torrent='%s' WHERE fid=%s" %(os.path.basename(torrent), fid))
+			UpqDB().query("UPDATE file SET torrent=1 WHERE fid=%s" %(fid))
 		return res
 
 	def create_torrent(self, filename, output):
