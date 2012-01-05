@@ -306,7 +306,7 @@ class Extract_metadata(UpqJob):
 		while not err==None:
 			self.logger.error(err)
 			err=usync.GetNextError()
-		sync.CloseArchive(archiveh)
+		usync.CloseArchive(archiveh)
 		usync.UnInit()
 		del usync
 		if not 'keeptemp' in  self.jobcfg:
