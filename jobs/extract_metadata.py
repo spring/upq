@@ -266,6 +266,7 @@ class Extract_metadata(UpqJob):
 		except:
 			self.movefile(filepath, 3, "")
 			self.msg("couldn't get sdp hash")
+			usync.CloseArchive(archiveh)
 			return False
 		idx=self.getMapIdx(usync,filename)
 		if idx>=0: #file is map
@@ -276,6 +277,7 @@ class Extract_metadata(UpqJob):
 				data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
 			except:
 				self.movefile(filepath, 3, "")
+				usync.CloseArchive(archiveh)
 				return False
 			moveto=self.jobcfg['maps-path']
 		else: # file is a game
@@ -283,6 +285,7 @@ class Extract_metadata(UpqJob):
 			if idx<0:
 				self.logger.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
 				self.movefile(filepath, 3, "")
+				usync.CloseArchive(archiveh)
 				return False
 			self.logger.debug("Extracting data from "+filename)
 			archivepath=usync.GetArchivePath(filename)+filename
@@ -292,6 +295,7 @@ class Extract_metadata(UpqJob):
 		data['sdp']=sdp
 		if (sdp == "") or (data['Name'] == ""): #mark as broken because sdp / name is missing
 			self.movefile(filepath, 3, "")
+			usync.CloseArchive(archiveh)
 			return False
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
 		self.jobdata['fid']=self.insertData(data, filepath)
@@ -302,6 +306,7 @@ class Extract_metadata(UpqJob):
 		while not err==None:
 			self.logger.error(err)
 			err=usync.GetNextError()
+		sync.CloseArchive(archiveh)
 		usync.UnInit()
 		del usync
 		if not 'keeptemp' in  self.jobcfg:
@@ -339,6 +344,7 @@ class Extract_metadata(UpqJob):
 	def createMapImage(self, usync, mapname, size):
 		data=ctypes.string_at(usync.GetMinimap(mapname, 0), 1024*1024*2)
 		im = Image.frombuffer("RGB", (1024, 1024), data, "raw", "BGR;16")
+		del data
 		return self.saveImage(im, size)
 
 	def createMapInfoImage(self, usync, mapname, maptype, byteperpx, decoder,decoderparm, size):
@@ -356,6 +362,7 @@ class Extract_metadata(UpqJob):
 			res=self.saveImage(im, size)
 			del data
 			return res
+		del data
 		self.msg("Error creating image %s" % (usync.usync.GetNextError()))
 		raise Exception("Error creating image")
 
