@@ -73,8 +73,8 @@ class Sf_sync(UpqJob):
 			for rpc in rpcres: #set description url received from springfiles
 				UpqDB().query("UPDATE file SET descriptionuri='%s' WHERE fid=%d" % (rpc['url'], rpc['fid']))
 		except Exception as e:
-			self.msg("xmlrpc  springfiles.sync() error: %s" %(e))
-			return False
+			self.msg("xmlrpc springfiles.sync() error: %s" %(e))
+			return True # fixme
 		self.logger.debug("received from springfiles: %s", rpcres)
 		return True
 
@@ -124,7 +124,8 @@ class Sf_sync(UpqJob):
 				if lastfid==res['fid'] and lastcmd==res['command']: #skip if the same command was already done before
 					continue
 				lastfid=res['fid']
-				lastcmd=data['command']
+				if 'command' in data:
+					lastcmd=data['command']
 				if res['command']==1: # delete
 					data['command']="delete"
 				elif res['command']==0: # update
