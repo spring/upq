@@ -547,6 +547,7 @@ class Extract_metadata(UpqJob):
 			os.chmod(dstfile, int("0444",8))
 		except OSError:
 			pass
+		self.logger.info("moved file to %s" % (dstfile))
 		return True
 	def normalizeFilename(self, srcfile, fid, name, version):
 		""" normalize filename + renames file + updates filename in database """
@@ -567,9 +568,11 @@ class Extract_metadata(UpqJob):
 			results=UpqDB().query("SELECT fid FROM file WHERE BINARY filename='%s' AND status=1" % (res))
 			row=results.first()
 			if row or os.path.exists(dstfile):
-				self.logger.error("Error renaming file: %s already exists!" % (dstfile))
-				return srcfile
-			shutil.move(srcfile, dstfile)
+				self.logger.error("Error renaming file: %s to %s already exists, deleting source + using dst!" % (srcfile, dstfile))
+				os.remove(srcfile)
+			else:
+				shutil.move(srcfile, dstfile)
+			
 			UpqDB().query("UPDATE file SET filename='%s' WHERE fid=%s" %(res, fid))
 			self.logger.info("Normalized filename to %s "%(dstfile))
 		return dstfile
