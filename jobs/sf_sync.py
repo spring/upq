@@ -103,8 +103,8 @@ class Sf_sync(UpqJob):
 				sid=int(proxy.springfiles.getlastsyncid(username, password))
 				self.logger.debug("Fetched sid from springfiles: %d" % (sid));
 			except Exception as e:
-					self.msg("xmlrpc springfiles.getlastsyncid() error: %s"%(e))
-					return False
+				self.msg("xmlrpc springfiles.getlastsyncid() error: %s"%(e))
+				return False
 		if sid>0:
 			results=UpqDB().query("SELECT fid, command FROM sf_sync WHERE sid>%d ORDER BY sid " %(sid)) #get all changes from db
 		else:
@@ -134,11 +134,12 @@ class Sf_sync(UpqJob):
 					self.logger.error("unknown command %d for fid %d", res['command'], res['fid'])
 					continue
 
-			self.logger.debug("adding sid %d to requests" % res['fid']);
+			self.logger.debug("adding sid %d to requests" % (res['fid']))
 			data['fid']=res['fid']
 			data['sid']=maxsid
 			requests.append(data)
-			if len(data)>self.jobcfg['maxrequests']: #more then maxrequests queued, flush them
+			if len(requests)>int(self.jobcfg['maxrequests']): #more then maxrequests queued, flush them
+				self.logger.debug("flushing %d requests" % (len(requests)))
 				if not self.rpc_call_sync(proxy, username, password, requests):
 					return False
 				requests = []
