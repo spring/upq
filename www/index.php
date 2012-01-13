@@ -1,15 +1,20 @@
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+<head>
+	<title></title>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+</head>
 <body>
-<table>
 Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 10 Results are returned at max.
 <form action="<?php echo $_SERVER["REQUEST_URI"] ?>" method="get">
+<table>
 
 <?php
 	foreach (array('springname', 'filename', 'tag', 'sdp') as $val) {
 	?>
 	<tr>
-		<tr><td><?php echo $val; ?>:</td>
-		<td><input type="text" name="<?php echo $val; ?>" value="<?php if (array_key_exists($val, $_REQUEST)) echo htmlentities($_REQUEST[$val]); ?>"></td>
+		<td><?php echo $val; ?>:</td>
+		<td><input type="text" name="<?php echo $val; ?>" value="<?php if (array_key_exists($val, $_REQUEST)) echo htmlentities($_REQUEST[$val]); ?>"/></td>
 	</tr>
 <?
 	}
@@ -17,16 +22,16 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 ?>
 	<tr>
 		<td><?php echo $val; ?></td>
-		<td><input type="checkbox" name="<?php echo $val; ?>" <?php if (array_key_exists($val, $_REQUEST)) echo 'checked'; ?>></td>
+		<td><input type="checkbox" name="<?php echo $val; ?>" <?php if (array_key_exists($val, $_REQUEST)) echo 'checked'; ?>/></td>
 	</tr>
 <?
 	}
 ?>
 	<tr>
-	<td colspan="2" align="center"><input type="submit"></td>
+	<td colspan="2" align="center"><input type="submit" /></td>
 	</tr>
-</form>
 </table>
+</form>
 
 <?php
 require("config.php");
