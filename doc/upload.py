@@ -10,7 +10,7 @@ if len(sys.argv) < 6:
 	print "Usage: "+sys.argv[0]+" user pass url"
 	exit(0)
 
-proxy = ServerProxy('http://springfiles.com/xmlrpc.php')
+proxy = ServerProxy('http://api.springfiles.com/xmlrpc.php')
 data = {
 	"username" : sys.argv[1],
 	"password" : sys.argv[2],
