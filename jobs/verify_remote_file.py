@@ -43,20 +43,20 @@ class Verify_remote_file(upqjob.UpqJob):
 		hash_url   = script_url+"?%s"%params
 		file_path  = res['path']
 
-        md5 = res['md5']
-        # retrieve md5 hash from deamon.php on remote mirror server
-        self.logger.debug("retrieving '%s'", hash_url)
-	try:
-  		hash_file = urllib.urlopen(hash_url)
- 		hash = hash_file.read()
-                hash_file.close()
-	except Exception as e:
-		self.logger.error(str(e))
-		return false
+	        md5 = res['md5']
+	        # retrieve md5 hash from deamon.php on remote mirror server
+	        self.logger.debug("retrieving '%s'", hash_url)
+		try:
+	  		hash_file = urllib.urlopen(hash_url)
+	 		hash = hash_file.read()
+	                hash_file.close()
+		except Exception as e:
+			self.logger.error(str(e))
+			return false
 
 		self.msg("received md5 hash for filename=%s on fmfid=%s is %s" %(file_path, fmfid, hash))
 		self.result = hash
-
+	
 		if res['md5'] == hash:
 			#TODO add notify job here
 			upqdb.UpqDB().query("UPDATE mirror_file SET lastcheck=NOW(), status=1 WHERE mfid=%d" %(fmfid))

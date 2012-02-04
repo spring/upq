@@ -35,7 +35,7 @@ def main(argv=None):
 	if argv is None:
 		argv = sys.argv
 	if len(argv)==1:
-	print 'Usage: %s "<jobname>( param:value)*"' % (argv[0])
+		print 'Usage: %s "<jobname>( param:value)*"' % (argv[0])
 		return 1
 	return send_cmd(argv[1:],socket_path)
 

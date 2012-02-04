@@ -87,14 +87,14 @@ def main(argv=None):
 	server = None
 
 # SIGINT signal handler
-def program_cleanup(sig_num, frame):
-	logger = log.getLogger("upq")
-	logger.info("Shutting down socket server...")
-	server.shutdown()
-	logger.info("Disconnecting from DB...")
-	upqdb.UpqDB().cleanup()
-	log.getLogger("upq").info("Good bye.")
-	sys.exit(0)
+	def program_cleanup(sig_num, frame):
+		logger = log.getLogger("upq")
+		logger.info("Shutting down socket server...")
+		server.shutdown()
+		logger.info("Disconnecting from DB...")
+		upqdb.UpqDB().cleanup()
+		log.getLogger("upq").info("Good bye.")
+		sys.exit(0)
 
 	usage = "usage: %prog -c CONFIGFILE [options]"
 	parser = OptionParser(usage)
