@@ -10,13 +10,13 @@ import log
 from upqjob import UpqJob
 
 class Archive_file(UpqJob):
-    def check(self):
-        # check if file is readable (or similar)
-        # register_to_queue()
-        # return ACK/REJ + optional msg in dict(['queued'], ['jobid'], ['msg'])
-        self.msg("Not implemented yet")
-        return False
-    
-    def run(self):
-        # actual work
-        pass
+	def check(self):
+		# check if file is readable (or similar)
+		# register_to_queue()
+		# return ACK/REJ + optional msg in dict(['queued'], ['jobid'], ['msg'])
+		self.msg("Not implemented yet")
+		return False
+
+	def run(self):
+		# actual work
+		pass

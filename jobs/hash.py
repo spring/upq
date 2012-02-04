@@ -56,12 +56,12 @@ class Hash(UpqJob):
 
 	def hash(self, filename):
 		"""
-        Calculate hashes (md5, sha1, sha256) of a given file
+		Calculate hashes (md5, sha1, sha256) of a given file
 
-        filename is absolute path to file
+		filename is absolute path to file
 
-        returns: {'md5': 'x', 'sha1': 'y', 'sha256': 'z'}
-        """
+		returns: {'md5': 'x', 'sha1': 'y', 'sha256': 'z'}
+		"""
 
 		md5 = hashlib.md5()
 		sha1 = hashlib.sha1()

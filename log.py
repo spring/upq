@@ -13,34 +13,33 @@ import logging.handlers
 logger=None
 
 def init_logging(conf):
-    global logger
-    
-    if conf.has_key('loglevel'):
-        loglevel = conf['loglevel'].upper()
-    else:
-        loglevel = 'INFO'
-        
-    if conf.has_key('logfile'):
-        logfile = conf['logfile']
-        if logfile[:2] == "./":
-            # convert relative to absolute path
-            logfile = os.path.realpath(os.path.dirname(__file__))+logfile[1:]            
-    else:
-        filename=None
+	global logger
 
-    if conf.has_key('logformat'):
-        logformat = conf['logformat']
-    else:
-        logformat = "%(asctime)s %(levelname)-8s %(module)s.%(funcName)s:%(lineno)d %(message)s"
+	if conf.has_key('loglevel'):
+		loglevel = conf['loglevel'].upper()
+	else:
+		loglevel = 'INFO'
+	if conf.has_key('logfile'):
+		logfile = conf['logfile']
+		if logfile[:2] == "./":
+			# convert relative to absolute path
+			logfile = os.path.realpath(os.path.dirname(__file__))+logfile[1:]
+	else:
+		filename=None
 
-    logging.basicConfig(level=logging.__getattribute__(loglevel),
-                        format=logformat,
-                        filename=logfile,
-                        filemode='a')
-    
-    logger = logging.getLogger("upq")
-    return logger
+	if conf.has_key('logformat'):
+		logformat = conf['logformat']
+	else:
+		logformat = "%(asctime)s %(levelname)-8s %(module)s.%(funcName)s:%(lineno)d %(message)s"
+
+	logging.basicConfig(level=logging.__getattribute__(loglevel),
+						format=logformat,
+						filename=logfile,
+						filemode='a')
+
+	logger = logging.getLogger("upq")
+	return logger
 
 def getLogger(*args, **kwargs):
-    return logging.getLogger(*args, **kwargs)
+	return logging.getLogger(*args, **kwargs)
 

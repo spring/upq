@@ -16,33 +16,32 @@ import urllib
 
 class Verify_remote_file(upqjob.UpqJob):
 
-    def check(self):
-        # TODO: check if time last file checked is < 1 Year
-        self.enqueue_job()
-        return True
+	def check(self):
+		# TODO: check if time last file checked is < 1 Year
+		self.enqueue_job()
+		return True
 
-    
-    def run(self):
-        """
-            call this module with argument "<fmfid>"
-        """
-        # get files hash from DB
-        fmfid=int(self.jobdata['mfid'])
-        result = upqdb.UpqDB().query("SELECT md5, mf.fid, url_prefix, url_daemon, mf.path \
+	def run(self):
+		"""
+			call this module with argument "<fmfid>"
+		"""
+		# get files hash from DB
+		fmfid=int(self.jobdata['mfid'])
+		result = upqdb.UpqDB().query("SELECT md5, mf.fid, url_prefix, url_daemon, mf.path \
 			FROM mirror AS m \
 			LEFT JOIN mirror_file as mf ON m.mid=mf.mid \
 			LEFT JOIN file as f ON f.fid=mf.fid \
 			WHERE mfid=%d "%fmfid)
-        res = result.first()
+		res = result.first()
 
-        if not res:
-            self.msg("File with jobdata='%s' not found in DB."%(self.jobdata))
-            return False
+		if not res:
+			self.msg("File with jobdata='%s' not found in DB."%(self.jobdata))
+			return False
 
-        script_url = res['url_prefix']+"/"+res['url_daemon']
-        params     = urllib.urlencode({'p': res['path']})
-        hash_url   = script_url+"?%s"%params
-        file_path  = res['path']
+		script_url = res['url_prefix']+"/"+res['url_daemon']
+		params	 = urllib.urlencode({'p': res['path']})
+		hash_url   = script_url+"?%s"%params
+		file_path  = res['path']
 
         md5 = res['md5']
         # retrieve md5 hash from deamon.php on remote mirror server
@@ -55,21 +54,21 @@ class Verify_remote_file(upqjob.UpqJob):
 		self.logger.error(str(e))
 		return false
 
-        self.msg("received md5 hash for filename=%s on fmfid=%s is %s" %(file_path, fmfid, hash))
-        self.result = hash
-        
-        if res['md5'] == hash:
-            #TODO add notify job here
-            upqdb.UpqDB().query("UPDATE mirror_file SET lastcheck=NOW(), status=1 WHERE mfid=%d" %(fmfid))
-            self.msg('Remote hash matches hash in DB.')
-            return True
-        else:
-            if len(hash)==32:
-                #TODO: delete from db to allow re-upload
-                query="UPDATE mirror_file SET status=0 WHERE mfid=%s " %(hash, fmfid)
-                upqdb.UpqDB().query(query)
-                self.msg('Remote hash does NOT match hash in DB.')
-            else:
-                self.msg('error retrieving hash from ' + hash_url)
-            return False
+		self.msg("received md5 hash for filename=%s on fmfid=%s is %s" %(file_path, fmfid, hash))
+		self.result = hash
+
+		if res['md5'] == hash:
+			#TODO add notify job here
+			upqdb.UpqDB().query("UPDATE mirror_file SET lastcheck=NOW(), status=1 WHERE mfid=%d" %(fmfid))
+			self.msg('Remote hash matches hash in DB.')
+			return True
+		else:
+			if len(hash)==32:
+				#TODO: delete from db to allow re-upload
+				query="UPDATE mirror_file SET status=0 WHERE mfid=%s " %(hash, fmfid)
+				upqdb.UpqDB().query(query)
+				self.msg('Remote hash does NOT match hash in DB.')
+			else:
+				self.msg('error retrieving hash from ' + hash_url)
+			return False
 

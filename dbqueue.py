@@ -18,36 +18,36 @@ from re import escape
 
 class DBQueue(Queue, object):
 
-    def __init__(self):
-        super(DBQueue, self).__init__()
-        self.threads = {}
+	def __init__(self):
+		super(DBQueue, self).__init__()
+		self.threads = {}
 
-    """ returns job """
-    def get(self, block=True, timeout=None):
-        job = super(DBQueue, self).get(block, timeout)
-        # update job state in DB
-        query="UPDATE upqueue SET status=1, start_time=NOW() WHERE jobid = %d" % (job.jobid)
-        UpqDB().query(query)
-        return job
+	""" returns job """
+	def get(self, block=True, timeout=None):
+		job = super(DBQueue, self).get(block, timeout)
+		# update job state in DB
+		query="UPDATE upqueue SET status=1, start_time=NOW() WHERE jobid = %d" % (job.jobid)
+		UpqDB().query(query)
+		return job
 
-    def task_done(self, job):
-        # update job state in DB
-        msgstr = str(escape(job.msgstr.strip("%")))
-        if job.result:
-            result=0
-        else:
-             result=1
-        query="UPDATE upqueue SET status=0, end_time=NOW(), result_msg='%s' WHERE jobid = %s" % (msgstr, int(job.jobid))
-        UpqDB().query(query)
-        super(DBQueue, self).task_done()
+	def task_done(self, job):
+		# update job state in DB
+		msgstr = str(escape(job.msgstr.strip("%")))
+		if job.result:
+			result=0
+		else:
+			result=1
+		query="UPDATE upqueue SET status=0, end_time=NOW(), result_msg='%s' WHERE jobid = %s" % (msgstr, int(job.jobid))
+		UpqDB().query(query)
+		super(DBQueue, self).task_done()
 
-    """ returns id of job and sets job.jobid to it """
-    def put(self, job, block=True, timeout=None):
-        if job.jobid == -1:
-            # add job to DB in state "new"
-            jobdata = json.dumps(job.jobdata, -1)
-            ret=UpqDB().insert("upqueue", {'jobname': job.jobname, 'status': 2, 'jobdata': jobdata, 'ctime': UpqDB().now() })
-            job.jobid=ret #set jobid
-        super(DBQueue, self).put(job, block, timeout)
-        return job.jobid
+	""" returns id of job and sets job.jobid to it """
+	def put(self, job, block=True, timeout=None):
+		if job.jobid == -1:
+			# add job to DB in state "new"
+			jobdata = json.dumps(job.jobdata, -1)
+			ret=UpqDB().insert("upqueue", {'jobname': job.jobname, 'status': 2, 'jobdata': jobdata, 'ctime': UpqDB().now() })
+			job.jobid=ret #set jobid
+		super(DBQueue, self).put(job, block, timeout)
+		return job.jobid
 

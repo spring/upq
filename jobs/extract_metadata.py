@@ -112,7 +112,7 @@ class Extract_metadata(UpqJob):
 			string=string.decode('cp850')
 			return self.escape(string)
 		except:
-			self.logger.error("Error decoding string %s" % (string))	
+			self.logger.error("Error decoding string %s" % (string))
 			return ""
 		return self.escape(string)
 
@@ -184,10 +184,10 @@ class Extract_metadata(UpqJob):
 		usync.AddAllArchives(filename)
 		return usync
 	def openArchive(self, usync, filename):
-                archiveh=usync.OpenArchive(filename)
-                if archiveh==0:
-                        self.logger.error("OpenArchive(%s) failed: %s" % (filename, usync.GetNextError()))
-                        return False
+		archiveh=usync.OpenArchive(filename)
+		if archiveh==0:
+			self.logger.error("OpenArchive(%s) failed: %s" % (filename, usync.GetNextError()))
+			return False
 		return archiveh
 	def saveImage(self, image, size):
 		""" store a image, called with an Image object, returns the filename """
@@ -576,4 +576,4 @@ class Extract_metadata(UpqJob):
 			UpqDB().query("UPDATE file SET filename='%s' WHERE fid=%s" %(res, fid))
 			self.logger.info("Normalized filename to %s "%(dstfile))
 		return dstfile
-	
+
