@@ -147,7 +147,12 @@ class UpqDB():
 		self.meta.bind = self.engine
 	def query(self, query):
 		#self.logger.debug(query)
-		return self.engine.execute(query)
+		res=None
+		try:
+			res=self.engine.execute(query)
+		except Exception as e:
+			self.logger.error("Error %s executing query %s" % (str(e), str(query)))
+		return res
 	"""
 		insert values into tables, returns last insert id if primary key is autoincrement
 	"""
