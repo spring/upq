@@ -553,7 +553,7 @@ class Extract_metadata(UpqJob):
 		""" normalize filename + renames file + updates filename in database """
 		name=name.lower()
 		if len(version)>0:
-			name = name +"-" + version.lower()
+			name = str(name[:200] +"-" + version.lower())[:255]
 		_, extension = os.path.splitext(srcfile)
 		name += extension
 
