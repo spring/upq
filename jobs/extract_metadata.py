@@ -117,18 +117,6 @@ class Extract_metadata(UpqJob):
 		return self.escape(string)
 
 	def insertData(self, data, filename):
-		for depend in data['Depends']:
-			res=UpqDB().query("SELECT fid FROM file WHERE CONCAT(name,' ',version)='%s'" % (depend))
-			row=res.first()
-			if not row:
-				id=0
-			else:
-				id=row['fid']
-			try:
-				UpqDB().insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
-				self.msg("Added %s '%s' version '%s' to the mirror-system" % (data['Type'], data['Name'], data['Version']))
-			except UpqDBIntegrityError:
-				pass
 		metadata=data.copy()
 		del metadata['Depends'] #remove redundant entries
 		del metadata['sdp']
@@ -168,6 +156,20 @@ class Extract_metadata(UpqJob):
 				metadata,
 				fid
 				))
+		# remove already existing depends
+		UpqDB().query("DELETE FROM file_depends WHERE fid = %s" % (fid) )
+		for depend in data['Depends']:
+			res=UpqDB().query("SELECT fid FROM file WHERE CONCAT(name,' ',version)='%s'" % (depend))
+			row=res.first()
+			if not row:
+				id=0
+			else:
+				id=row['fid']
+			try:
+				UpqDB().insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
+				self.msg("Added %s '%s' version '%s' to the mirror-system" % (data['Type'], data['Name'], data['Version']))
+			except UpqDBIntegrityError:
+				pass
 		self.msg("Updated %s '%s' version '%s' sdp '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version'], data['sdp']))
 		return fid
 	def initUnitSync(self, tmpdir, filename):
@@ -272,7 +274,7 @@ class Extract_metadata(UpqJob):
 		if idx>=0: #file is map
 			archivepath=usync.GetArchivePath(filename)+filename
 			springname = usync.GetMapName(idx)
-			data=self.getMapData(usync, filename, idx)
+			data=self.getMapData(usync, filename, idx, archiveh)
 			try:
 				data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
 			except:
@@ -290,7 +292,7 @@ class Extract_metadata(UpqJob):
 			self.logger.debug("Extracting data from "+filename)
 			archivepath=usync.GetArchivePath(filename)+filename
 			gamearchivecount=usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
-			data=self.getGameData(usync, idx, gamearchivecount, archivepath)
+			data=self.getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
 			moveto=self.jobcfg['games-path']
 		data['sdp']=sdp
 		if (sdp == "") or (data['Name'] == ""): #mark as broken because sdp / name is missing
@@ -313,7 +315,6 @@ class Extract_metadata(UpqJob):
 			self.cleandir(tmpdir)
 		return True
 
-	springcontent = [ 'bitmaps.sdz', 'springcontent.sdz', 'maphelper.sdz', 'cursors.sdz' ]
 	def getMapPositions(self, usync, idx, Map):
 		startpositions = usync.GetMapPosCount(idx)
 		res = []
@@ -323,14 +324,77 @@ class Extract_metadata(UpqJob):
 			res.append({'x': x, 'z': z})
 		return res
 
-	def getMapDepends(self, usync,Map):
-		res=[]
-		count=usync.GetMapArchiveCount(Map)
-		for i in range (1, count): # get depends for file, idx=0 is filename itself
-			deps=os.path.basename(usync.GetMapArchiveName(i))
-			if not deps in self.springcontent:
-				res.append(deps)
+	def dumpLuaTree(self, usync, depth = 0):
+		""" dumps a lua tree into a python dict """
+		if depth > 5:
+			self.logger.error("max depth reached!")
+			return {}
+		tables = []
+		inttables = []
+		res = {}
+		# str tables
+		count = usync.lpGetStrKeyListCount()
+		for i in range(0, count):
+			key = usync.lpGetStrKeyListEntry(i)
+			typ = usync.lpGetStrKeyType(key)
+			if typ == 1: #int
+				res[key] = usync.lpGetStrKeyIntVal(key, "")
+			elif typ == 2:#string
+				res[key] = usync.lpGetStrKeyStrVal(key, "")
+			elif typ == 3:#bool
+				res[key] = usync.lpGetStrKeyBoolVal(key, "")
+			elif typ == 4:#table
+				val = "table"
+				tables.append(key)
+		# int tables
+		count = usync.lpGetIntKeyListCount()
+		for i in range(0, count):
+			key = usync.lpGetIntKeyListEntry(i)
+			typ = usync.lpGetIntKeyType(key)
+			if typ == 1: #int
+				res[key] = usync.lpGetIntKeyIntVal(key, "")
+			elif typ == 2:#string
+				res[key] = usync.lpGetIntKeyStrVal(key, "")
+			elif typ == 3:#bool
+				res[key] = usync.lpGetIntKeyBoolVal(key, "")
+			elif typ == 4:#table
+				val = "table"
+				inttables.append(key)
+		count = usync.lpGetStrKeyListCount()
+		for table in tables:
+			usync.lpSubTableStr(table)
+			res[table] = self.dumpLuaTree(usync, depth + 1)
+			usync.lpPopTable()
+		count = usync.lpGetIntKeyListCount()
+		for table in inttables:
+			usync.lpSubTableInt(table)
+			res[table] = self.dumpLuaTree(usync, depth + 1)
+			usync.lpPopTable()
 		return res
+
+	def luaToPy(self, usync, archiveh, filename):
+		""" laods filename from archiveh, parses it and returns lua-tables as dict """
+		luafile = self.getFile(usync, archiveh, filename)
+		usync.lpOpenSource(luafile, "r")
+		usync.lpExecute()
+		res = self.dumpLuaTree(usync)
+		err = usync.lpErrorLog()
+		if err:
+			self.logger.error(err)
+		return res
+
+	def getDepends(self, usync, archiveh, filename):
+		filterdeps = [ 'bitmaps.sdz', 'springcontent.sdz', 'maphelper.sdz', 'cursors.sdz', 'Map Helper v1' ]
+		res = self.luaToPy(usync, archiveh, filename)
+		if 'depend' in res:
+			vals = []
+			for i in res['depend'].values():
+				if i not in filterdeps:
+					vals.append(i)
+			self.logger.error(vals)
+			return vals
+		return []
+
 	def getMapResources(self, usync,idx,Map):
 		res=[]
 		resourceCount=usync.GetMapResourceCount(idx)
@@ -377,14 +441,6 @@ class Extract_metadata(UpqJob):
 		res.append(self.createMapImage(usync,springname, scaledsize))
 		res.append(self.createMapInfoImage(usync,springname, "height",2, "RGB","BGR;15", scaledsize))
 		res.append(self.createMapInfoImage(usync,springname, "metal",1, "L","L;I", scaledsize))
-		return res
-
-	def getGameDepends(self, usync, idx, gamearchivecount, game):
-		res=[]
-		for i in range (1, gamearchivecount): # get depends for file, idx=0 is filename itself
-			deps=os.path.basename(usync.GetPrimaryModArchiveList(i))
-			if not deps in self.springcontent:
-				res.append(depend)
 		return res
 
 	def getUnits(self, usync, archive):
@@ -462,7 +518,7 @@ class Extract_metadata(UpqJob):
 			cid=UpqDB().insert("categories", {"name": name})
 		return cid
 
-	def getGameData(self, usync, idx, gamesarchivecount, archivename):
+	def getGameData(self, usync, idx, gamesarchivecount, archivename, archiveh):
 		res={}
 		springname=usync.GetPrimaryModName(idx)
 		version=usync.GetPrimaryModVersion(idx)
@@ -477,11 +533,11 @@ class Extract_metadata(UpqJob):
 		res['Name']= springname
 		res['Description']= self.decodeString(usync.GetPrimaryModDescription(idx))
 		res['Version']= version
-		res['Depends']=self.getGameDepends(usync, idx, gamesarchivecount, archivename)
+		res['Depends']=self.getDepends(usync, archiveh, "modinfo.lua")
 		res['Units']=self.getUnits(usync, archivename)
 		return res
 
-	def getMapData(self, usync, filename, idx):
+	def getMapData(self, usync, filename, idx, archiveh):
 		res={}
 		res['Type'] = "Map"
 		mapname=usync.GetMapName(idx)
@@ -506,7 +562,7 @@ class Extract_metadata(UpqJob):
 		res['Units'] = self.getUnits(usync, filename)
 
 		res['StartPos']=self.getMapPositions(usync,idx,filename)
-		res['Depends']=self.getMapDepends(usync,filename)
+		res['Depends']=self.getDepends(usync, archiveh, "mapinfo.lua")
 		version="" #TODO: add support
 		res['Version']=version
 		return res

@@ -123,9 +123,10 @@ class UpqDB():
 			Column('cid', INTEGER(display_width=11), primary_key=True, nullable=False, autoincrement=True),
 			Column('name', VARCHAR(length=24), nullable=False))
 		self.tables['file_depends']=Table('file_depends', self.meta,
-			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=False),
-			Column('depends_fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=False), #id of other file, if null(couldn't be resolved), use depends_string
-			Column('depends_string', VARCHAR(length=64), nullable=False))
+			Column('fid', INTEGER(display_width=10), primary_key=False, nullable=False, autoincrement=False),
+			Column('depends_fid', INTEGER(display_width=10), primary_key=False, nullable=False, autoincrement=False), #id of other file, if null(couldn't be resolved), use depends_string
+			Column('depends_string', VARCHAR(length=64), nullable=False),
+			UniqueConstraint('fid', 'depends_string'))
 		self.tables['upqueue']=Table('upqueue', self.meta,
 			Column('jobid', INTEGER(display_width=11), primary_key=True, nullable=False, autoincrement=True),
 			Column('jobname', VARCHAR(length=255), nullable=False),
