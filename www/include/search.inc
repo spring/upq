@@ -125,7 +125,7 @@ function search($req){
 			LEFT JOIN {file} AS a ON d.depends_fid=a.fid
 			WHERE d.fid=%d",$res[$i]['fid']);
 		while($row = db_fetch_array($result)){
-			if(!is_array($res[$i]['depends']))
+			if(!array_key_exists('depends', $res[$i]))
 				$res[$i]['depends']=array();
 			if(strlen($row['springname'])<=0) // 0 means it wasn't resolveable, return the string
 				$res[$i]['depends'][]=$row['depends_string'];
