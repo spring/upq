@@ -374,7 +374,11 @@ class Extract_metadata(UpqJob):
 
 	def luaToPy(self, usync, archiveh, filename):
 		""" laods filename from archiveh, parses it and returns lua-tables as dict """
-		luafile = self.getFile(usync, archiveh, filename)
+		try:
+			luafile = self.getFile(usync, archiveh, filename)
+		except:
+			self.logger.error("file doesn't exist in archive: %s" %(filename))
+			return {}
 		usync.lpOpenSource(luafile, "r")
 		usync.lpExecute()
 		res = self.dumpLuaTree(usync)
