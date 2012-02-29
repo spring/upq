@@ -16,6 +16,9 @@ searchstring = {
 	"filename" : sys.argv[1],
 	"springname" : sys.argv[1],
 	"torrent" : True,
+	"metadata" : True,
+	"nosensitive" : True,
+	"images" : True
 }
 
 pp = pprint.PrettyPrinter(depth=6)
