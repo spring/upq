@@ -388,7 +388,7 @@ class Extract_metadata(UpqJob):
 		return res
 
 	def getDepends(self, usync, archiveh, filename):
-		filterdeps = [ 'bitmaps.sdz', 'springcontent.sdz', 'maphelper.sdz', 'cursors.sdz', 'Map Helper v1' ]
+		filterdeps = [ 'bitmaps.sdz', 'springcontent.sdz', 'maphelper.sdz', 'cursors.sdz', 'Map Helper v1', 'Spring content v1' ]
 		res = self.luaToPy(usync, archiveh, filename)
 		if 'depend' in res:
 			vals = []
