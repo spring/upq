@@ -28,6 +28,32 @@ class Upload(UpqJob):
 
 		self.enqueue_job()
 		return True
+	def archiveOldFiles(self, ftpcon, mirrorid):
+		"""
+			deletes files from ftpmirror when:
+				file is older than 100 days
+				it is known in rapid
+				it is not a stable|test tag (no number at the end in tag)
+			expects to be in a subfolder of the mirror data dir
+		"""
+		ftp.cwd('..') # we are in games / maps do a cd ..
+		results = UpqDB().query("SELECT * FROM `file` f \
+LEFT JOIN tag t ON f.fid=t.fid \
+WHERE (t.fid>0) \
+AND f.status=1 \
+AND timestamp < NOW() - INTERVAL 100 DAY \
+GROUP BY f.fid HAVING count(f.fid) = 1")
+		for row in results:
+			res2 = UpqDB().query("SELECT * FROM mirror_file WHERE fid = %d AND mid = %d" % (row['fid'], mirrorid))
+			filee = res2.first()
+			if filee and row['tag'][:-1].isdigit():
+				self.logger.info("deleting %s"% filee['path'])
+				try:
+					ftp.delete(filee['path'])
+				except:
+					self.logger.error("deleting %s failed" % filee['path'])
+					continue
+				UpqDB.query("UPDATE mirror_file SET status=4 WHERE fid = %d and mid = %d" % (row['fid'], mirrorid))
 
 	def run(self):
 		fid=int(self.jobdata['fid'])
@@ -93,6 +119,8 @@ GROUP by m.mid"% fid)
 						continue
 				self.logger.info("uploading %s to %s" % (os.path.basename(dstfilename),host))
 				ftp.storbinary('STOR '+os.path.basename(dstfilename), f)
+
+				archiveOldFiles(ftp, row['m.mid'])
 				ftp.quit()
 				f.close()
 				try: #upload succeed, mark in db as uploaded

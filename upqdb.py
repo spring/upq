@@ -87,7 +87,7 @@ class UpqDB():
 			Column('mid', INTEGER(display_width=4)), # mirror id
 			Column('path', VARCHAR(length=1024)), # relative to (mfid.url_prefix) path
 			Column('lastcheck', DATETIME(timezone=False)), # last time checksum/existence was checked
-			Column('status', INTEGER(display_width=4)), # 0=inactive, 1 = active, 2 = marked for recheck, 3 = broken
+			Column('status', INTEGER(display_width=4)), # 0=inactive, 1 = active, 2 = marked for recheck, 3 = broken, 4 = archived (=possible deleted)
 			UniqueConstraint('fid', 'mid'))
 		self.tables['file']=Table('file', self.meta, #all known files
 			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True), #primary key of file
