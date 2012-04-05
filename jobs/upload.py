@@ -17,18 +17,10 @@ import socket
 
 class Upload(UpqJob):
 	def check(self):
-		#TODO: merge these TODOS, this can be done simpler, i feel it (at least move stuff into cron) :)
-		#TODO: check if file is already marked in db as uploaded
-		#TODO: reupload files with invalid md5
-		#TODO: test + test +test + improve this!
-		#TODO: create a job for each ftp-mirror here
-		#TODO: create a cron-job or something similar, that creates upload jobs, when a new mirror is added (like a validation for all files/mirrors)
-		#TODO: check files with the same path (or use path from files?)
-		#TODO: always spawn upload job for all mirrors + recheck md5
-
 		self.enqueue_job()
 		return True
-	def deleteOldFiles(self, ftpcon, mirrorid):
+
+	def deleteOldFiles(self):
 		"""
 			deletes files from ftpmirror when:
 				file is older than 100 days
@@ -36,47 +28,51 @@ class Upload(UpqJob):
 				it is not a stable|test tag (no number at the end in tag)
 		"""
 		results = UpqDB().query("SELECT m.mid, ftp_url, ftp_user, ftp_pass, ftp_dir, ftp_port, ftp_passive, ftp_ssl \
-FROM mirror as m")
+FROM mirror as m \
+WHERE m.status=1")
 		for mirror in results:
 			try:
-				ftp = self.ftpconnect(mirror['ftp_url'], mirror['ftp_port'], mirror['ftp_user'], mirror['ftp_pass'], int(mirror['ftp_passive'])>1, mirror['ftp_dir'])
+				ftp = self.ftpconnect(mirror['ftp_url'], mirror['ftp_port'], mirror['ftp_user'], mirror['ftp_pass'], int(mirror['ftp_passive'])>1, mirror['ftp_dir'], mirror['ftp_ssl'])
 			except Exception as e:
-				self.logger.error("Couldn't connect to the ftp server: %s", e)
+				self.logger.error("Couldn't connect to %s: %s",mirror['ftp_url'], e)
 				continue
-			results = UpqDB().query("SELECT * FROM `file` f \
+			results = UpqDB().query("SELECT f.fid,tag FROM `file` f \
 LEFT JOIN tag t ON f.fid=t.fid \
 WHERE (t.fid>0) \
 AND f.status=1 \
 AND timestamp < NOW() - INTERVAL 100 DAY \
 GROUP BY f.fid HAVING count(f.fid) = 1")
 			for filetodel in results:
-				res2 = UpqDB().query("SELECT * FROM mirror_file WHERE fid = %d AND mid = %d AND status=1" % (filetodel['fid'], mirrorid))
+				res2 = UpqDB().query("SELECT * FROM mirror_file WHERE fid = %d AND mid = %d AND status=1" % (filetodel['fid'], mirror['mid']))
 				curfile = res2.first()
-				if curfile and filetodel['tag'][:-1].isdigit():
-					self.logger.info("deleting %s"% filee['path'])
+				if curfile and filetodel['tag'][-1].isdigit():
 					try:
-						ftp.delete(filee['path'])
+						self.logger.error("deleting %s" % (curfile['path']))
+						ftp.delete(curfile['path'])
 					except:
-						self.logger.error("deleting %s failed" % filee['path'])
-						continue
-					UpqDB.query("UPDATE mirror_file SET status=4 WHERE fid = %d and mid = %d" % (filetodel['fid'], mirrorid))
+						pass
+					UpqDB().query("UPDATE mirror_file SET status=4 WHERE mfid = %d" % (int(curfile['mfid'])))
 			ftp.close()
-	def ftpconnect(self, host, port, username, password, passive, cwddir):
-		"return the ftp connection handle"
-		ftp = ftplib.FTP_TLS()
+	def ftpconnect(self, host, port, username, password, passive, cwddir, ssl):
+		"""return the ftp connection handle"""
+		if ssl:
+			try:
+				ftp = ftplib.FTP_TLS()
+			except Exception as e:
+				self.logger.error("TLS not supported")
+				ftp = ftplib.FTP()
+		else:
+			ftp = ftplib.FTP()
 		#set global timeout
 		socket.setdefaulttimeout(30)
-		ftp = ftplib.FTP()
 		self.logger.debug("connecting to "+host)
 		ftp.connect(host,port)
-		if (res['ftp_ssl']):
+		if ssl:
 			try:
-				ftp.auth(username, password)
-			except Exception as e: #fallback to plain auth if failed
-				self.logger.error("%s", e)
-				ftp.login(username, password)
-		else:
-			ftp.login(username, password)
+				ftp.auth()
+			except Exception as e:
+				self.logger.error("Setting up tls connection failed: %s", e)
+		ftp.login(username, password)
 		ftp.set_pasv(passive) #set passive mode
 		if (len(cwddir)>0):
 			self.logger.debug("cd into "+cwddir)
@@ -108,7 +104,7 @@ GROUP by m.mid"% fid)
 		uploadcount=0
 		for res in results:
 			try:
-				ftp = self.ftpconnect(res['ftp_url'], res['ftp_port'], res['ftp_user'], res['ftp_pass'], int(res['ftp_passive'])>1, res['ftp_dir'])
+				ftp = self.ftpconnect(res['ftp_url'], res['ftp_port'], res['ftp_user'], res['ftp_pass'], int(res['ftp_passive'])>1, res['ftp_dir'], res['ftp_ssl'])
 			except Exception as e:
 				self.logger.error("Couldn't connect to the ftp server: %s", e)
 				continue
