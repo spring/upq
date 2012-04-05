@@ -28,32 +28,60 @@ class Upload(UpqJob):
 
 		self.enqueue_job()
 		return True
-	def archiveOldFiles(self, ftpcon, mirrorid):
+	def deleteOldFiles(self, ftpcon, mirrorid):
 		"""
 			deletes files from ftpmirror when:
 				file is older than 100 days
 				it is known in rapid
 				it is not a stable|test tag (no number at the end in tag)
-			expects to be in a subfolder of the mirror data dir
 		"""
-		ftp.cwd('..') # we are in games / maps do a cd ..
-		results = UpqDB().query("SELECT * FROM `file` f \
+		results = UpqDB().query("SELECT m.mid, ftp_url, ftp_user, ftp_pass, ftp_dir, ftp_port, ftp_passive, ftp_ssl \
+FROM mirror as m")
+		for mirror in results:
+			try:
+				ftp = self.ftpconnect(mirror['ftp_url'], mirror['ftp_port'], mirror['ftp_user'], mirror['ftp_pass'], int(mirror['ftp_passive'])>1, mirror['ftp_dir'])
+			except Exception as e:
+				self.logger.error("Couldn't connect to the ftp server: %s", e)
+				continue
+			results = UpqDB().query("SELECT * FROM `file` f \
 LEFT JOIN tag t ON f.fid=t.fid \
 WHERE (t.fid>0) \
 AND f.status=1 \
 AND timestamp < NOW() - INTERVAL 100 DAY \
 GROUP BY f.fid HAVING count(f.fid) = 1")
-		for row in results:
-			res2 = UpqDB().query("SELECT * FROM mirror_file WHERE fid = %d AND mid = %d" % (row['fid'], mirrorid))
-			filee = res2.first()
-			if filee and row['tag'][:-1].isdigit():
-				self.logger.info("deleting %s"% filee['path'])
-				try:
-					ftp.delete(filee['path'])
-				except:
-					self.logger.error("deleting %s failed" % filee['path'])
-					continue
-				UpqDB.query("UPDATE mirror_file SET status=4 WHERE fid = %d and mid = %d" % (row['fid'], mirrorid))
+			for filetodel in results:
+				res2 = UpqDB().query("SELECT * FROM mirror_file WHERE fid = %d AND mid = %d AND status=1" % (filetodel['fid'], mirrorid))
+				curfile = res2.first()
+				if curfile and filetodel['tag'][:-1].isdigit():
+					self.logger.info("deleting %s"% filee['path'])
+					try:
+						ftp.delete(filee['path'])
+					except:
+						self.logger.error("deleting %s failed" % filee['path'])
+						continue
+					UpqDB.query("UPDATE mirror_file SET status=4 WHERE fid = %d and mid = %d" % (filetodel['fid'], mirrorid))
+			ftp.close()
+	def ftpconnect(self, host, port, username, password, passive, cwddir):
+		"return the ftp connection handle"
+		ftp = ftplib.FTP_TLS()
+		#set global timeout
+		socket.setdefaulttimeout(30)
+		ftp = ftplib.FTP()
+		self.logger.debug("connecting to "+host)
+		ftp.connect(host,port)
+		if (res['ftp_ssl']):
+			try:
+				ftp.auth(username, password)
+			except Exception as e: #fallback to plain auth if failed
+				self.logger.error("%s", e)
+				ftp.login(username, password)
+		else:
+			ftp.login(username, password)
+		ftp.set_pasv(passive) #set passive mode
+		if (len(cwddir)>0):
+			self.logger.debug("cd into "+cwddir)
+			ftp.cwd(cwddir)
+		return ftp
 
 	def run(self):
 		fid=int(self.jobdata['fid'])
@@ -79,31 +107,17 @@ AND m.mid not in ( \
 GROUP by m.mid"% fid)
 		uploadcount=0
 		for res in results:
-			host=res['ftp_url']
-			port=res['ftp_port']
-			username=res['ftp_user']
-			password=res['ftp_pass']
-			passive=int(res['ftp_passive'])>1
-			cwddir=res['ftp_dir']
+			try:
+				ftp = self.ftpconnect(res['ftp_url'], res['ftp_port'], res['ftp_user'], res['ftp_pass'], int(res['ftp_passive'])>1, res['ftp_dir'])
+			except Exception as e:
+				self.logger.error("Couldn't connect to the ftp server: %s", e)
+				continue
 			if not os.path.isfile(srcfilename):
 				self.msg("File doesn't exist: " + srcfilename)
 				return False
 			try:
 				f=open(srcfilename,"rb")
-				ftp = ftplib.FTP_TLS()
-				#set global timeout
-				socket.setdefaulttimeout(30)
-				ftp = ftplib.FTP()
-				self.logger.debug("connecting to "+host)
-				ftp.connect(host,port)
-#				if (res['ftp_ssl']):
-#				   ftp.auth(username, password)
-#				else:
-				ftp.login(username, password)
-				ftp.set_pasv(passive) #set passive mode
-				if (len(cwddir)>0):
-					self.logger.debug("cd into "+cwddir)
-					ftp.cwd(cwddir)
+
 				dstdir=os.path.dirname(dstfilename)
 				try:
 					self.logger.debug("cd into "+dstdir)
@@ -120,7 +134,6 @@ GROUP by m.mid"% fid)
 				self.logger.info("uploading %s to %s" % (os.path.basename(dstfilename),host))
 				ftp.storbinary('STOR '+os.path.basename(dstfilename), f)
 
-				archiveOldFiles(ftp, row['m.mid'])
 				ftp.quit()
 				f.close()
 				try: #upload succeed, mark in db as uploaded
@@ -136,4 +149,6 @@ GROUP by m.mid"% fid)
 				return False
 			uploadcount+=1
 		self.msg("Uploaded to %d mirrors." % (uploadcount))
+		self.deleteOldFiles()
 		return True
+
