@@ -127,7 +127,7 @@ GROUP by m.mid"% fid)
 					except:
 						self.logger.error("couldn't cd/mkdir %s, skipping upload " % (dstdir))
 						continue
-				self.logger.info("uploading %s to %s" % (os.path.basename(dstfilename),host))
+				self.logger.info("uploading %s to %s" % (os.path.basename(dstfilename),(res['ftp_url'])))
 				ftp.storbinary('STOR '+os.path.basename(dstfilename), f)
 
 				ftp.quit()
@@ -139,9 +139,9 @@ GROUP by m.mid"% fid)
 				self.logger.debug("inserted into db as %d", id)
 				self.enqueue_newjob("verify_remote_file", {"mfid": id})
 			except ftplib.all_errors as e:
-				self.logger.error("Ftp-Error (%s) %s failed %s" % (host, srcfilename,e))
+				self.logger.error("Ftp-Error (%s) %s failed %s" % ((res['ftp_url'], srcfilename,e)))
 			except Exception as e:
-				self.logger.error("Upload (%s) %s failed %s" % (host, srcfilename,e));
+				self.logger.error("Upload (%s) %s failed %s" % ((res['ftp_url'], srcfilename,e)))
 				return False
 			uploadcount+=1
 		self.msg("Uploaded to %d mirrors." % (uploadcount))
