@@ -43,7 +43,7 @@ function _run_upq($job){
         $timeout=5;
         $sock = @stream_socket_client('unix:///tmp/.upq-incoming.sock', $errno, $errstr, $timeout);
         if($sock===FALSE){
-                watchdog("filemirror", "error connecting to upq socket $errstr $fid");
+                watchdog("filemirror", "error connecting to upq socket $errstr $job");
                 return;
         }
         stream_set_timeout($sock, $timeout);
