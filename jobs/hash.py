@@ -22,7 +22,7 @@ class Hash(UpqJob):
 			file is in db + file has to exist
 	"""
 	def check(self):
-		results = UpqDB().query("SELECT fid, filename,path FROM file WHERE fid=%d " % int(self.jobdata['fid']))
+		results = UpqDB().query("SELECT fid, filename, path FROM file WHERE fid=%d " % int(self.jobdata['fid']))
 		res=results.first()
 		filename = os.path.join(UpqConfig().paths['files'], res['path'], res['filename'])
 		if not os.path.exists(filename):
