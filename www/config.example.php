@@ -8,5 +8,6 @@ $config=array(
 'base_url'=> 'http://localhost',
 'metadata'=>'metadata',
 'file'=>'file',
+'socket'=>'unix:///var/run/upq-incoming.sock',
 );
 
