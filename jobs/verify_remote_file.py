@@ -52,7 +52,7 @@ class Verify_remote_file(upqjob.UpqJob):
 	                hash_file.close()
 		except Exception as e:
 			self.logger.error(str(e))
-			return false
+			return False 
 
 		self.msg("received md5 hash for filename=%s on fmfid=%s is %s" %(file_path, fmfid, hash))
 		self.result = hash
