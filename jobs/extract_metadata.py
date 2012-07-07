@@ -533,7 +533,7 @@ class Extract_metadata(UpqJob):
 			if springname.endswith(" ") : #remove space at end (added through unitsync hack)
 				springname=springname[:len(springname)-1]
 
-		res['Type']= "Game"
+		res['Type']= "game"
 		res['Name']= springname
 		res['Description']= self.decodeString(usync.GetPrimaryModDescription(idx))
 		res['Version']= version
@@ -543,7 +543,7 @@ class Extract_metadata(UpqJob):
 
 	def getMapData(self, usync, filename, idx, archiveh):
 		res={}
-		res['Type'] = "Map"
+		res['Type'] = "map"
 		mapname=usync.GetMapName(idx)
 		res['Name'] = mapname
 
