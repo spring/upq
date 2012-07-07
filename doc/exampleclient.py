@@ -10,7 +10,7 @@ if len(sys.argv) < 2:
 
 proxy = ServerProxy('http://api.springfiles.com/xmlrpc.php', verbose=True)
 searchstring = {
-#	"category" : "Spring Maps",
+	"category" : "map",
 	"logical" : "or",
 	"tag" : sys.argv[1],
 	"filename" : sys.argv[1],

@@ -28,6 +28,22 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 	}
 ?>
 	<tr>
+		<td>category</td>
+		<td>
+		<select name="category">
+
+<?
+	foreach (array('game', 'map') as $val){
+		
+?>
+		<option<? if ((array_key_exists('category', $_REQUEST)) && ($_REQUEST['category']==$val)) echo ' selected="selected"'; ?>><? echo $val; ?></option>
+<?
+	}
+?>
+		</select>
+		</td>
+	</tr>
+	<tr>
 	<td colspan="2" align="center"><input type="submit" /></td>
 	</tr>
 </table>
