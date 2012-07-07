@@ -311,7 +311,7 @@ class Extract_metadata(UpqJob):
 		usync.CloseArchive(archiveh)
 		usync.UnInit()
 		del usync
-		if not 'keeptemp' in  self.jobcfg:
+		if not self.jobcfg.has_key('keeptemp'):
 			self.cleandir(tmpdir)
 		return True
 
