@@ -63,12 +63,8 @@ class Verify_remote_file(upqjob.UpqJob):
 			self.msg('Remote hash matches hash in DB.')
 			return True
 		else:
-			if len(hash)==32:
-				#TODO: delete from db to allow re-upload
-				query="UPDATE mirror_file SET status=0, lastcheck=NOW() WHERE mfid=%s " %(hash, fmfid)
-				upqdb.UpqDB().query(query)
-				self.msg('Remote hash does NOT match hash in DB.')
-			else:
-				self.msg('error retrieving hash from ' + hash_url)
+			query="DELETE FROM mirror_file WHERE mfid=%s " %(fmfid)
+			upqdb.UpqDB().query(query)
+			self.msg('Remote hash does NOT match hash in DB for mfid %s = %s.' %(fmfid, hash))
 			return False
 

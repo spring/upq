@@ -19,8 +19,8 @@ class Reverify(UpqJob):
 			WHERE m.status=1 \
 			AND ( f.lastcheck < DATE_SUB(NOW(), INTERVAL 1 MONTH) \
 			OR f.lastcheck is null ) \
-			ORDER BY f.lastcheck ASC
- LIMIT 0,1")
+			ORDER BY f.lastcheck ASC \
+			LIMIT 0,5")
 		id=res.first()["mfid"]
 		if id:
 			self.enqueue_newjob("verify_remote_file", { "mfid":id})
