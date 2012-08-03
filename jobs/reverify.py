@@ -12,17 +12,17 @@
 
 from upqjob import UpqJob
 from upqdb import UpqDB
-
+from time import sleep
 class Reverify(UpqJob):
 	def run(self):
-		res=UpqDB().query("SELECT f.mfid FROM mirror_file f LEFT JOIN mirror m ON f.mid=m.mid \
+		results=UpqDB().query("SELECT f.mfid FROM mirror_file f LEFT JOIN mirror m ON f.mid=m.mid \
 			WHERE m.status=1 \
 			AND ( f.lastcheck < DATE_SUB(NOW(), INTERVAL 1 MONTH) \
 			OR f.lastcheck is null ) \
 			ORDER BY f.lastcheck ASC \
 			LIMIT 0,5")
-		id=res.first()["mfid"]
-		if id:
-			self.enqueue_newjob("verify_remote_file", { "mfid":id})
+		for res in results:
+			self.enqueue_newjob("verify_remote_file", { "mfid":res["mfid"]})
+			sleep(5)
 		return True
 
