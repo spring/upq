@@ -14,7 +14,6 @@ from Queue import *
 
 from upqdb import UpqDB
 import json
-from re import escape
 
 class DBQueue(Queue, object):
 
@@ -32,12 +31,11 @@ class DBQueue(Queue, object):
 
 	def task_done(self, job):
 		# update job state in DB
-		msgstr = str(escape(job.msgstr.strip("%")))
 		if job.result:
 			result=0
 		else:
 			result=1
-		query="UPDATE upqueue SET status=0, end_time=NOW(), result_msg='%s' WHERE jobid = %s" % (msgstr, int(job.jobid))
+		query="UPDATE upqueue SET status=0, end_time=NOW(), result_msg='%s' WHERE jobid = %s" % (UpqDB().escape(job.msgstr), job.jobid)
 		UpqDB().query(query)
 		super(DBQueue, self).task_done()
 

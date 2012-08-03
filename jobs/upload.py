@@ -135,7 +135,10 @@ GROUP by m.mid"% fid)
 				try: #upload succeed, mark in db as uploaded
 					id=UpqDB().insert("mirror_file", {"mid":res['mid'],"fid":fid, "path":dstfilename, "status":1})
 				except UpqDBIntegrityError:
-					self.logger("file already uploaded: mfid=%d" % (id))
+					res=UpqDB().query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (res['mid'], fid))
+					id=res.first()
+					self.logger.info("file already uploaded: mfid=%d" % (id))
+					UpqDB().query("UPDATE mirror_file SET status=1 path='%s' WHERE mfid=%s" % (dstfilename, id))
 				self.logger.debug("inserted into db as %d", id)
 				self.enqueue_newjob("verify_remote_file", {"mfid": id})
 			except ftplib.all_errors as e:

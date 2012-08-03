@@ -65,7 +65,7 @@ class Verify_remote_file(upqjob.UpqJob):
 		else:
 			if len(hash)==32:
 				#TODO: delete from db to allow re-upload
-				query="UPDATE mirror_file SET status=0 WHERE mfid=%s " %(hash, fmfid)
+				query="UPDATE mirror_file SET status=0, lastcheck=NOW() WHERE mfid=%s " %(hash, fmfid)
 				upqdb.UpqDB().query(query)
 				self.msg('Remote hash does NOT match hash in DB.')
 			else:

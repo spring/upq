@@ -189,4 +189,5 @@ class UpqDB():
 			pass
 	def now(self):
 		return func.now()
-
+	def escape(self, string):
+		return string.replace("'","").replace("%","")
