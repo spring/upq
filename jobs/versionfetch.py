@@ -52,6 +52,7 @@ class Download():
 #		url=self.jobdata['url']
 #		self.jobdata['file']=tmpfile
 #		self.logger.debug("going to download %s", url)
+		dled = {}
 		urls = [ "http://springrts.com/dl/buildbot/" ]
 		while len(urls)>0:
 			cur = urls.pop()
@@ -64,7 +65,10 @@ class Download():
 					print cur
 
 				continue
+			if cur in dled:
+				raise Exception("File was already downloaded! %s" % (cur))
 			f = my_download().open(cur)
+			dled[cur] = True
 			data = f.read()
 			files = self.geturls(data)
 			for file in files:
