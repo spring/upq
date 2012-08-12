@@ -63,7 +63,11 @@ class Download():
 					branch, version = self.getversion(verstring)
 					print "branch: " + branch + " version: " + version
 					print cur
-
+				verstring = re.findall("[sS]pring_(.*)[_-]MacOSX-.*.zip", cur)
+				if verstring:
+					branch, version = self.getversion(verstring)
+					print "branch: " + branch + " version: " + version
+					print cur
 				continue
 			if cur in dled:
 				raise Exception("File was already downloaded! %s" % (cur))
