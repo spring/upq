@@ -1,12 +1,12 @@
 # This file is part of the "upq" program used on springfiles.com to manage file
 # uploads, mirror distribution etc. It is published under the GPLv3.
 #
-#Copyright (C) 2011 Daniel Troeder (daniel #at# admin-box #dot# com)
+#Copyright (C) 2012 Matthias Ableitner (spring #at# abma #dot# de)
 #
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# downloads a file
+# fetches version information from http://springrts.com/dl/buildbot
 
 #from upqjob import UpqJob
 #from upqdb import UpqDB
@@ -15,15 +15,13 @@ import urllib
 import os
 import shutil
 import re
+import socket
 
 class my_download(urllib.URLopener):
 	def http_error_default(self, url, fp, errcode, errmsg, headers):
 		raise Exception("Error retrieving %s %d %s" %(url, errcode, errmsg))
 
-class Download():
-	"""
-		"download url:$url"
-	"""
+class Versionfetch():
 	def check(self):
 		if not 'url' in self.jobdata:
 			return False
@@ -32,6 +30,7 @@ class Download():
 		return True
 
 	def geturls(self, htmldata):
+		""" returns an array of urls found in htmldata """
 		res = re.findall("href=\s*(?:\"[^\"]*\"|'[^']'|\S+)", htmldata)
 		ret = []
 		for r in res:
@@ -41,12 +40,26 @@ class Download():
 		return ret
 
 	def getversion(self, string):
+		""" returns branch, version of given string """
 		ver = string[0].replace("%7b", "{").replace("%7d", "}")
 		branch = "master"
 		if ver[0] == "{":
 			branch = re.findall("{.*}", ver)[0].strip("{}")
 			ver = ver[len(branch)+2:]
 		return branch, ver
+	def getlobbyversion(self):
+		""" connects to the lobby server and returns the current spring version"""
+		version = ""
+		try:
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			s.connect(("lobby.springrts.com", 8200))
+			data = s.recv(1024)
+			version = data.split(" ")[2]
+			s.send("EXIT")
+			s.close()
+		except Exception as e:
+			self.msg(str(e))
+		return version
 
 	def run(self):
 #		url=self.jobdata['url']
@@ -54,6 +67,7 @@ class Download():
 #		self.logger.debug("going to download %s", url)
 		dled = {}
 		urls = [ "http://springrts.com/dl/buildbot/" ]
+		print self.getlobbyversion()
 		while len(urls)>0:
 			cur = urls.pop()
 #			print cur
@@ -64,6 +78,11 @@ class Download():
 					print "branch: " + branch + " version: " + version
 					print cur
 				verstring = re.findall("[sS]pring_(.*)[_-]MacOSX-.*.zip", cur)
+				if verstring:
+					branch, version = self.getversion(verstring)
+					print "branch: " + branch + " version: " + version
+					print cur
+				verstring = re.findall("spring_(.*)_minimal-portable-linux-static.7z", cur)
 				if verstring:
 					branch, version = self.getversion(verstring)
 					print "branch: " + branch + " version: " + version
@@ -84,5 +103,5 @@ class Download():
 		urllib.urlcleanup()
 		return True
 
-dl = Download()
-dl.run()
+ver = Versionfetch()
+ver.run()
