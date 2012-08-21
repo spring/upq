@@ -8,8 +8,8 @@
 
 # fetches version information from http://springrts.com/dl/buildbot
 
-#from upqjob import UpqJob
-#from upqdb import UpqDB
+from upqjob import UpqJob
+from upqdb import UpqDB
 from time import time
 import urllib
 import os
@@ -21,14 +21,7 @@ class my_download(urllib.URLopener):
 	def http_error_default(self, url, fp, errcode, errmsg, headers):
 		raise Exception("Error retrieving %s %d %s" %(url, errcode, errmsg))
 
-class Versionfetch():
-	def check(self):
-		if not 'url' in self.jobdata:
-			return False
-		self.enqueue_job()
-		self.msg("Downloading " + self.jobdata['url'])
-		return True
-
+class Versionfetch(UpqJob):
 	def geturls(self, htmldata):
 		""" returns an array of urls found in htmldata """
 		res = re.findall("href=\s*(?:\"[^\"]*\"|'[^']'|\S+)", htmldata)
@@ -62,24 +55,31 @@ class Versionfetch():
 		return version
 	def escape(self, string):
 		return string.replace("%7b", "{").replace("%7d", "}")
+		cats = {}
+	def getCID(self, category):
+		if category in cats:
+			return cats[category]
+		res = UpqDB().query("SELECT cid from categories WHERE category='%s'" % (category))
+		return res.first()[0]
+
 	def update(self, category, versionregex, url):
 		version = re.findall(versionregex, url)
 		if not version:
 			return
 		version = self.escape(version[0])
 		filename = self.escape(url[url.rfind("/")+1:])
+		category = "spring_" + category
+		cid = getCID(category)
 		print "%s %s %s %s" % (filename, version, category, url)
+		fid = UpqDB().insert("file", {"filename" : filename, "name":"spring", "version": version, "category" : cid  })
+		#FIXME: add mirror url
 
 	def run(self):
-#		url=self.jobdata['url']
-#		self.jobdata['file']=tmpfile
-#		self.logger.debug("going to download %s", url)
 		dled = {}
 		urls = [ "http://springrts.com/dl/buildbot/" ]
 		print self.getlobbyversion()
 		while len(urls)>0:
 			cur = urls.pop()
-#			print cur
 			if not cur.endswith('/'): # file detected
 				self.update("windows", "spring_(.*)_minimal-portable.7z", cur)
 				self.update("macosx", "[sS]pring_(.*)[_-]MacOSX-.*.zip", cur)
@@ -93,12 +93,6 @@ class Versionfetch():
 			files = self.geturls(data)
 			for file in files:
 				urls.append(cur + file)
-		#except Exception as e:
-#			self.msg(str(e))
-		#	print str(e)
-		#	return False
 		urllib.urlcleanup()
 		return True
 
-ver = Versionfetch()
-ver.run()
