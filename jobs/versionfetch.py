@@ -60,6 +60,13 @@ class Versionfetch():
 		except Exception as e:
 			self.msg(str(e))
 		return version
+	def update(self, category, versionregex, url):
+		version = re.findall(versionregex, url)
+		if not version:
+			return
+		version = version[0].replace("%7b", "{").replace("%7d", "}")
+		filename = url[url.rfind("/")+1:]
+		print "%s %s %s %s" % (filename, version, category, url)
 
 	def run(self):
 #		url=self.jobdata['url']
@@ -72,18 +79,9 @@ class Versionfetch():
 			cur = urls.pop()
 #			print cur
 			if not cur.endswith('/'): # file detected
-				verstring = re.findall("spring_(.*)_minimal-portable.7z", cur)
-				if verstring:
-					branch, version = self.getversion(verstring)
-					print "branch: " + branch + " version: " + version + " " +  cur
-				verstring = re.findall("[sS]pring_(.*)[_-]MacOSX-.*.zip", cur)
-				if verstring:
-					branch, version = self.getversion(verstring)
-					print "branch: " + branch + " version: " + version + " "+ cur
-				verstring = re.findall("spring_(.*)_minimal-portable-linux-static.7z", cur)
-				if verstring:
-					branch, version = self.getversion(verstring)
-					print "branch: " + branch + " version: " + version + " " + cur
+				self.update("windows", "spring_(.*)_minimal-portable.7z", cur)
+				self.update("macosx", "[sS]pring_(.*)[_-]MacOSX-.*.zip", cur)
+				self.update("linux", "spring_(.*)_minimal-portable-linux-static.7z", cur)
 				continue
 			if cur in dled:
 				raise Exception("File was already downloaded! %s" % (cur))
