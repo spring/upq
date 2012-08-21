@@ -60,12 +60,14 @@ class Versionfetch():
 		except Exception as e:
 			self.msg(str(e))
 		return version
+	def escape(self, string):
+		return string.replace("%7b", "{").replace("%7d", "}")
 	def update(self, category, versionregex, url):
 		version = re.findall(versionregex, url)
 		if not version:
 			return
-		version = version[0].replace("%7b", "{").replace("%7d", "}")
-		filename = url[url.rfind("/")+1:]
+		version = self.escape(version[0])
+		filename = self.escape(url[url.rfind("/")+1:])
 		print "%s %s %s %s" % (filename, version, category, url)
 
 	def run(self):
