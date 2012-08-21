@@ -75,18 +75,15 @@ class Versionfetch():
 				verstring = re.findall("spring_(.*)_minimal-portable.7z", cur)
 				if verstring:
 					branch, version = self.getversion(verstring)
-					print "branch: " + branch + " version: " + version
-					print cur
+					print "branch: " + branch + " version: " + version + " " +  cur
 				verstring = re.findall("[sS]pring_(.*)[_-]MacOSX-.*.zip", cur)
 				if verstring:
 					branch, version = self.getversion(verstring)
-					print "branch: " + branch + " version: " + version
-					print cur
+					print "branch: " + branch + " version: " + version + " "+ cur
 				verstring = re.findall("spring_(.*)_minimal-portable-linux-static.7z", cur)
 				if verstring:
 					branch, version = self.getversion(verstring)
-					print "branch: " + branch + " version: " + version
-					print cur
+					print "branch: " + branch + " version: " + version + " " + cur
 				continue
 			if cur in dled:
 				raise Exception("File was already downloaded! %s" % (cur))
