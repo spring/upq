@@ -1,3 +1,8 @@
+<?php
+require("config.php");
+require("include/drupal_dummy.inc");
+require("include/search.inc");
+?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"> 
 <head>
@@ -33,8 +38,9 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 		<select name="category">
 
 <?
-	foreach (array('game', 'map') as $val){
-		
+	$res=db_query("SELECT name from categories");
+        while($val = db_result($res)){
+
 ?>
 		<option<? if ((array_key_exists('category', $_REQUEST)) && ($_REQUEST['category']==$val)) echo ' selected="selected"'; ?>><? echo $val; ?></option>
 <?
@@ -50,9 +56,6 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 </form>
 
 <?php
-require("config.php");
-require("include/drupal_dummy.inc");
-require("include/search.inc");
 
 /**
  *	format a result to a human readable output
