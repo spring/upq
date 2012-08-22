@@ -74,15 +74,21 @@ class Versionfetch(UpqJob):
 		if not version:
 			return
 		version = self.escape(version[0])
+		if version == "testing":
+			return
 		filename = self.escape(url[url.rfind("/")+1:])
 		category = "engine_" + category
 		cid = self.getCID(category)
-		print "%s %s %s %s" % (filename, version, category, url)
-		fid = UpqDB().insert("file", {"filename" : filename, "name":"spring", "version": version, "category" : cid  })
+		#print "%s %s %s %s" % (filename, version, category, url)
+		fid = UpqDB().insert("file", {"filename" : filename, "name": category, "version": version, "cid" : cid, "status": 1 })
 		res = UpqDB().query("SELECT mid from mirror WHERE url_prefix='%s'" % self.prefix)
 		mid = res.first()[0]
-		relpath = self.escape(url[len(self.prefix):]) 
-		UpqDB().insert("mirror_file", {"mid" : mid, "path": relpath, "status": 1 })
+		relpath = self.escape(url[len(self.prefix)+1:])
+		try:
+			id = UpqDB().insert("mirror_file", {"mid" : mid, "path": relpath, "status": 1, "fid": fid })
+		except UpqDBIntegrityError:
+			self.logger.error(id)
+#			UpqDB().query("UPDATE 
 
 	def run(self):
 		dled = {}
