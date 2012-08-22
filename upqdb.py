@@ -107,7 +107,7 @@ class UpqDB():
 			Column('sdp', VARCHAR(length=32),nullable=False, unique=True), #for this file
 			Column('descriptionuri', VARCHAR(length=1024)),
 			Column('metadata', TEXT()),
-			UniqueConstraint('name', 'version', 'category'))
+			UniqueConstraint('name', 'version', 'cid'))
 		self.tables['image_file']=Table('image_file', self.meta,
 			Column('iid', INTEGER(display_width=10), nullable=False), #id of the image
 			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
