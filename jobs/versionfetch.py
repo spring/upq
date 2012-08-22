@@ -22,6 +22,10 @@ class my_download(urllib.URLopener):
 		raise Exception("Error retrieving %s %d %s" %(url, errcode, errmsg))
 
 class Versionfetch(UpqJob):
+	prefix = "http://springrts.com/dl/buildbot"
+	lobby = "lobby.springrts.com"
+	lobbyport = 8200
+	cats = {}
 	def geturls(self, htmldata):
 		""" returns an array of urls found in htmldata """
 		res = re.findall("href=\s*(?:\"[^\"]*\"|'[^']'|\S+)", htmldata)
@@ -45,7 +49,7 @@ class Versionfetch(UpqJob):
 		version = ""
 		try:
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			s.connect(("lobby.springrts.com", 8200))
+			s.connect((self.lobby, self.lobbyport))
 			data = s.recv(1024)
 			version = data.split(" ")[2]
 			s.send("EXIT")
@@ -55,12 +59,15 @@ class Versionfetch(UpqJob):
 		return version
 	def escape(self, string):
 		return string.replace("%7b", "{").replace("%7d", "}")
-		cats = {}
 	def getCID(self, category):
-		if category in cats:
-			return cats[category]
-		res = UpqDB().query("SELECT cid from categories WHERE category='%s'" % (category))
-		return res.first()[0]
+		if category in self.cats:
+			return self.cats[category]
+		res = UpqDB().query("SELECT cid from categories WHERE name='%s'" % (category))
+		try:
+			self.cats[category]=res.first()[0] # cache result
+		except:
+			self.logger.error("Invalid category: %s" % category)
+		return self.cats[category]
 
 	def update(self, category, versionregex, url):
 		version = re.findall(versionregex, url)
@@ -68,15 +75,18 @@ class Versionfetch(UpqJob):
 			return
 		version = self.escape(version[0])
 		filename = self.escape(url[url.rfind("/")+1:])
-		category = "spring_" + category
-		cid = getCID(category)
+		category = "engine_" + category
+		cid = self.getCID(category)
 		print "%s %s %s %s" % (filename, version, category, url)
 		fid = UpqDB().insert("file", {"filename" : filename, "name":"spring", "version": version, "category" : cid  })
-		#FIXME: add mirror url
+		res = UpqDB().query("SELECT mid from mirror WHERE url_prefix='%s'" % self.prefix)
+		mid = res.first()[0]
+		relpath = self.escape(url[len(self.prefix):]) 
+		UpqDB().insert("mirror_file", {"mid" : mid, "path": relpath, "status": 1 })
 
 	def run(self):
 		dled = {}
-		urls = [ "http://springrts.com/dl/buildbot/" ]
+		urls = [ self.prefix + '/' ]
 		print self.getlobbyversion()
 		while len(urls)>0:
 			cur = urls.pop()
