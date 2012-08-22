@@ -35,6 +35,8 @@ class DBQueue(Queue, object):
 			result=0
 		else:
 			result=1
+		if len(job.msgstr)>255: #limit string length
+			job.msgstr=job.msgstr[:255]
 		query="UPDATE upqueue SET status=0, end_time=NOW(), result_msg='%s' WHERE jobid = %s" % (UpqDB().escape(job.msgstr), job.jobid)
 		UpqDB().query(query)
 		super(DBQueue, self).task_done()
