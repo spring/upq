@@ -114,7 +114,12 @@ function search($req){
 	);
 	$res=array();
 	while($row = db_fetch_array($result)){
-		$row['mirrors']=array($config['base_url'].'/'.$row['path'].'/'.$row['filename']);
+		#inject local file as mirror
+		if (($row['category'] == "game") or ($row['category'] == "map")) {
+			$row['mirrors']=array($config['base_url'].'/'.$row['path'].'/'.$row['filename']);
+		} else {
+			$row['mirrors']=array();
+		}
 		$res[]=$row;
 	}
 
@@ -140,7 +145,7 @@ function search($req){
 			LEFT JOIN mirror as m ON mf.mid=m.mid
 			LEFT JOIN file as f ON f.fid=mf.fid
 			WHERE f.fid=%d
-			AND m.status=1
+			AND (m.status=1 or m.status=2)
 			AND mf.status=1',array($res[$i]['fid']));
 		while($row = db_fetch_array($result)){
 			$res[$i]['mirrors'][]=$row['url'];
