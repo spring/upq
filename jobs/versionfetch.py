@@ -9,13 +9,11 @@
 # fetches version information from http://springrts.com/dl/buildbot
 
 from upqjob import UpqJob
-from upqdb import UpqDB
-from time import time
+from upqdb import UpqDB, UpqDBIntegrityError
+import datetime
 import urllib
-import os
-import shutil
-import re
 import socket
+import json
 
 class my_download(urllib.URLopener):
 	def http_error_default(self, url, fp, errcode, errmsg, headers):
@@ -26,24 +24,6 @@ class Versionfetch(UpqJob):
 	lobby = "lobby.springrts.com"
 	lobbyport = 8200
 	cats = {}
-	def geturls(self, htmldata):
-		""" returns an array of urls found in htmldata """
-		res = re.findall("href=\s*(?:\"[^\"]*\"|'[^']'|\S+)", htmldata)
-		ret = []
-		for r in res:
-			url = r[5:].strip("\"'")
-			if len(url)>0 and url[0]!='?' and url[0]!='/':
-				ret.append(url)
-		return ret
-
-	def getversion(self, string):
-		""" returns branch, version of given string """
-		ver = string[0].replace("%7b", "{").replace("%7d", "}")
-		branch = "master"
-		if ver[0] == "{":
-			branch = re.findall("{.*}", ver)[0].strip("{}")
-			ver = ver[len(branch)+2:]
-		return branch, ver
 	def getlobbyversion(self):
 		""" connects to the lobby server and returns the current spring version"""
 		version = ""
@@ -69,46 +49,56 @@ class Versionfetch(UpqJob):
 			self.logger.error("Invalid category: %s" % category)
 		return self.cats[category]
 
-	def update(self, category, versionregex, url):
-		version = re.findall(versionregex, url)
-		if not version:
+	def update(self, data):
+		"""
+			data is an array with
+				md5
+				filectime
+				version
+				filesize
+				os
+				path
+		"""
+		if data['version'] == "testing":
 			return
-		version = self.escape(version[0])
-		if version == "testing":
-			return
-		filename = self.escape(url[url.rfind("/")+1:])
-		category = "engine_" + category
+		filename = self.escape(data['path'][data['path'].rfind("/")+1:])
+		category = "engine_" + data['os']
+		version = data['version']
+		url = self.prefix +'/' + data['path']
 		cid = self.getCID(category)
 		#print "%s %s %s %s" % (filename, version, category, url)
-		fid = UpqDB().insert("file", {"filename" : filename, "name": category, "version": version, "cid" : cid, "status": 1 })
+		try:
+			fid = UpqDB().insert("file", {
+				"filename" : filename,
+				"name": category,
+				"version": version,
+				"cid" : cid,
+				"md5" : data['md5'],
+				"timestamp": datetime.datetime.fromtimestamp(data['filectime']),
+				#"timestamp": data['filectime'],
+				"size": data['filesize'],
+				"status": 1 })
+		except UpqDBIntegrityError:
+			res = UpqDB().query("SELECT fid from file WHERE name='%s' AND version='%s' AND md5='%s'" % (category, version, data['md5']))
+			fid = res.first()[0]
 		res = UpqDB().query("SELECT mid from mirror WHERE url_prefix='%s'" % self.prefix)
 		mid = res.first()[0]
 		relpath = self.escape(url[len(self.prefix)+1:])
 		try:
 			id = UpqDB().insert("mirror_file", {"mid" : mid, "path": relpath, "status": 1, "fid": fid })
 		except UpqDBIntegrityError:
-			self.logger.error(id)
-#			UpqDB().query("UPDATE 
+			res = UpqDB().query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (mid, fid))
+			id = res.first()[0]
+			UpqDB().query("UPDATE mirror_file SET lastcheck=NOW() WHERE mfid = %s"% (id))
 
 	def run(self):
 		dled = {}
-		urls = [ self.prefix + '/' ]
-		print self.getlobbyversion()
-		while len(urls)>0:
-			cur = urls.pop()
-			if not cur.endswith('/'): # file detected
-				self.update("windows", "spring_(.*)_minimal-portable.7z", cur)
-				self.update("macosx", "[sS]pring_(.*)[_-]MacOSX-.*.zip", cur)
-				self.update("linux", "spring_(.*)_minimal-portable-linux-static.7z", cur)
-				continue
-			if cur in dled:
-				raise Exception("File was already downloaded! %s" % (cur))
-			f = my_download().open(cur)
-			dled[cur] = True
-			data = f.read()
-			files = self.geturls(data)
-			for file in files:
-				urls.append(cur + file)
+		url = self.prefix + '/list.php'
+		#print self.getlobbyversion()
+		f = my_download().open(url)
+		data = json.loads(str(f.read()))
+		for row in data:
+			self.update(row)
 		urllib.urlcleanup()
 		return True
 
