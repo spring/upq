@@ -70,7 +70,7 @@ class Versionfetch(UpqJob):
 		try:
 			fid = UpqDB().insert("file", {
 				"filename" : filename,
-				"name": category,
+				"name": "spring",
 				"version": version,
 				"cid" : cid,
 				"md5" : data['md5'],
@@ -79,7 +79,7 @@ class Versionfetch(UpqJob):
 				"size": data['filesize'],
 				"status": 1 })
 		except UpqDBIntegrityError:
-			res = UpqDB().query("SELECT fid from file WHERE name='%s' AND version='%s' AND md5='%s'" % (category, version, data['md5']))
+			res = UpqDB().query("SELECT fid from file WHERE name='spring' AND version='%s' AND md5='%s' and cid=%s" % (version, data['md5'], cid))
 			fid = res.first()[0]
 		res = UpqDB().query("SELECT mid from mirror WHERE url_prefix='%s'" % self.prefix)
 		mid = res.first()[0]
