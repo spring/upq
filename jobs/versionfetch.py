@@ -49,7 +49,7 @@ class Versionfetch(UpqJob):
 			self.logger.error("Invalid category: %s" % category)
 		return self.cats[category]
 
-	def update(self, data):
+	def update(self, data, mid):
 		"""
 			data is an array with
 				md5
@@ -81,11 +81,15 @@ class Versionfetch(UpqJob):
 		except UpqDBIntegrityError:
 			res = UpqDB().query("SELECT fid from file WHERE name='spring' AND version='%s' AND md5='%s' and cid=%s" % (version, data['md5'], cid))
 			fid = res.first()[0]
-		res = UpqDB().query("SELECT mid from mirror WHERE url_prefix='%s'" % self.prefix)
-		mid = res.first()[0]
 		relpath = self.escape(url[len(self.prefix)+1:])
 		try:
-			id = UpqDB().insert("mirror_file", {"mid" : mid, "path": relpath, "status": 1, "fid": fid })
+			id = UpqDB().insert("mirror_file", {
+				"mid" : mid,
+				"path": relpath,
+				"status": 1,
+				"fid": fid,
+				"lastcheck": UpqDB().now()
+				})
 		except UpqDBIntegrityError:
 			res = UpqDB().query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (mid, fid))
 			id = res.first()[0]
@@ -97,8 +101,12 @@ class Versionfetch(UpqJob):
 		#print self.getlobbyversion()
 		f = my_download().open(url)
 		data = json.loads(str(f.read()))
+		res = UpqDB().query("SELECT mid from mirror WHERE url_prefix='%s'" % self.prefix)
+		mid = res.first()[0]
 		for row in data:
-			self.update(row)
+			self.update(row, mid)
+		#delete files that wheren't updated this run (means removed from mirror)
+		UpqDB().query("DELETE FROM `mirror_file` WHERE `lastcheck` < NOW() - INTERVAL 1 HOUR AND mid = %s" %(mid))
 		urllib.urlcleanup()
 		return True
 
