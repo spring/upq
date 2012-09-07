@@ -43,11 +43,14 @@ class Hash(UpqJob):
 			self.msg("File %s doesn't exist" % (filename))
 			return False
 		hashes = self.hash(filename)
-		if res['md5']!=None  and res['md5']!=hashes['md5']:
+		if res['md5']!=None and res['md5']!=hashes['md5']:
+			self.logger.error("md5 missmatch")
 			return False
 		if res['sha1']!=None and res['sha1']!=hashes['sha1']:
+			self.logger.error("sha1 missmatch")
 			return False
 		if res['sha256']!=None and res['sha256']!=hashes['sha256']:
+			self.logger.error("sha256 missmatch")
 			return False
 		UpqDB().query("UPDATE file set md5='%s', sha1='%s', sha256='%s' WHERE fid=%d" %
 			(hashes['md5'], hashes['sha1'], hashes['sha256'], fid))
