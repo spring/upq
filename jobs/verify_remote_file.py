@@ -27,11 +27,11 @@ class Verify_remote_file(upqjob.UpqJob):
 		"""
 		# get files hash from DB
 		fmfid=int(self.jobdata['mfid'])
-		result = upqdb.UpqDB().query("SELECT md5, mf.fid, url_prefix, url_daemon, mf.path \
-			FROM mirror AS m \
-			LEFT JOIN mirror_file as mf ON m.mid=mf.mid \
-			LEFT JOIN file as f ON f.fid=mf.fid \
-			WHERE mfid=%d "%fmfid)
+		result = upqdb.UpqDB().query("SELECT f.md5, mf.fid, m.url_prefix, m.url_daemon, mf.path \
+						FROM mirror_file as mf \
+						LEFT JOIN file as f on f.fid = mf.fid \
+						LEFT JOIN mirror as m on mf.mid = m.mid \
+						WHERE mf.mfid = %d" % fmfid)
 		res = result.first()
 
 		if not res:
@@ -57,7 +57,7 @@ class Verify_remote_file(upqjob.UpqJob):
 		self.msg("received md5 hash for filename=%s on fmfid=%s is %s" %(file_path, fmfid, hash))
 		self.result = hash
 	
-		if res['md5'] == hash:
+		if md5 == hash:
 			#TODO add notify job here
 			upqdb.UpqDB().query("UPDATE mirror_file SET lastcheck=NOW(), status=1 WHERE mfid=%d" %(fmfid))
 			self.msg('Remote hash matches hash in DB.')
@@ -65,6 +65,6 @@ class Verify_remote_file(upqjob.UpqJob):
 		else:
 			query="DELETE FROM mirror_file WHERE mfid=%s " %(fmfid)
 			upqdb.UpqDB().query(query)
-			self.msg('Remote hash does NOT match hash in DB for mfid %s = %s.' %(fmfid, hash))
+			self.msg('Remote hash does NOT match hash in DB for mfid %s = %s != %s.' %(fmfid, hash, md5))
 			return False
 
