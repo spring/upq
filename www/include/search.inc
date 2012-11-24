@@ -83,7 +83,7 @@ function search($req){
 	_file_mirror_createquery($query, $vars, $logical, "f.name LIKE $BINARY '%s'", $req, array('name'));
 	_file_mirror_createquery($query, $vars, $logical, "f.version LIKE $BINARY '%s'", $req, array('version'));
 	_file_mirror_createquery($query, $vars, $logical, "f.sdp LIKE $BINARY '%s'", $req, array('sdp'));
-	_file_mirror_createquery($query, $vars, $logical, "( CONCAT(f.name,' ',f.version) LIKE $BINARY '%s' OR f.name LIKE $BINARY '%s' )",$req,  array('springname','springname'));
+	_file_mirror_createquery($query, $vars, $logical, "( CONCAT(f.name,' ',f.version) LIKE $BINARY '%s' OR f.name LIKE $BINARY '%s' OR f.version LIKE $BINARY '%s' )",$req,  array('springname','springname', 'springname'));
 	_file_mirror_createquery($query, $vars, $logical, "f.md5 = '%s'", $req, array('md5'));
 	if($query!="")
 		$query=" AND (".$query.")";
