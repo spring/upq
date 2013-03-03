@@ -92,7 +92,7 @@ class UpqDB():
 		self.tables['file']=Table('file', self.meta, #all known files
 			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True), #primary key of file
 			Column('uid', INTEGER(display_width=10), default=0, nullable=False), # owner uid of file
-			Column('filename', VARCHAR(length=255), nullable=False, unique=True), # filename (without path)
+			Column('filename', VARCHAR(length=255), nullable=False, unique=False), # filename (without path)
 			Column('path', VARCHAR(length=1024), default='', nullable=False), # relative path where file is (without filename!)
 			Column('size', INTEGER(display_width=11), nullable=False), # file size
 			Column('status', INTEGER(display_width=11), nullable=False), # 0=inactive, 1 = active, 2 = marked for recheck, 3 = broken
@@ -107,7 +107,9 @@ class UpqDB():
 			Column('sdp', VARCHAR(length=32),nullable=False, unique=True), #for this file
 			Column('descriptionuri', VARCHAR(length=1024)),
 			Column('metadata', TEXT()),
-			UniqueConstraint('name', 'version', 'cid'))
+			UniqueConstraint('name', 'version', 'cid'),
+			UniqueConstraint('filename', 'cid')
+			)
 		self.tables['image_file']=Table('image_file', self.meta,
 			Column('iid', INTEGER(display_width=10), nullable=False), #id of the image
 			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),

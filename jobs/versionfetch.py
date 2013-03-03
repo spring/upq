@@ -78,9 +78,14 @@ class Versionfetch(UpqJob):
 				#"timestamp": data['filectime'],
 				"size": data['filesize'],
 				"status": 1 })
-		except UpqDBIntegrityError:
-			res = UpqDB().query("SELECT fid from file WHERE name='spring' AND version='%s' AND md5='%s' and cid=%s" % (version, data['md5'], cid))
-			fid = res.first()[0]
+		except UpqDBIntegrityError, e:
+			try:
+				res = UpqDB().query("SELECT fid from file WHERE version='%s' and cid=%s" % (version, cid))
+				fid = res.first()[0]
+				UpqDB().query("UPDATE file set md5='%s' WHERE fid=%s"%  (data['md5'], fid))
+			except Exception, e:
+				self.logger.error("Error %s %s %s %s", version, data['md5'], cid, e)
+				return
 		relpath = self.escape(url[len(self.prefix)+1:])
 		try:
 			id = UpqDB().insert("mirror_file", {
