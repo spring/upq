@@ -38,7 +38,7 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 		<select name="category">
 
 <?
-	$res=db_query("SELECT name from categories");
+	$res=db_query("SELECT name from categories UNION SELECT ' ' AS name ORDER BY name");
         while($val = db_result($res)){
 
 ?>
