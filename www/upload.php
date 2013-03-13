@@ -1,3 +1,9 @@
+<?php
+	require('config.php');
+	require('include/drupal_dummy.inc');
+	require('include/upq.inc');
+	require('include/upload.inc');
+?>
 <html>
 <head>
 		<title>upload to upq</title>
@@ -19,10 +25,12 @@ body, td, input{
 	padding: 1em;
 	margin:0px auto;
 	text-align:left;
+	border: 1px solid;
 }
 .form {
 	width:600px;
 }
+
 h1 {
 	font-size: 18px;
 }
@@ -38,7 +46,7 @@ h1 {
 		With this form you can upload files to the spring mirroring system.
 		Files will be uploaded to mirrors and can be automaticly downloaded by Lobbies.
 	</p>
-	<form method="post">
+	<form method="post" enctype="multipart/form-data">
 		<table class="form">
 		<tr>
 				<td>Username</td>
@@ -56,7 +64,7 @@ h1 {
 -->
 		<tr>
 			<td>Select file for upload</td>
-			<td><input type="file"></td>
+			<td><input type="file" name="file"></td>
 		</tr>
 		<tr>
 			<td>OR: http-url to download </td>
@@ -70,3 +78,4 @@ h1 {
 </div>
 </body>
 </html>
+

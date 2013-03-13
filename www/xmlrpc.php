@@ -5,6 +5,7 @@ require("include/xmlrpc.inc");
 require("include/xmlrpcs.inc");
 require("include/drupal_dummy.inc");
 require("include/search.inc");
+require("include/upq.inc");
 
 //this script requires >= php 5.25
 
@@ -36,33 +37,13 @@ function xmlrpc_search($req){
 	return $res;
 }
 
-/**
-* notify cron job about changes
-*/
-function _run_upq($job){
-	global $config;
-	$timeout=5;
-	$sock = @stream_socket_client($config['socket'], $errno, $errstr, $timeout);
-	if($sock===FALSE){
-		watchdog("filemirror", "error connecting to upq socket $errstr $job");
-		return;
-        }
-	stream_set_timeout($sock, $timeout);
-	fwrite($sock, "$job\n");
-	$res=fgets($sock);
-	fclose($sock);
-	watchdog("filemirror", "result from upq: $res");
-	return $res;
-}
-
-
 function xmlrpc_upload($req){
 	xml_log($req, 'upload');
 	if (!(array_key_exists('url', $req))){
 		return "Error: Url not set in request!";
 	}
 	//FIXME: authentification!
-	return _run_upq("download url:".$req['url']);
+	return upq_run("download url:".$req['url']);
 }
 
 
