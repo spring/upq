@@ -187,7 +187,7 @@ class Extract_metadata(UpqJob):
 		return usync
 	def openArchive(self, usync, filename):
 		archiveh=usync.OpenArchive(filename)
-		if archiveh==0:
+		if archiveh<=0:
 			self.logger.error("OpenArchive(%s) failed: %s" % (filename, usync.GetNextError()))
 			return False
 		return archiveh
