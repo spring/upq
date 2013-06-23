@@ -55,6 +55,18 @@ function _add_metadata_path($arr){
 	
 }
 
+// return LIMIT 0,X for sql query
+function getlimit(&$req) {
+	if(isset($req['limit'])) {
+		$max = intval($req['limit']);
+		if ($max > 0 ) {
+			return "LIMIT 0,".$max;
+		} else {
+			return "";
+		}
+	}
+	return "LIMIT 0,10";
+}
 /**
 *	implementation of the xml-rpc call
 */
@@ -87,6 +99,8 @@ function search($req){
 	_file_mirror_createquery($query, $vars, $logical, "f.md5 = '%s'", $req, array('md5'));
 	if($query!="")
 		$query=" AND (".$query.")";
+	$limit = getlimit($req);
+
 	$result=db_query("SELECT
 		distinct(f.fid) as fid,
 		f.name as name,
@@ -108,7 +122,7 @@ function search($req){
 		AND f.status=1
 		$query
 		ORDER BY f.timestamp DESC
-		LIMIT 0,10
+		$limit
 		",
 		$vars
 	);
