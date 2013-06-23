@@ -50,7 +50,7 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 		</td>
 	</tr>
 	<tr>
-	<td colspan="2" align="center"><input type="submit" /></td>
+	<td colspan="2" align="right"><input type="submit" /></td>
 	</tr>
 </table>
 </form>
