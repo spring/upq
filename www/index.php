@@ -55,6 +55,9 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 </table>
 </form>
 
+All these parameters can be used for the <a href="xmlrpc.php">xmlrpc api</a>, too.
+
+<pre>
 <?php
 
 /**
@@ -81,9 +84,8 @@ function dump_result($res, $rec=0){
 }
 
 $res=search($_REQUEST);
-echo "<pre>";
 echo dump_result($res);
-echo "</pre>";
 ?>
+</pre>
 </body>
 </html>
