@@ -1,6 +1,10 @@
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<script>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+	<title>Search springfiles.com</title>
+<script type="text/javascript">
+<!--
 
 var timer;
 var query;
@@ -49,14 +53,16 @@ xmlhttp.onreadystatechange=function()
 xmlhttp.open("GET","newindex.php?q="+str,true);
 xmlhttp.send();
 }
+// -->
 </script>
 </head>
-<body onload="FocusOnInput()">
+<body onload="FocusOnInput();">
 
-<form>
-<input type="text" id="search" size="30" onkeyup="chk_me(this.value)" onkeypress="if(event.keyCode==13) { showResult(this.value); return false; }">
+<form action="#">
+<input type="text" id="search" size="30" onkeyup="chk_me(this.value)" onkeypress="if(event.keyCode==13) { showResult(this.value); return false; }" />
 <div id="livesearch"></div>
 </form>
 
 </body>
-</html> 
+</html>
+
