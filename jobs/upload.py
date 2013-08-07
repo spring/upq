@@ -92,15 +92,10 @@ GROUP BY f.fid HAVING count(f.fid) = 1")
 		md5=res['md5']
 		#uploads a fid to all mirrors
 		results = UpqDB().query("SELECT m.mid, ftp_url, ftp_user, ftp_pass, ftp_dir, ftp_port, ftp_passive, ftp_ssl \
-FROM mirror as m \
-LEFT JOIN mirror_file as f ON m.mid=f.mid \
-WHERE m.status=1 \
-AND m.status=1 \
-AND f.status = 1 \
-AND m.mid not in ( \
-	SELECT mid FROM mirror_file WHERE fid=%d AND status=1\
-) \
-GROUP by m.mid"% fid)
+						from file f  \
+						left join mirror m on m.status=f.status \
+						where f.fid=%d and f.status=1 and m.status=1 \
+						and m.mid not in (select mid from mirror_file where fid=%d and status = 1)"% (fid, fid))
 		uploadcount=0
 		for res in results:
 			try:

@@ -84,7 +84,7 @@ class Versionfetch(UpqJob):
 				fid = res.first()[0]
 				UpqDB().query("UPDATE file set md5='%s' WHERE fid=%s"%  (data['md5'], fid))
 			except Exception, e:
-				self.logger.error("Error %s %s %s %s", version, data['md5'], cid, e)
+				self.logger.error("Error %s %s %s", version, cid, e)
 				return
 		relpath = self.escape(url[len(self.prefix)+1:])
 		try:
