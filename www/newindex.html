@@ -1,0 +1,62 @@
+<html>
+<head>
+<script>
+
+var timer;
+var query;
+function FocusOnInput()
+{
+     document.getElementById("search").focus();
+}
+
+function validate() {
+	showResult(query);
+}
+function chk_me(str){
+	query = str;
+	if (str == "") {
+		showResult("");
+		return;
+	}
+	clearTimeout(timer);
+	timer=setTimeout(validate,800);
+}
+
+function showResult(str)
+{
+if (str.length==0)
+  {
+  document.getElementById("livesearch").innerHTML="";
+  document.getElementById("livesearch").style.border="0px";
+  return;
+  }
+if (window.XMLHttpRequest)
+  {// code for IE7+, Firefox, Chrome, Opera, Safari
+  xmlhttp=new XMLHttpRequest();
+  }
+else
+  {// code for IE6, IE5
+  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+xmlhttp.onreadystatechange=function()
+  {
+  if (xmlhttp.readyState==4 && xmlhttp.status==200)
+    {
+    document.getElementById("livesearch").innerHTML=xmlhttp.responseText;
+    document.getElementById("livesearch").style.border="1px solid #A5ACB2";
+    }
+  }
+xmlhttp.open("GET","newindex.php?q="+str,true);
+xmlhttp.send();
+}
+</script>
+</head>
+<body onload="FocusOnInput()">
+
+<form>
+<input type="text" id="search" size="30" onkeyup="chk_me(this.value)" onkeypress="if(event.keyCode==13) { showResult(this.value); return false; }">
+<div id="livesearch"></div>
+</form>
+
+</body>
+</html> 
