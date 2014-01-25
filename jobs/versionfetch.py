@@ -55,6 +55,7 @@ class Versionfetch(UpqJob):
 				md5
 				filectime
 				version
+				branch
 				filesize
 				os
 				path
@@ -63,7 +64,10 @@ class Versionfetch(UpqJob):
 			return
 		filename = self.escape(data['path'][data['path'].rfind("/")+1:])
 		category = "engine_" + data['os']
+		branch = data['branch']
 		version = data['version']
+		if not data['branch'] in ('master', 'develop'):
+			version = data['version'] + ' ' + data['branch']
 		url = self.prefix +'/' + data['path']
 		cid = self.getCID(category)
 		#print "%s %s %s %s" % (filename, version, category, url)
