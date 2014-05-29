@@ -45,6 +45,10 @@ SQLAlchemy 0.6
 MySQL
 python-daemon (http://pypi.python.org/pypi/python-daemon)
 
+on ubuntu run:
+
+apt-get install python-sqlalchemy python-mysqldb python-daemon python-imaging
+
 LICENSING
 ---------
 At this moment all code is covered by the GPLv3, see file COPYING.
