@@ -31,18 +31,20 @@ class Upload(UpqJob):
 FROM mirror as m \
 WHERE m.status=1")
 		for mirror in results:
-			try:
-				ftp = self.ftpconnect(mirror['ftp_url'], mirror['ftp_port'], mirror['ftp_user'], mirror['ftp_pass'], int(mirror['ftp_passive'])>1, mirror['ftp_dir'], mirror['ftp_ssl'])
-			except Exception as e:
-				self.logger.error("Couldn't connect to %s: %s",mirror['ftp_url'], e)
-				continue
-			results = UpqDB().query("SELECT f.fid,tag FROM `file` f \
+			results2 = UpqDB().query("SELECT f.fid,tag FROM `file` f \
 LEFT JOIN tag t ON f.fid=t.fid \
 WHERE (t.fid>0) \
 AND f.status=1 \
 AND timestamp < NOW() - INTERVAL 100 DAY \
 GROUP BY f.fid HAVING count(f.fid) = 1")
-			for filetodel in results:
+			ftp = None
+			for filetodel in results2:
+				if not ftp:
+					try:
+						ftp = self.ftpconnect(mirror['ftp_url'], mirror['ftp_port'], mirror['ftp_user'], mirror['ftp_pass'], int(mirror['ftp_passive'])>1, mirror['ftp_dir'], mirror['ftp_ssl'])
+					except Exception as e:
+						self.logger.error("Couldn't connect to %s: %s",mirror['ftp_url'], e)
+						break
 				res2 = UpqDB().query("SELECT * FROM mirror_file WHERE fid = %d AND mid = %d AND status=1" % (filetodel['fid'], mirror['mid']))
 				curfile = res2.first()
 				if curfile and filetodel['tag'][-1].isdigit():
@@ -52,7 +54,8 @@ GROUP BY f.fid HAVING count(f.fid) = 1")
 					except:
 						pass
 					UpqDB().query("UPDATE mirror_file SET status=4 WHERE mfid = %d" % (int(curfile['mfid'])))
-			ftp.close()
+			if ftp:
+				ftp.close()
 	def ftpconnect(self, host, port, username, password, passive, cwddir, ssl):
 		"""return the ftp connection handle"""
 		if ssl:
