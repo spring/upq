@@ -66,7 +66,7 @@ class Versionfetch(UpqJob):
 		category = "engine_" + data['os']
 		branch = data['branch']
 		version = data['version']
-		if not data['branch'] in ('master', 'develop'):
+		if not data['branch'] in ('master'):
 			version = data['version'] + ' ' + data['branch']
 		url = self.prefix +'/' + data['path']
 		cid = self.getCID(category)
