@@ -21,7 +21,7 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 		<td><?php echo $val; ?>:</td>
 		<td><input type="text" name="<?php echo $val; ?>" value="<?php if (array_key_exists($val, $_REQUEST)) echo htmlentities($_REQUEST[$val]); ?>"/></td>
 	</tr>
-<?
+<?php
 	}
 	foreach (array('images', 'metadata', 'nosensitive') as $val){
 ?>
@@ -29,7 +29,7 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 		<td><?php echo $val; ?></td>
 		<td><input type="checkbox" name="<?php echo $val; ?>" <?php if (array_key_exists($val, $_REQUEST)) echo 'checked'; ?>/></td>
 	</tr>
-<?
+<?php
 	}
 ?>
 	<tr>
@@ -37,13 +37,13 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 		<td>
 		<select name="category">
 
-<?
+<?php
 	$res=db_query("SELECT name from categories UNION SELECT ' ' AS name ORDER BY name");
         while($val = db_result($res)){
 
 ?>
-		<option<? if ((array_key_exists('category', $_REQUEST)) && ($_REQUEST['category']==$val)) echo ' selected="selected"'; ?>><? echo $val; ?></option>
-<?
+		<option<?php if ((array_key_exists('category', $_REQUEST)) && ($_REQUEST['category']==$val)) echo ' selected="selected"'; ?>><?php echo $val; ?></option>
+<?php
 	}
 ?>
 		</select>
