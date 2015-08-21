@@ -300,7 +300,12 @@ class Extract_metadata(UpqJob):
 			usync.CloseArchive(archiveh)
 			return False
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
-		self.jobdata['fid']=self.insertData(data, filepath)
+		try:
+			self.jobdata['fid']=self.insertData(data, filepath)
+		except UpqDBIntegrityError:
+			self.logger.error("Duplicate file detected: %s %s %s" % (filename, data['Name'], data['Version']))
+			return False
+
 		filepath = self.normalizeFilename(filepath, self.jobdata['fid'], data['Name'], data['Version'])
 		self.jobdata['file']=filepath
 		self.movefile(filepath, 1, moveto)
