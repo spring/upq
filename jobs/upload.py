@@ -41,7 +41,7 @@ GROUP BY f.fid HAVING count(f.fid) = 1")
 			for filetodel in results2:
 				if not ftp:
 					try:
-						ftp = self.ftpconnect(mirror['ftp_url'], mirror['ftp_port'], mirror['ftp_user'], mirror['ftp_pass'], int(mirror['ftp_passive'])>1, mirror['ftp_dir'], mirror['ftp_ssl'])
+						ftp = self.ftpconnect(mirror['ftp_url'], mirror['ftp_port'], mirror['ftp_user'], mirror['ftp_pass'], mirror['ftp_passive'], mirror['ftp_dir'], mirror['ftp_ssl'])
 					except Exception as e:
 						self.logger.error("Couldn't connect to %s: %s",mirror['ftp_url'], e)
 						break
@@ -60,6 +60,7 @@ GROUP BY f.fid HAVING count(f.fid) = 1")
 		"""return the ftp connection handle"""
 		if ssl:
 			try:
+				self.logger.debug("Using tls")
 				ftp = ftplib.FTP_TLS()
 			except Exception as e:
 				self.logger.error("TLS not supported")
@@ -76,6 +77,8 @@ GROUP BY f.fid HAVING count(f.fid) = 1")
 			except Exception as e:
 				self.logger.error("Setting up tls connection failed: %s", e)
 		ftp.login(username, password)
+		if (passive):
+			self.logger.debug("Enabling passive mode")
 		ftp.set_pasv(passive) #set passive mode
 		if (len(cwddir)>0):
 			self.logger.debug("cd into "+cwddir)
@@ -102,7 +105,7 @@ GROUP BY f.fid HAVING count(f.fid) = 1")
 		uploadcount=0
 		for res in results:
 			try:
-				ftp = self.ftpconnect(res['ftp_url'], res['ftp_port'], res['ftp_user'], res['ftp_pass'], int(res['ftp_passive'])>1, res['ftp_dir'], res['ftp_ssl'])
+				ftp = self.ftpconnect(res['ftp_url'], res['ftp_port'], res['ftp_user'], res['ftp_pass'], res['ftp_passive'], res['ftp_dir'], res['ftp_ssl'])
 			except Exception as e:
 				self.logger.error("Couldn't connect to the ftp server: %s", e)
 				continue
