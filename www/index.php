@@ -56,7 +56,7 @@ Input is case sensitive! Use * (multiple chars) or ? (single char) as wildcard. 
 </form>
 
 For more info about this/feedback please visit the <a href="https://github.com/springfiles/upq">UPQ project page</a>.
-All these parameters can be used for the <a href="xmlrpc.php">xmlrpc api</a>, too.
+All these parameters can be used for the <a href="json.php">json api</a>, too.
 
 <pre>
 <?php
