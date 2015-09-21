@@ -27,7 +27,7 @@ class Verify_remote_file(upqjob.UpqJob):
 		"""
 		# get files hash from DB
 		fmfid=int(self.jobdata['mfid'])
-		result = upqdb.UpqDB().query("SELECT f.md5, mf.fid, m.url_prefix, m.url_daemon, mf.path \
+		result = upqdb.UpqDB().query("SELECT f.md5, mf.fid, m.url_prefix, m.url_daemon, m.url_daemon_password, mf.path \
 						FROM mirror_file as mf \
 						LEFT JOIN file as f on f.fid = mf.fid \
 						LEFT JOIN mirror as m on mf.mid = m.mid \
@@ -39,8 +39,8 @@ class Verify_remote_file(upqjob.UpqJob):
 			return False
 
 		script_url = res['url_prefix']+"/"+res['url_daemon']
-		params	 = urllib.urlencode({'p': res['path']})
-		hash_url   = script_url+"?%s"%params
+		params	 = urllib.urlencode({'p': res['path'], 'pw': res['url_daemon_password']})
+		hash_url   = "%s?%s" % (script_url, params)
 		file_path  = res['path']
 
 	        md5 = res['md5']
