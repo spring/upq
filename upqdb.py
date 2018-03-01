@@ -145,8 +145,8 @@ class UpqDB():
 
 		try:
 			self.meta.create_all(self.engine)
-		except:
-			raise Exception("Unable to initialize database %s" %(databaseurl))
+		except Exception as e:
+			raise Exception("Unable to initialize database %s:%s" %(databaseurl, e))
 		self.meta.bind = self.engine
 	def query(self, query):
 		#self.logger.debug(query)
