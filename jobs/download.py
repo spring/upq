@@ -11,13 +11,11 @@
 from upqjob import UpqJob
 from upqdb import UpqDB
 from time import time
-import urllib
 import os
 import shutil
+import requests
 
-class my_download(urllib.URLopener):
-	def http_error_default(self, url, fp, errcode, errmsg, headers):
-		raise Exception("Error retrieving %s %d %s" %(url, errcode, errmsg))
+
 
 class Download(UpqJob):
 	"""
@@ -27,7 +25,7 @@ class Download(UpqJob):
 		if not 'url' in self.jobdata:
 			return False
 		self.enqueue_job()
-		self.msg("Downloading " + self.jobdata['url'])
+		self.logger.debug("Downloading " + self.jobdata['url'])
 		return True
 
 	def run(self):
@@ -37,10 +35,13 @@ class Download(UpqJob):
 		self.jobdata['file']=tmpfile
 		self.logger.debug("going to download %s", url)
 		try:
-			filename, headers = my_download().retrieve(url, tmpfile)
-			urllib.urlcleanup()
+			response = requests.get(url, stream=True, verify=False)
+			with open(tmpfile, 'wb') as out_file:
+				shutil.copyfileobj(response.raw, out_file)
+			del response
+			self.logger.debug("downloaded to %s", tmpfile)
 		except Exception as e:
-			self.msg(str(e))
+			self.logger.error(str(e))
 			return False
 		return True
 
