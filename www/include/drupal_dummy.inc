@@ -1,10 +1,12 @@
 <?php
 
-if(!mysql_connect($config['db_host'], $config['db_user'], $config['db_pass']))
-	die("mysql error: ".mysql_error());
+$con = mysqli_connect($config['db_host'], $config['db_user'], $config['db_pass']);
+if (!$con)
+	die("mysql error: ".mysqli_error($con));
 
-if(!mysql_select_db($config['db_db']))
-	die("mysql error: ".mysql_error());
+mysqli_select_db($con, $config['db_db']);
+
+	//die("mysql error: ".mysql_error());
 
 //drupal dummy functions to make xmlrp*.inc work
 
@@ -55,11 +57,13 @@ function _db_query_callback($match, $init = FALSE) {
 }
 
 function db_escape_string($text) {
-  return mysql_real_escape_string($text);
+	global $con;
+  return mysqli_real_escape_string($con, $text);
 }
 
 function db_encode_blob($data) {
-  return "'". mysql_real_escape_string($data, $active_db) ."'";
+	global $con;
+  return "'". mysqli_real_escape_string($con, $data, $active_db) ."'";
 }
 
 define('DB_QUERY_REGEXP', '/(%d|%s|%%|%f|%b|%n)/');
@@ -76,21 +80,23 @@ function db_query($query) {
 }
 
 function _db_query($query) {
-  $result = mysql_query($query);
-  if (!mysql_errno()) {
+  global $con;
+  $result = mysqli_query($con, $query);
+  if (!mysqli_errno($con)) {
     return $result;
   }
   else {
-    trigger_error(check_plain(mysql_error() ."\nquery: ". $query), E_USER_WARNING);
+    trigger_error(check_plain(mysqli_error($con) ."\nquery: ". $query), E_USER_WARNING);
     return FALSE;
   }
 }
 
 function db_result($result) {
-  if ($result && mysql_num_rows($result) > 0) {
+	global $con;
+  if ($result && mysqli_num_rows($result) > 0) {
     // The mysql_fetch_row function has an optional second parameter $row
     // but that can't be used for compatibility with Oracle, DB2, etc.
-    $array = mysql_fetch_row($result);
+    $array = mysqli_fetch_row($result);
     return $array[0];
   }
   return FALSE;
@@ -105,7 +111,8 @@ function watchdog($msg, $arr=array()){
 }
 
 function db_fetch_array($result){
+	global $con;
 	if ($result)
-		return mysql_fetch_array($result, MYSQL_ASSOC);
+		return mysqli_fetch_array($result, MYSQLI_ASSOC);
 }
 
