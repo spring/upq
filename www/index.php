@@ -79,7 +79,7 @@ function dump_result($res, $rec=0){
 	}else{
 		if (strlen($res)<=0)
 			return "\n";
-		if (!(strpos($res,"http://")===false))
+		if ( strpos($res,"http://")===0 || strpos($res,"https://")===0 )
 			return sprintf('<a href="%s">%s</a>'."\n", $res, $res);
 		return "$res\n";
 	}

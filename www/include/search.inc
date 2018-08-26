@@ -45,11 +45,21 @@ function _get_metadata($row){
 	return array();
 }
 
+$https=(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+function TransformUrl($url)
+{
+	global $https;
+	if ($https) {
+		return str_replace("http://", "https://", $url);
+	}
+	return $url;
+}
+
 function _add_metadata_path($arr){
 	global $config;
 	$res=array();
 	foreach ($arr as $val){
-		$res[] = $config['metadata'].'/'.$val;
+		$res[] = TransformUrl($config['metadata'].'/'.$val);
 	}
 	return $res;
 	
@@ -70,7 +80,6 @@ function getlimit(&$req) {
 /**
 *	implementation of the xml-rpc call
 */
-
 function search($req){
 	global $config;
 	if (!is_array($req))
@@ -130,7 +139,7 @@ function search($req){
 	while($row = db_fetch_array($result)){
 		#inject local file as mirror
 		if (($row['category'] == "game") or ($row['category'] == "map")) {
-			$row['mirrors']=array($config['base_url'].'/'.$row['path'].'/'.$row['filename']);
+			$row['mirrors']=TransformUrl(array($config['base_url'].'/'.$row['path'].'/'.$row['filename']));
 		} else {
 			$row['mirrors']=array();
 		}
@@ -162,7 +171,7 @@ function search($req){
 			AND (m.status=1 or m.status=2)
 			AND mf.status=1',array($res[$i]['fid']));
 		while($row = db_fetch_array($result)){
-			$res[$i]['mirrors'][]=$row['url'];
+			$res[$i]['mirrors'][]=TransformUrl($row['url']);
 		}
 		//randomize order of result
 		shuffle($res[$i]['mirrors']);
