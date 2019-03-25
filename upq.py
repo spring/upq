@@ -137,14 +137,6 @@ def main(argv=None):
 			logger.info("Starting socket server...")
 			server = upq.start_server()
 
-		# ignore all signals
-		for sig in dir(signal):
-			if sig.startswith("SIG"):
-				try:
-					signal.signal(signal.__getattribute__(sig), signal.SIG_IGN)
-				except:
-					# some signals cannot be ignored or are unknown on diff platforms
-					pass
 		# except SIGINT and SIGTERM
 		signal.signal(signal.SIGINT, program_cleanup)
 		signal.signal(signal.SIGTERM, program_cleanup)
