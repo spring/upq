@@ -16,9 +16,10 @@ import urlparse
 import os.path
 
 from upqjob import UpqJob
-from upqdb import UpqDB
+from upqdb import UpqDB, UpqDBIntegrityError
 
 class Rapidsync(UpqJob):
+	cats = {}
 	def run(self):
 		repos=self.fetchListing(self.getcfg('mainrepo', "http://repos.springrts.com/repos.gz"))
 		i=0
@@ -43,11 +44,33 @@ class Rapidsync(UpqJob):
 					UpqDB().query("DELETE FROM tag WHERE tag='%s'" % (sdp[0]))
 					#insert updated tag
 					UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (row['fid'], sdp[0]))
+					#self.logger.info("updated %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
 				else:
-					#TODO: add somehow to db without fid (download by rapid + create it?)
-					if i<5: #limit output
-						self.logger.debug("file isn't avaiable as .sdz but as .sdp: %s %s %s" % (sdp[1], sdp[0], sdp[3]))
-						i=i+1
+					if not sdp[3]: #without a name, we can't do anything!
+						continue
+					cid = self.getCid("game")
+					try:
+						fid = UpqDB().insert("file", {
+							"filename" : sdp[3] + " (not available as sdz)",
+							"name": sdp[3],
+							"cid" : cid,
+							"md5" : sdp[1],
+							"sdp" : sdp[1],
+							"size" : 0,
+							"status" : 4, # special status for files that can only be downloaded via rapid
+							"uid" : 0,
+							"path" : "",
+							})
+						UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (fid, sdp[0]))
+						#self.logger.info("inserted %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
+					except Exception, e:
+						self.logger.error(str(e))
+						self.logger.error("Error from sdp: %s %s %s %s", sdp[3], sdp[2],sdp[1],sdp[0])
+						res=UpqDB().query("SELECT * FROM file f WHERE name='%s'" % sdp[3])
+						if res:
+							row=res.first()
+							self.logger.error("a file with this name already exists, fid=%s, sdp=%s" % (row['fid'], row['sdp']))
+
 	def fetchListing(self, url):
 		self.logger.debug("Fetching %s" % (url))
 		ParseResult=urlparse.urlparse(url)
@@ -65,3 +88,14 @@ class Rapidsync(UpqJob):
 			res.append(line.strip("\n").split(","))
 		return res
 
+	def getCid(self, name):
+		if name in self.cats:
+			return self.cats[name]
+		result=UpqDB().query("SELECT cid from categories WHERE name='%s'" % name)
+		res=result.first()
+		if res:
+			cid=res['cid']
+		else:
+			cid=UpqDB().insert("categories", {"name": name})
+		self.cats[name] = cid
+		return cid
