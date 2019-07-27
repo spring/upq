@@ -6,6 +6,11 @@
 /.pydevproject
 /.settings
 /www/config.php
+/www/broken
+/www/files
+/www/metadata
+/broken
 /tmp
 /files
 /metadata
+/upq.log*
