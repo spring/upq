@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import socket
 import sys
-import ConfigParser
+import configparser
 
 
 
@@ -13,29 +13,28 @@ def send_cmd(txts, socket_path):
 	except:
 		raise Exception("Couldn't connect to %s" % (socket_path))
 		return 2
-	print >>sys.stderr, "Connected to '%s'."%socket_path
-	#for txt in txts:
-	txt = reduce(lambda x, y: x+" "+y, txts)
+	sys.stderr.write("Connected to '%s'."%socket_path + "\n")
 	sock.settimeout(10)
-	sock.send(txt+"\n")
-	print >>sys.stderr, "Sent	: '%s'"%txt
+	data = " ".join(txts) + "\n"
+	sock.send(data.encode())
+	sys.stderr.write("Sent: '%s'" % " ".join(txts) + "\n")
 	res=""
 	while True:
-		res += sock.recv(1)
+		res += sock.recv(1).decode()
 		if res.endswith("\n"):
-			print >>sys.stderr, res,
+			sys.stderr.write(res + "\n")
 			break
 	sock.close()
 	return 0
 
 def main(argv=None):
-	config = ConfigParser.RawConfigParser()
+	config = configparser.RawConfigParser()
 	config.read('upq.cfg')
 	socket_path=config.get("paths","socket")
 	if argv is None:
 		argv = sys.argv
 	if len(argv)==1:
-		print 'Usage: %s "<jobname>( param:value)*"' % (argv[0])
+		print('Usage: %s "<jobname>( param:value)*"' % (argv[0]))
 		return 1
 	return send_cmd(argv[1:],socket_path)
 
