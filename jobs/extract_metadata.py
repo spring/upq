@@ -194,7 +194,7 @@ class Extract_metadata(UpqJob):
 	def saveImage(self, image, size):
 		""" store a image, called with an Image object, returns the filename """
 		m = hashlib.md5()
-		m.update(image.tostring())
+		m.update(image.tobytes())
 		if (size[0]>1024): # shrink if to big
 			sizey=int((1024.0/size[0])*size[1])
 			self.logger.debug("image to big %dx%d, resizing... to %dx%d" % (size[0], size[1], 1024, sizey))
@@ -277,7 +277,8 @@ class Extract_metadata(UpqJob):
 			data=self.getMapData(usync, filename, idx, archiveh)
 			try:
 				data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
-			except:
+			except Exception as e:
+				self.msg("Error extracting data: %s" %(str(e)))
 				self.movefile(filepath, 3, "")
 				usync.CloseArchive(archiveh)
 				return False
@@ -296,6 +297,7 @@ class Extract_metadata(UpqJob):
 			moveto=self.jobcfg['games-path']
 		data['sdp']=sdp
 		if (sdp == "") or (data['Name'] == ""): #mark as broken because sdp / name is missing
+			self.logger.error("Couldn't get name / filename")
 			self.movefile(filepath, 3, "")
 			usync.CloseArchive(archiveh)
 			return False
@@ -400,7 +402,7 @@ class Extract_metadata(UpqJob):
 			for i in res['depend'].values():
 				if i not in filterdeps:
 					vals.append(i)
-			self.logger.error(vals)
+			self.logger.info(vals)
 			return vals
 		return []
 
