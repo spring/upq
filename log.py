@@ -8,7 +8,7 @@
 
 import os.path
 import logging
-import logging.handlers
+from logging.handlers import RotatingFileHandler
 
 logger=None
 
@@ -32,12 +32,12 @@ def init_logging(conf):
 	else:
 		logformat = "%(asctime)s %(levelname)-8s %(module)s.%(funcName)s:%(lineno)d %(message)s"
 
-	logging.basicConfig(level=logging.__getattribute__(loglevel),
-						format=logformat,
-						filename=logfile,
-						filemode='a')
-
 	logger = logging.getLogger("upq")
+	logger.setLevel(loglevel)
+	handler = RotatingFileHandler(filename=logfile, maxBytes=1024*1024, backupCount=5)
+	formatter = logging.Formatter(logformat)
+	handler.setFormatter(formatter)
+	logger.addHandler(handler)
 	return logger
 
 def getLogger(*args, **kwargs):
