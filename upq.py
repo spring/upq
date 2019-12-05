@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 # "upq" program used on springfiles.com to manage file uploads, mirror
 # distribution etc. It is published under the GPLv3.
@@ -27,8 +27,6 @@ import signal
 import sys, os, os.path
 import threading
 import traceback
-import daemon
-#from daemon import pidlockfile
 
 from upqconfig import UpqConfig
 import log
@@ -100,9 +98,6 @@ def main(argv=None):
 	parser = OptionParser(usage)
 	parser.add_option("-c", "--config", dest="configfile", default="",
 			  help="path to config file CONFIGFILE")
-#TODO: use this to en/disable daemonization
-#		parser.add_option("-d", "--daemonize",
-#		help="detach from terminal etc")
 	parser.add_option("-l", "--logfile", dest="logfile", default="",
 			  help="path to logfile LOGFILE")
 	(options, argv) = parser.parse_args()
@@ -112,30 +107,19 @@ def main(argv=None):
 		UpqConfig(options.configfile, options.logfile)
 		UpqConfig().readConfig()
 
-		#FIXME: remove following line + how does this $%$!" work?
-		del UpqConfig().daemon['pidfile']
-	#	 if UpqConfig().daemon.has_key('pidfile'):
-	#		 lockfile=UpqConfig().daemon['pidfile']
-	#		 UpqConfig().daemon['pidfile']=pidlockfile.TimeoutPIDLockFile(lockfile, acquire_timeout=1)
-		context = daemon.DaemonContext(**UpqConfig().daemon)
-		# daemonize
-		context.stdout = sys.stderr
-		context.stderr = sys.stderr
-
 		upq = Upq()
-		with context:
-			# initialize logging
-			logger = log.init_logging(UpqConfig().logging)
-			logger.info("Starting logging...")
-			logger.debug(UpqConfig().config_log)
-			# setup and test DB
-			logger.info("Connecting to DB...")
-			db = upqdb.UpqDB()
-			db.connect(UpqConfig().db['url'], UpqConfig().db['debug'])
-			db.version()
-			# start server
-			logger.info("Starting socket server...")
-			server = upq.start_server()
+		# initialize logging
+		logger = log.init_logging(UpqConfig().logging)
+		logger.info("Starting logging...")
+		logger.debug(UpqConfig().config_log)
+		# setup and test DB
+		logger.info("Connecting to DB...")
+		db = upqdb.UpqDB()
+		db.connect(UpqConfig().db['url'], UpqConfig().db['debug'])
+		db.version()
+		# start server
+		logger.info("Starting socket server...")
+		server = upq.start_server()
 
 		# except SIGINT and SIGTERM
 		signal.signal(signal.SIGINT, program_cleanup)
