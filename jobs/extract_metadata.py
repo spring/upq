@@ -269,6 +269,7 @@ class Extract_metadata(UpqJob):
 			self.movefile(filepath, 3, "")
 			self.msg("couldn't get sdp hash")
 			usync.CloseArchive(archiveh)
+			usync.UnInit()
 			return False
 		idx=self.getMapIdx(usync,filename)
 		if idx>=0: #file is map
@@ -281,6 +282,7 @@ class Extract_metadata(UpqJob):
 				self.msg("Error extracting data: %s" %(str(e)))
 				self.movefile(filepath, 3, "")
 				usync.CloseArchive(archiveh)
+				usync.UnInit()
 				return False
 			moveto=self.jobcfg['maps-path']
 		else: # file is a game
@@ -289,6 +291,7 @@ class Extract_metadata(UpqJob):
 				self.logger.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
 				self.movefile(filepath, 3, "")
 				usync.CloseArchive(archiveh)
+				usync.UnInit()
 				return False
 			self.logger.debug("Extracting data from "+filename)
 			archivepath=usync.GetArchivePath(filename)+filename
@@ -300,6 +303,7 @@ class Extract_metadata(UpqJob):
 			self.logger.error("Couldn't get name / filename")
 			self.movefile(filepath, 3, "")
 			usync.CloseArchive(archiveh)
+			usync.UnInit()
 			return False
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
 		try:
@@ -431,7 +435,7 @@ class Extract_metadata(UpqJob):
 		data = ctypes.create_string_buffer(int(width*height*byteperpx*2))
 		data.restype = ctypes.c_void_p
 		ret=usync.GetInfoMap(mapname, maptype, data, byteperpx)
-		if (ret<>0):
+		if ret != 0:
 			im = Image.frombuffer(decoder, (width, height), data, "raw", decoderparm)
 			im=im.convert("L")
 			res=self.saveImage(im, size)
