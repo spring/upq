@@ -31,9 +31,9 @@ class UpqJob(object):
 		self.jobcfg  = upqconfig.UpqConfig().jobs[jobname] #settings from config-filea
 
 		# subjobs handling: if a runtime job is available, use it, else the configured ones
-		if jobdata.has_key('subjobs'): #runtime set subjobs are available
+		if "subjobs" in jobdata: #runtime set subjobs are available
 			jobdata['subjobs']=jobdata['subjobs']
-		elif self.jobcfg.has_key('subjobs'):
+		elif "subjobs" in self.jobcfg:
 			# make copy of subjobs, as we modify them later
 			jobdata['subjobs']=self.jobcfg['subjobs'][:]
 		else:
