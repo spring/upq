@@ -7,8 +7,14 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-import ConfigParser
+
+
+if sys.version_info >=  (3, 0):
+	import configparser as ConfigParser
+else:
+	import ConfigParser
 import os, os.path
+from upqjob import UpqJob
 
 
 class UpqConfig():

@@ -18,7 +18,7 @@ import threading
 import log
 from upqqueuemngr import UpqQueueMngr
 import json
-from upqconfig import UpqConfig
+import upqconfig
 
 
 
@@ -28,7 +28,7 @@ class UpqJob(object):
 		# through a restart/reschedule, add it to notify_job.jobdata['job']
 		# in notify(), if and only if it is (JSON)-serializable!
 		self.jobname = jobname
-		self.jobcfg  = UpqConfig().jobs[jobname] #settings from config-filea
+		self.jobcfg  = upqconfig.UpqConfig().jobs[jobname] #settings from config-filea
 
 		# subjobs handling: if a runtime job is available, use it, else the configured ones
 		if jobdata.has_key('subjobs'): #runtime set subjobs are available

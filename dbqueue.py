@@ -10,9 +10,14 @@
 # DBQueue: queue with persistant state in DB
 #
 
-from Queue import *
+import sys
+if sys.version_info >=  (3, 0):
+	from queue import *
+else:
+	from Queue import *
 
-from upqdb import UpqDB
+
+import upqdb
 import json
 
 class DBQueue(Queue, object):
@@ -26,7 +31,7 @@ class DBQueue(Queue, object):
 		job = super(DBQueue, self).get(block, timeout)
 		# update job state in DB
 		query="UPDATE upqueue SET status=1, start_time=NOW() WHERE jobid = %d" % (job.jobid)
-		UpqDB().query(query)
+		upqdb.UpqDB().query(query)
 		return job
 
 	def task_done(self, job):
@@ -37,8 +42,8 @@ class DBQueue(Queue, object):
 			result=1
 		if len(job.msgstr)>255: #limit string length
 			job.msgstr=job.msgstr[:255]
-		query="UPDATE upqueue SET status=0, end_time=NOW(), result_msg='%s' WHERE jobid = %s" % (UpqDB().escape(job.msgstr), job.jobid)
-		UpqDB().query(query)
+		query="UPDATE upqueue SET status=0, end_time=NOW(), result_msg='%s' WHERE jobid = %s" % (upqdb.UpqDB().escape(job.msgstr), job.jobid)
+		upqdb.UpqDB().query(query)
 		super(DBQueue, self).task_done()
 
 	""" returns id of job and sets job.jobid to it """
@@ -46,7 +51,7 @@ class DBQueue(Queue, object):
 		if job.jobid == -1:
 			# add job to DB in state "new"
 			jobdata = json.dumps(job.jobdata, -1)
-			ret=UpqDB().insert("upqueue", {'jobname': job.jobname, 'status': 2, 'jobdata': jobdata, 'ctime': UpqDB().now() })
+			ret=upqdb.UpqDB().insert("upqueue", {'jobname': job.jobname, 'status': 2, 'jobdata': jobdata, 'ctime': upqdb.UpqDB().now() })
 			job.jobid=ret #set jobid
 		super(DBQueue, self).put(job, block, timeout)
 		return job.jobid

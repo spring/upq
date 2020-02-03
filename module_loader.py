@@ -13,7 +13,7 @@
 import imp
 import sys
 
-from upqconfig import UpqConfig
+import upqconfig
 
 def load_module(name):
 	"""
@@ -23,7 +23,7 @@ def load_module(name):
 		return sys.modules[name].__getattribute__(name[0].upper()+name[1:])
 	except KeyError:
 		pass
-	fp, pathname, description = imp.find_module(name, [UpqConfig().paths['jobs_dir'],])
+	fp, pathname, description = imp.find_module(name, [upqconfig.UpqConfig().paths['jobs_dir'],])
 
 	try:
 		module = imp.load_module(name, fp, pathname, description)
