@@ -15,7 +15,12 @@ from upqconfig import UpqConfig
 import sys
 import os
 import ctypes
-import Image
+if sys.version_info >=  (3, 0):
+	from PIL import Image
+	from io import StringIO
+else:
+	import Image
+	import StringIO
 import shutil
 import getopt
 import base64
@@ -24,7 +29,6 @@ import gzip
 import hashlib
 import json
 import gc
-import StringIO
 
 unitsyncpath=os.path.join(UpqConfig().paths['jobs_dir'],'unitsync')
 sys.path.append(unitsyncpath)

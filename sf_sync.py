@@ -82,9 +82,13 @@ class Sf_sync(upqjob.UpqJob):
 
 	def download_and_add_file(self, url):
 		from jobs import download
-		j = download.Download("download", {"url": url})
+		j = download.Download("download", {"url": url, "subjobs": []})
 		j.run()
 		from jobs import extract_metadata
+		print(j.jobdata)
+
+		j = extract_metadata.Extract_metadata("extract_metadata", j.jobdata)
+		j.run()
 
 
 	def run(self):
@@ -120,9 +124,13 @@ class Sf_sync(upqjob.UpqJob):
 
 		return True
 
-logging.getLogger().addHandler(logging.StreamHandler())
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s %(module)s.%(funcName)s:%(lineno)d %(message)s"))
+logging.getLogger().addHandler(handler)
 logging.getLogger().setLevel(logging.DEBUG)
 logging.info("Started sf_sync")
+
+
 upqconfig.UpqConfig(configfile="upq.cfg")
 upqconfig.UpqConfig().readConfig()
 db = upqdb.UpqDB()
