@@ -80,8 +80,11 @@ class Sf_sync(upqjob.UpqJob):
 		self.logger.debug("received from springfiles: %s", rpcres)
 		return True
 
-	def download_and_add_file(url):
-		from . import extract_metadata
+	def download_and_add_file(self, url):
+		from jobs import download
+		j = download.Download("download", {"url": url})
+		j.run()
+		from jobs import extract_metadata
 
 
 	def run(self):
@@ -111,6 +114,7 @@ class Sf_sync(upqjob.UpqJob):
 				UpqDB().query("INSERT INTO sf_sync2 (sid, fid) VALUES (%d, %d) "% (sid, row["fid"]))
 				self.logger.debug("Added mapping: %s <-> %s" %(sid, row["fid"]))
 				continue
+			self.download_and_add_file("https://springfiles.com/" + data["filepath"])
 			assert(False)
 
 

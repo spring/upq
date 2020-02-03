@@ -147,7 +147,7 @@ class UpqJob(object):
 		"""
 			returns a config value or default, if config isn't set
 		"""
-		if self.jobcfg.has_key(name):
+		if name in  self.jobcfg:
 			return self.jobcfg[name]
 		else:
 			return default
