@@ -27,6 +27,8 @@ def generate_linux_search_paths():
 		yield os.path.join(prefix, 'lib/spring')
 		yield os.path.join(prefix, 'lib64')
 		yield os.path.join(prefix, 'lib')
+	for i in range(104, 96, -1):
+		yield os.path.join(os.path.expanduser("~"), ".spring", "engine", "%d.0" %(i))
 
 def generate_windows_search_paths():
 	"""Yield candidate unitsync paths for Windows systems."""
@@ -90,13 +92,13 @@ def get_writable_data_directory():
 def test():
 	# Quick test.
 	for location in generate_locations():
-		print location
+		print(location)
 	unitsync = locate_unitsync()
 	# This is not available in older versions of unitsync.
-	print 'Has GetMapDescription?', unitsync.has('GetMapDescription')
+	print('Has GetMapDescription?', unitsync.has('GetMapDescription'))
 	# Test main interface.
 	data_directory = get_writable_data_directory()
-	print '===>', data_directory, '<==='
+	print('===>', data_directory, '<===')
 
 
 if __name__ == '__main__':

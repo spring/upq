@@ -253,40 +253,25 @@ class Extract_metadata(UpqJob):
 			return False
 		self.enqueue_job()
 		return True
-	def run(self):
-		gc.collect()
-		#filename of the archive to be scanned
-		filepath=self.jobdata['file']
-		filename=os.path.basename(filepath) # filename only (no path info)
-		metadatapath=UpqConfig().paths['metadata']
 
-		if not os.path.exists(filepath):
-			self.msg("File doesn't exist: %s" %(filepath))
-			return False
-		tmpdir=self.setupdir(filepath) #temporary directory for unitsync
-		usync=self.initUnitSync(tmpdir, filename)
-		archiveh=self.openArchive(usync, os.path.join("games",filename))
+	def ExtractMetadata(self, usync, archiveh, filename, filepath, metadatapath):
 		filelist=self.getFileList(usync, archiveh)
 		try:
 			sdp = self.getSDPName(usync, archiveh)
 		except:
 			self.movefile(filepath, 3, "")
 			self.msg("couldn't get sdp hash")
-			usync.CloseArchive(archiveh)
-			usync.UnInit()
 			return False
 		idx=self.getMapIdx(usync,filename)
 		if idx>=0: #file is map
 			archivepath=usync.GetArchivePath(filename)+filename
 			springname = usync.GetMapName(idx)
-			data=self.getMapData(usync, filename, idx, archiveh)
+			data=self.getMapData(usync, filename, idx, archiveh, springname)
 			try:
 				data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
 			except Exception as e:
 				self.msg("Error extracting data: %s" %(str(e)))
 				self.movefile(filepath, 3, "")
-				usync.CloseArchive(archiveh)
-				usync.UnInit()
 				return False
 			moveto=self.jobcfg['maps-path']
 		else: # file is a game
@@ -294,8 +279,6 @@ class Extract_metadata(UpqJob):
 			if idx<0:
 				self.logger.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
 				self.movefile(filepath, 3, "")
-				usync.CloseArchive(archiveh)
-				usync.UnInit()
 				return False
 			self.logger.debug("Extracting data from "+filename)
 			archivepath=usync.GetArchivePath(filename)+filename
@@ -306,8 +289,6 @@ class Extract_metadata(UpqJob):
 		if (sdp == "") or (data['Name'] == ""): #mark as broken because sdp / name is missing
 			self.logger.error("Couldn't get name / filename")
 			self.movefile(filepath, 3, "")
-			usync.CloseArchive(archiveh)
-			usync.UnInit()
 			return False
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
 		try:
@@ -319,16 +300,38 @@ class Extract_metadata(UpqJob):
 		filepath = self.normalizeFilename(filepath, self.jobdata['fid'], data['Name'], data['Version'])
 		self.jobdata['file']=filepath
 		self.movefile(filepath, 1, moveto)
+		return True
+
+	def run(self):
+		gc.collect()
+		#filename of the archive to be scanned
+		filepath=self.jobdata['file']
+		filename=os.path.basename(filepath) # filename only (no path info)
+		metadatapath=UpqConfig().paths['metadata']
+
+		if not os.path.exists(filepath):
+			self.msg("File doesn't exist: %s" %(filepath))
+			return False
+		tmpdir=self.setupdir(filepath) #temporary directory for unitsync
+
+		usync=self.initUnitSync(tmpdir, filename)
+		archiveh=self.openArchive(usync, os.path.join("games",filename))
+
+		res  = self.ExtractMetadata(usync, archiveh, filename, filepath, metadatapath)
+
 		err=usync.GetNextError()
 		while not err==None:
 			self.logger.error(err)
 			err=usync.GetNextError()
+
 		usync.CloseArchive(archiveh)
+		usync.RemoveAllArchives()
 		usync.UnInit()
 		del usync
-		if not self.jobcfg.has_key('keeptemp'):
+		if not "keeptemp" in self.jobcfg or self.jobcfg["keeptemp"] != "yes":
 			self.cleandir(tmpdir)
-		return True
+		return res
+
 
 	def getMapPositions(self, usync, idx, Map):
 		startpositions = usync.GetMapPosCount(idx)
@@ -556,12 +559,11 @@ class Extract_metadata(UpqJob):
 		res['Units']=self.getUnits(usync, archivename)
 		return res
 
-	def getMapData(self, usync, filename, idx, archiveh):
+	def getMapData(self, usync, filename, idx, archiveh, springname):
 		res={}
 		res['Type'] = "map"
 		mapname=usync.GetMapName(idx)
 		res['Name'] = mapname
-
 		res['Author'] = usync.GetMapAuthor(idx)
 		res['Description'] = self.decodeString(usync.GetMapDescription(idx))
 		res['Gravity'] = usync.GetMapGravity(idx)

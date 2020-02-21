@@ -76,14 +76,14 @@ if len(argv) < 2:
 	if os.path.isfile('./unitsync_api.h'):
 		argv.append('./unitsync_api.h')
 	else:
-		print 'must be passed unitsync_api.h to generate bindings'
-		print 'if on windows, you can simply drag the file onto this one'
+		print('must be passed unitsync_api.h to generate bindings')
+		print('if on windows, you can simply drag the file onto this one')
 		time.sleep(30)
 		sys.exit(1)
 
 name = argv[1]
 if not os.path.isfile(name):
-	print '%s is not a valid file' % name
+	print('%s is not a valid file' % name)
 	time.sleep(30)
 	sys.exit(1)
 
