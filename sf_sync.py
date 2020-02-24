@@ -22,70 +22,13 @@ import upqjob
 import upqdb
 
 class Sf_sync(upqjob.UpqJob):
-	"""
-		no params required, if
-			sid>=0:
-				sync, starting from this id
-			sid<0:
-				full sync
-
-			fid>=0:
-				file was changed, requires
-			command=update|delete
-				to be set
-	"""
-	def check(self):
-		self.enqueue_job()
-		return True
-
-	def updatefile(self, fid, command):
-		UpqDB().insert("sf_sync", {'fid': fid, 'command': command})
-
-	def getmetadata(self, fid):
-		"""
-			returns the metadata, that is required for springfiles in a struct
-			required data:
-				link to images
-				mirror urls
-				file size
-				md5
-		"""
-		data={}
-		data['mirror']=[]
-		results=UpqDB().query("SELECT CONCAT(m.url_prefix, f.path) as url FROM mirror_file f LEFT JOIN mirror m ON f.mid=m.mid WHERE f.fid=%d" % (fid))
-		for res in results:
-			data['mirror'].append(res['url'])
-		results=UpqDB().query("SELECT f.filename, f.size, f.timestamp, f.md5, f.name, f.version, c.name as category, f.metadata FROM file f LEFT JOIN categories c ON f.cid=c.cid WHERE f.fid=%d" %(fid))
-		res=results.first()
-		for value in ["filename", "size", "timestamp", "md5", "name", "version", "category"]:
-			data[value]=res[value]
-		if res['metadata']!=None and len(res['metadata'])>0:
-			data['metadata']=json.loads(res['metadata'])
-		else:
-			data['metadata']=[]
-		return data
-
-
-	def rpc_call_sync(self, proxy, username, password, data):
-		"""
-			make the xml-rpc call
-		"""
-		try:
-			rpcres=proxy.springfiles.sync(username, password, data)
-			for rpc in rpcres: #set description url received from springfiles
-				UpqDB().query("UPDATE file SET descriptionuri='%s' WHERE fid=%d" % (rpc['url'], rpc['fid']))
-		except Exception as e:
-			self.msg("xmlrpc springfiles.sync() error: %s" %(e))
-			return True # fixme
-		self.logger.debug("received from springfiles: %s", rpcres)
-		return True
-
 	def download_and_add_file(self, url):
 		from jobs import download
 		j = download.Download("download", {"url": url, "subjobs": []})
 		j.run()
 		from jobs import extract_metadata
 		print(j.jobdata)
+
 
 		j = extract_metadata.Extract_metadata("extract_metadata", j.jobdata)
 		j.run()
@@ -131,7 +74,7 @@ logging.getLogger().setLevel(logging.DEBUG)
 logging.info("Started sf_sync")
 
 
-upqconfig.UpqConfig(configfile="upq.cfg")
+upqconfig.UpqConfig(configfile="upq2.cfg")
 upqconfig.UpqConfig().readConfig()
 db = upqdb.UpqDB()
 db.connect(upqconfig.UpqConfig().db['url'], upqconfig.UpqConfig().db['debug'])
