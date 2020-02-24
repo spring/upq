@@ -68,7 +68,7 @@ function _add_metadata_path($arr){
 // return LIMIT 0,X for sql query
 function getlimit(&$req) {
 	if(isset($req['limit'])) {
-		$max = intval($req['limit']);
+		$max = min(intval($req['limit']), 64);
 		if ($max > 0 ) {
 			return "LIMIT 0,".$max;
 		} else {
@@ -125,7 +125,6 @@ function search($req){
 		f.metadata as metadata
 		FROM file as f
 		LEFT JOIN categories as c ON f.cid=c.cid
-		LEFT JOIN mirror_file as m ON f.fid=m.fid
 		LEFT JOIN tag as t ON  f.fid=t.fid
 		WHERE c.cid>0
 		AND f.status=1
