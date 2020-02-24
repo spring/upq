@@ -152,7 +152,7 @@ class Extract_metadata(UpqJob):
 				"status": 1,
 				})
 		else:
-			UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s' WHERE fid=%s" %(
+			UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s', status=1 WHERE fid=%s" %(
 				self.escape(data['Name']),
 				data['Version'],
 				data['sdp'],
