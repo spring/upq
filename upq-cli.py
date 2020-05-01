@@ -8,10 +8,12 @@ import configparser
 
 def send_cmd(txts, socket_path):
 	sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+	sock.setblocking(True)
+	sock.settimeout(3)
 	try:
 		sock.connect(socket_path)
-	except:
-		raise Exception("Couldn't connect to %s" % (socket_path))
+	except Exception as e:
+		print ("Couldn't connect to %s" % (socket_path))
 		return 2
 	sys.stderr.write("Connected to '%s'."%socket_path + "\n")
 	sock.settimeout(10)
