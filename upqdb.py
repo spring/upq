@@ -83,7 +83,7 @@ class UpqDB():
 			Column('status', INTEGER(display_width=4))) # 0=inactive, 1=active
 		self.tables['mirror_file']=Table('mirror_file', self.meta, #table with files on file mirrors
 			Column('mfid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
-			Column('fid', INTEGER(display_width=8)),
+			Column('fid', Integer, ForeignKey("file.fid")),
 			Column('mid', INTEGER(display_width=4)), # mirror id
 			Column('path', VARCHAR(length=1024)), # relative to (mfid.url_prefix) path
 			Column('lastcheck', DATETIME(timezone=False)), # last time checksum/existence was checked
@@ -119,14 +119,14 @@ class UpqDB():
 			Column('md5', CHAR(length=32))) #md5 = path
 		self.tables['tag']=Table('tag', self.meta,
 			Column('tid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
-			Column('fid', INTEGER(display_width=10)),
-			Column('tag', VARCHAR(length=256), unique=True))
+			Column('fid', INTEGER(display_width=10), ForeignKey("file.fid"), nullable=False),
+			Column('tag', VARCHAR(length=128), unique=True))
 		self.tables['categories']=Table('categories', self.meta, # file categories
 			Column('cid', INTEGER(display_width=11), primary_key=True, nullable=False, autoincrement=True),
 			Column('name', VARCHAR(length=24), nullable=False))
 		self.tables['file_depends']=Table('file_depends', self.meta,
-			Column('fid', INTEGER(display_width=10), primary_key=False, nullable=False, autoincrement=False),
-			Column('depends_fid', INTEGER(display_width=10), primary_key=False, nullable=False, autoincrement=False), #id of other file, if null(couldn't be resolved), use depends_string
+			Column('fid', Integer, ForeignKey("file.fid")),
+			Column('depends_fid', Integer, ForeignKey("file.fid"), nullable=True), #id of other file, if null(couldn't be resolved), use depends_string
 			Column('depends_string', VARCHAR(length=64), nullable=False),
 			UniqueConstraint('fid', 'depends_string'))
 		self.tables['upqueue']=Table('upqueue', self.meta,
