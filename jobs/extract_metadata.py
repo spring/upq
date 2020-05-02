@@ -196,6 +196,9 @@ class Extract_metadata(UpqJob):
 		#use md5 as filename, so it can be reused
 		filename=m.hexdigest()+".jpg"
 		absname=os.path.join(UpqConfig().paths['metadata'], filename)
+		if os.path.isfile(absname) and os.path.getsize(absname) == image.len:
+			self.logger.debug("Not overwriting %s" %(absname))
+			return
 		image.save(absname)
 		os.chmod(absname,int("0644",8))
 		self.logger.debug("Wrote " + absname)
