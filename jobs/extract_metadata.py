@@ -33,7 +33,7 @@ import gc
 unitsyncpath=os.path.join(UpqConfig().paths['jobs_dir'],'unitsync')
 sys.path.append(unitsyncpath)
 
-import unitsync
+from unitsync import unitsync
 
 class Extract_metadata(UpqJob):
 
@@ -63,26 +63,6 @@ class Extract_metadata(UpqJob):
 		except:
 			pass
 
-
-	"""
-		cleans up temporary directory, removes also files created by unitsync
-	"""
-	def cleandir(self, temppath):
-		self.savedelete(self.tmpfile)
-		self.savedelete(os.path.join(temppath,"games"))
-		self.savedelete(os.path.join(temppath,"cache","ArchiveCacheV9.lua"))
-		self.savedelete(os.path.join(temppath,"cache","ArchiveCache.lua"))
-		self.savedelete(os.path.join(temppath,"cache","CACHEDIR.TAG"))
-		self.savedelete(os.path.join(temppath,"cache"))
-		self.savedelete(os.path.join(temppath,"unitsync.log"))
-		self.savedelete(os.path.join(temppath,".springrc"))
-		self.savedelete(temppath)
-		if os.path.exists(temppath):
-			dirList=os.listdir(temppath)
-			files=""
-			for fname in dirList:
-				files+=fname
-			self.logger.warn("Didn't clean temp directory %s: %s" % (temppath, files))
 	def getMapIdx(self, usync, filename):
 		mapcount = usync.GetMapCount()
 		for i in range(0, mapcount):
@@ -120,7 +100,7 @@ class Extract_metadata(UpqJob):
 			return ""
 		return self.escape(string)
 
-	def insertData(self, data, filename):
+	def insertData(self, data, filename, hashes):
 		metadata=data.copy()
 		del metadata['Depends'] #remove redundant entries
 		del metadata['sdp']
@@ -150,14 +130,20 @@ class Extract_metadata(UpqJob):
 				"timestamp": UpqDB().now(), #fixme: use file timestamp
 				"size": os.path.getsize(filename),
 				"status": 1,
+				"md5": hashes["md5"],
+				"sha1": hashes["sha1"],
+				"sha256": hashes["sha256"],
 				})
 		else:
-			UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s', status=1 WHERE fid=%s" %(
+			UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s', md5='%s', sha1='%s', sha256='%s', status=1 WHERE fid=%s" %(
 				self.escape(data['Name']),
 				data['Version'],
 				data['sdp'],
 				self.getCid(data['Type']),
 				metadata,
+				hashes["md5"],
+				hashes["sha1"],
+				hashes["sha256"],
 				fid
 				))
 		# remove already existing depends
@@ -176,6 +162,7 @@ class Extract_metadata(UpqJob):
 				pass
 		self.msg("Updated %s '%s' version '%s' sdp '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version'], data['sdp']))
 		return fid
+
 	def initUnitSync(self, tmpdir, filename):
 		libunitsync=self.jobcfg['unitsync']
 		os.environ["SPRING_DATADIR"]=tmpdir
@@ -189,6 +176,7 @@ class Extract_metadata(UpqJob):
 		usync.AddArchive(filename)
 		usync.AddAllArchives(filename)
 		return usync
+
 	def openArchive(self, usync, filename):
 		archiveh=usync.OpenArchive(filename)
 		if archiveh<=0:
@@ -254,7 +242,7 @@ class Extract_metadata(UpqJob):
 		self.enqueue_job()
 		return True
 
-	def ExtractMetadata(self, usync, archiveh, filename, filepath, metadatapath):
+	def ExtractMetadata(self, usync, archiveh, filename, filepath, metadatapath, hashes):
 		filelist=self.getFileList(usync, archiveh)
 		try:
 			sdp = self.getSDPName(usync, archiveh)
@@ -292,7 +280,7 @@ class Extract_metadata(UpqJob):
 			return False
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
 		try:
-			self.jobdata['fid']=self.insertData(data, filepath)
+			self.jobdata['fid']=self.insertData(data, filepath, hashes)
 		except UpqDBIntegrityError:
 			self.logger.error("Duplicate file detected: %s %s %s" % (filename, data['Name'], data['Version']))
 			return False
@@ -312,12 +300,14 @@ class Extract_metadata(UpqJob):
 		if not os.path.exists(filepath):
 			self.msg("File doesn't exist: %s" %(filepath))
 			return False
+
+		hashes = self.get_hash(filepath)
 		tmpdir=self.setupdir(filepath) #temporary directory for unitsync
 
 		usync=self.initUnitSync(tmpdir, filename)
 		archiveh=self.openArchive(usync, os.path.join("games",filename))
 
-		res  = self.ExtractMetadata(usync, archiveh, filename, filepath, metadatapath)
+		res  = self.ExtractMetadata(usync, archiveh, filename, filepath, metadatapath, hashes)
 
 		err=usync.GetNextError()
 		while not err==None:
@@ -328,8 +318,10 @@ class Extract_metadata(UpqJob):
 		usync.RemoveAllArchives()
 		usync.UnInit()
 		del usync
+		print(self.jobcfg)
 		if not "keeptemp" in self.jobcfg or self.jobcfg["keeptemp"] != "yes":
-			self.cleandir(tmpdir)
+			assert(tmpdir.startswith("/home/upq/upq/tmp/"))
+			shutil.rmtree(tmpdir)
 		return res
 
 
@@ -654,3 +646,33 @@ class Extract_metadata(UpqJob):
 			self.logger.info("Normalized filename to %s "%(dstfile))
 		return dstfile
 
+	def get_hash(self, filename):
+		"""
+		Calculate hashes (md5, sha1, sha256) of a given file
+
+		filename is absolute path to file
+
+		returns: {'md5': 'x', 'sha1': 'y', 'sha256': 'z'}
+		"""
+
+		md5 = hashlib.md5()
+		sha1 = hashlib.sha1()
+		sha256 = hashlib.sha256()
+
+		try:
+			fd = open(filename, "rb", 4096)
+		except IOError as ex:
+			msg = "Unable to open '%s' for reading: '%s'." % (filename, ex)
+			self.logger.error(msg)
+			raise Exception(msg)
+
+		while True:
+			data = fd.read(4096)
+			if not data: break
+			md5.update(data)
+			sha1.update(data)
+			sha256.update(data)
+
+		fd.close()
+
+		return {'md5': md5.hexdigest(), 'sha1': sha1.hexdigest(), 'sha256': sha256.hexdigest()}

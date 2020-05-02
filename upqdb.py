@@ -176,6 +176,7 @@ class UpqDB():
 		s=Session(self.engine)
 		try:
 			s.execute(query)
+			s.commit()
 		except IntegrityError as e:
 			raise UpqDBIntegrityError("Integrity Error" + e.statement + str(values))
 		finally:

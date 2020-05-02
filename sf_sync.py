@@ -13,7 +13,12 @@
 
 from upqdb import UpqDB
 import upqconfig
-from xmlrpc.client import ServerProxy
+
+import sys
+if sys.version_info[0] >= 3:
+	from xmlrpc.client import ServerProxy
+else:
+	from xmlrpclib import ServerProxy
 import logging
 
 import json
@@ -22,9 +27,10 @@ import upqjob
 import upqdb
 
 class Sf_sync(upqjob.UpqJob):
+
 	def download_and_add_file(self, url):
 		from jobs import download
-		j = download.Download("download", {"url": url, "subjobs": []})
+		j = download.Download("download", {"url": url, "subjobs": [], "keeptemp": "yes"})
 		j.run()
 		from jobs import extract_metadata
 		print(j.jobdata)
@@ -32,7 +38,6 @@ class Sf_sync(upqjob.UpqJob):
 
 		j = extract_metadata.Extract_metadata("extract_metadata", j.jobdata)
 		j.run()
-
 
 	def run(self):
 		#username=self.jobcfg['username']
@@ -59,10 +64,15 @@ class Sf_sync(upqjob.UpqJob):
 			if row:
 				#UpqDB().insert("sf_sync", {"sid": sid, "fid": row["fid"]})
 				UpqDB().query("INSERT INTO sf_sync2 (sid, fid) VALUES (%d, %d) "% (sid, row["fid"]))
-				self.logger.debug("Added mapping: %s <-> %s" %(sid, row["fid"]))
+				self.logger.info("Added mapping: %s <-> %s" %(sid, row["fid"]))
 				continue
 			self.download_and_add_file("https://springfiles.com/" + data["filepath"])
-			assert(False)
+
+			row= UpqDB().query("SELECT fid FROM file WHERE md5='%s'" %(data["md5"])).first()
+			if not row:
+				self.logger.error("Error adding %s"%(data))
+			#assert(row)
+			#assert(False)
 
 
 		return True
