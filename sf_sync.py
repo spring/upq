@@ -37,7 +37,7 @@ class Sf_sync(upqjob.UpqJob):
 
 
 		j = extract_metadata.Extract_metadata("extract_metadata", j.jobdata)
-		j.run()
+		return j.run()
 
 	def FixPathes(self):
 		from jobs import extract_metadata
@@ -84,15 +84,11 @@ class Sf_sync(upqjob.UpqJob):
 				UpqDB().query("INSERT INTO sf_sync2 (sid, fid) VALUES (%d, %d) "% (sid, row["fid"]))
 				self.logger.info("Added mapping: %s <-> %s" %(sid, row["fid"]))
 				continue
-			self.download_and_add_file("https://springfiles.com/" + data["filepath"])
-
-			row= UpqDB().query("SELECT fid FROM file WHERE md5='%s'" %(data["md5"])).first()
-			if not row:
+			if not self.download_and_add_file("https://springfiles.com/" + data["filepath"]):
 				self.logger.error("Error adding %s"%(data))
-			#assert(row)
-			#assert(False)
-
-
+			else:
+				row = UpqDB().query("SELECT fid FROM file WHERE md5='%s'" %(data["md5"])).first()
+				assert(row)
 		return True
 
 
