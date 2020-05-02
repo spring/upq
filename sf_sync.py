@@ -39,6 +39,24 @@ class Sf_sync(upqjob.UpqJob):
 		j = extract_metadata.Extract_metadata("extract_metadata", j.jobdata)
 		j.run()
 
+	def FixPathes(self):
+		from jobs import extract_metadata
+		rows = UpqDB().query("select filename, fid, name, version, cid, status from file where filename like '/tmp%%'")
+		j = extract_metadata.Extract_metadata("extract_metadata", {})
+		for row in rows:
+			#print(row)
+			srcfile = j.normalizeFilename(row[0], row[1], row[2], row[3])
+			subdir = j.jobcfg['maps-path'] if row[4] == 1 else j.jobcfg['games-path']
+
+			status = row[5]
+	                #self.movefile(filepath, 1, moveto)
+
+			prefix=j.getPathByStatus(status)
+			dstfile=os.path.join(prefix, subdir, os.path.basename(srcfile))
+			filename=os.path.basename(srcfile)
+			UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%d" %(subdir, status, filename, row[1]))
+
+
 	def run(self):
 		#username=self.jobcfg['username']
 		#password=self.jobcfg['password']
@@ -77,6 +95,9 @@ class Sf_sync(upqjob.UpqJob):
 
 		return True
 
+
+
+
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s %(module)s.%(funcName)s:%(lineno)d %(message)s"))
 logging.getLogger().addHandler(handler)
@@ -91,6 +112,7 @@ db.connect(upqconfig.UpqConfig().db['url'], upqconfig.UpqConfig().db['debug'])
 
 s = Sf_sync("sf_sync", dict())
 
+#s.FixPathes()
 
 s.run()
 

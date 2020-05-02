@@ -638,7 +638,8 @@ class Extract_metadata(UpqJob):
 			row=results.first()
 			if row or os.path.exists(dstfile):
 				self.logger.error("Error renaming file: %s to %s already exists, deleting source + using dst!" % (srcfile, dstfile))
-				os.remove(srcfile)
+				if os.path.isfile(srcfile):
+					os.remove(srcfile)
 			else:
 				shutil.move(srcfile, dstfile)
 			
