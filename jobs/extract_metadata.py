@@ -325,7 +325,7 @@ class Extract_metadata(UpqJob):
 		usync.RemoveAllArchives()
 		usync.UnInit()
 		del usync
-		print(self.jobcfg)
+		#print(self.jobcfg)
 		if not "keeptemp" in self.jobcfg or self.jobcfg["keeptemp"] != "yes":
 			assert(tmpdir.startswith("/home/upq/upq/tmp/"))
 			shutil.rmtree(tmpdir)
