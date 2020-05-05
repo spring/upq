@@ -34,7 +34,10 @@ import traceback
 unitsyncpath=os.path.join(UpqConfig().paths['jobs_dir'],'unitsync')
 sys.path.append(unitsyncpath)
 
-from unitsync import unitsync
+try:
+	from unitsync import unitsync
+except ImportError:
+	import unitsync
 
 class Extract_metadata(UpqJob):
 
