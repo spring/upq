@@ -102,7 +102,8 @@ class UpqJob(object):
 		if self.jobdata.has_key('subjobs') and len(job.jobdata['subjobs'])>0:
 			jobname=job.jobdata['subjobs'].pop()
 			newjob=UpqQueueMngr().new_job(jobname, job.jobdata)
-			newjob.check()
+			if newjob:
+				newjob.check()
 
 	def append_job(self, job, params={}):
 		"""

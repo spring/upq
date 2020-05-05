@@ -105,7 +105,6 @@ class UpqDB():
 			Column('version', VARCHAR(length=256)), #spring version of this file
 			Column('cid', INTEGER(display_width=11)), #category of this file: game/map
 			Column('sdp', VARCHAR(length=32),nullable=False, unique=True), #for this file
-			Column('descriptionuri', VARCHAR(length=1024)),
 			Column('metadata', TEXT()),
 			UniqueConstraint('name', 'version', 'cid'),
 			UniqueConstraint('filename', 'cid')

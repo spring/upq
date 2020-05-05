@@ -48,6 +48,7 @@ class Sf_sync(UpqJob):
 				file size
 				md5
 		"""
+		#print(fid)
 		data={}
 		data['mirror']=[]
 		results=UpqDB().query("SELECT CONCAT(m.url_prefix, f.path) as url FROM mirror_file f LEFT JOIN mirror m ON f.mid=m.mid WHERE f.fid=%d" % (fid))
@@ -58,9 +59,15 @@ class Sf_sync(UpqJob):
 		for value in ["filename", "size", "timestamp", "md5", "name", "version", "category"]:
 			data[value]=res[value]
 		if res['metadata']!=None and len(res['metadata'])>0:
-			data['metadata']=json.loads(res['metadata'])
+			try:
+				data['metadata']=json.loads(res['metadata'])
+			except ValueError:
+				self.logger.error("Error loading json from field metadata for fid: %d" %(fid))
+				data['metadata']=[]
 		else:
 			data['metadata']=[]
+		if "Units" in data['metadata']: # not used
+			del data['metadata']["Units"]
 		return data
 
 
@@ -70,11 +77,8 @@ class Sf_sync(UpqJob):
 		"""
 		try:
 			rpcres=proxy.springfiles.sync(username, password, data)
-			for rpc in rpcres: #set description url received from springfiles
-				UpqDB().query("UPDATE file SET descriptionuri='%s' WHERE fid=%d" % (rpc['url'], rpc['fid']))
-		except Exception as e:
-			self.msg("xmlrpc springfiles.sync() error: %s" %(e))
-			return True # fixme
+		except TypeError:
+			return False
 		self.logger.debug("received from springfiles: %s", rpcres)
 		return True
 
@@ -95,16 +99,12 @@ class Sf_sync(UpqJob):
 
 		username=self.jobcfg['username']
 		password=self.jobcfg['password']
-		proxy = ServerProxy(self.jobcfg['rpcurl'])
+		proxy = ServerProxy(self.jobcfg['rpcurl'], allow_none=True, verbose=False)
 		if self.jobdata.has_key('sid'): #sid set, update to springfiles requested
 			sid=int(self.jobdata['sid'])
 		else: #sid not set, request from springfiles
-			try:
-				sid=int(proxy.springfiles.getlastsyncid(username, password))
-				self.logger.debug("Fetched sid from springfiles: %d" % (sid));
-			except Exception as e:
-				self.msg("xmlrpc springfiles.getlastsyncid() error: %s"%(e))
-				return False
+			sid=int(proxy.springfiles.getlastsyncid(username, password))
+			self.logger.debug("Fetched sid from springfiles: %d" % (sid));
 		if sid>0:
 			results=UpqDB().query("SELECT fid, command FROM sf_sync WHERE sid>%d ORDER BY sid " %(sid)) #get all changes from db
 		else:
@@ -135,11 +135,11 @@ class Sf_sync(UpqJob):
 					self.logger.error("unknown command %d for fid %d", res['command'], res['fid'])
 					continue
 
-			self.logger.debug("adding sid %d to requests" % (res['fid']))
+			#self.logger.debug("adding sid %d to requests" % (res['fid']))
 			data['fid']=res['fid']
 			data['sid']=maxsid
 			requests.append(data)
-			if len(requests)>int(self.jobcfg['maxrequests']): #more then maxrequests queued, flush them
+			if len(requests) >= int(self.jobcfg['maxrequests']): #more then maxrequests queued, flush them
 				self.logger.debug("flushing %d requests" % (len(requests)))
 				if not self.rpc_call_sync(proxy, username, password, requests):
 					return False

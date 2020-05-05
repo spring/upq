@@ -121,7 +121,6 @@ function search($req){
 		LOWER(c.name) as category,
 		f.size as size,
 		f.timestamp as timestamp,
-		f.descriptionuri as description,
 		f.metadata as metadata
 		FROM file as f
 		LEFT JOIN categories as c ON f.cid=c.cid
