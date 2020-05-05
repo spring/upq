@@ -14,7 +14,12 @@
 from upqjob import UpqJob
 from upqdb import UpqDB
 from upqconfig import UpqConfig
-from xmlrpclib import ServerProxy
+import sys
+if sys.version_info[0] >= 3:
+        from xmlrpc.client import ServerProxy
+else:
+        from xmlrpclib import ServerProxy
+
 
 import json
 import os
@@ -83,10 +88,10 @@ class Sf_sync(UpqJob):
 		return True
 
 	def run(self):
-		if self.jobdata.has_key('fid'): #fid set, add change to db
+		if "fid" in self.jobdata: #fid set, add change to db
 			fid=int(self.jobdata['fid'])
 			command=0 #default to update command
-			if self.jobdata.has_key('command'):
+			if "command" in self.jobdata:
 				command=self.jobdata['command']
 				if command=="update":
 					command=0
@@ -100,7 +105,7 @@ class Sf_sync(UpqJob):
 		username=self.jobcfg['username']
 		password=self.jobcfg['password']
 		proxy = ServerProxy(self.jobcfg['rpcurl'], allow_none=True, verbose=False)
-		if self.jobdata.has_key('sid'): #sid set, update to springfiles requested
+		if "sid" in self.jobdata: #sid set, update to springfiles requested
 			sid=int(self.jobdata['sid'])
 		else: #sid not set, request from springfiles
 			sid=int(proxy.springfiles.getlastsyncid(username, password))
