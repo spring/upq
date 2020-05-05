@@ -157,7 +157,9 @@ class UpqDB():
 		#self.logger.debug(query)
 		res=None
 		try:
-			res=self.engine.execute(query)
+			s = Session(self.engine)
+			res=s.execute(query)
+			s.commit()
 		except Exception as e:
 			self.logger.error("Error %s executing query %s" % (str(e), str(query)))
 		return res
