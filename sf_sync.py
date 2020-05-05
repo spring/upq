@@ -30,7 +30,7 @@ class Sf_sync(upqjob.UpqJob):
 
 	def download_and_add_file(self, url):
 		from jobs import download
-		j = download.Download("download", {"url": url, "subjobs": [], "keeptemp": "yes"})
+		j = download.Download("download", {"url": url, "subjobs": []})
 		j.run()
 		from jobs import extract_metadata
 		print(j.jobdata)

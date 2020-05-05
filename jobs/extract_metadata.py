@@ -29,6 +29,7 @@ import gzip
 import hashlib
 import json
 import gc
+import traceback
 
 unitsyncpath=os.path.join(UpqConfig().paths['jobs_dir'],'unitsync')
 sys.path.append(unitsyncpath)
@@ -110,7 +111,7 @@ class Extract_metadata(UpqJob):
 		if 'fid' in self.jobdata: # detect already existing files
 			fid=self.jobdata['fid']
 		else:
-			results=UpqDB().query("SELECT fid FROM file WHERE sdp='%s'"% (data['sdp']))
+			results=UpqDB().query("SELECT fid FROM file WHERE sdp='%s' or md5='%s'"% (data['sdp'], hashes['md5']))
 			res=results.first()
 			if res:
 				fid=res['fid']
@@ -196,7 +197,7 @@ class Extract_metadata(UpqJob):
 		#use md5 as filename, so it can be reused
 		filename=m.hexdigest()+".jpg"
 		absname=os.path.join(UpqConfig().paths['metadata'], filename)
-		if os.path.isfile(absname) and os.path.getsize(absname) == image.len:
+		if os.path.isfile(absname) and os.path.getsize(absname) == image.size:
 			self.logger.debug("Not overwriting %s" %(absname))
 			return
 		image.save(absname)
@@ -261,7 +262,7 @@ class Extract_metadata(UpqJob):
 			try:
 				data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
 			except Exception as e:
-				self.msg("Error extracting data: %s" %(str(e)))
+				self.msg("Error extracting data: %s (%s), %s" %(str(e), usync.GetNextError(), traceback.format_exc(10)))
 				self.movefile(filepath, 3, "")
 				return False
 			moveto=self.jobcfg['maps-path']
