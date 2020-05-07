@@ -254,7 +254,6 @@ class Extract_metadata(UpqJob):
 		try:
 			sdp = self.getSDPName(usync, archiveh)
 		except:
-			self.movefile(filepath, 3, "")
 			self.msg("couldn't get sdp hash")
 			return False
 		idx=self.getMapIdx(usync,filename)
@@ -266,14 +265,12 @@ class Extract_metadata(UpqJob):
 				data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
 			except Exception as e:
 				self.msg("Error extracting data: %s (%s), %s" %(str(e), usync.GetNextError(), traceback.format_exc(10)))
-				self.movefile(filepath, 3, "")
 				return False
 			moveto=self.jobcfg['maps-path']
 		else: # file is a game
 			idx=self.getGameIdx(usync,filename)
 			if idx<0:
 				self.logger.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
-				self.movefile(filepath, 3, "")
 				return False
 			self.logger.debug("Extracting data from "+filename)
 			archivepath=usync.GetArchivePath(filename)+filename
@@ -283,7 +280,6 @@ class Extract_metadata(UpqJob):
 		data['sdp']=sdp
 		if (sdp == "") or (data['Name'] == ""): #mark as broken because sdp / name is missing
 			self.logger.error("Couldn't get name / filename")
-			self.movefile(filepath, 3, "")
 			return False
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
 		try:
@@ -292,9 +288,10 @@ class Extract_metadata(UpqJob):
 			self.logger.error("Duplicate file detected: %s %s %s" % (filename, data['Name'], data['Version']))
 			return False
 
-		filepath = self.normalizeFilename(filepath, self.jobdata['fid'], data['Name'], data['Version'])
+		filepath = self.normalizeFilename(filepath, data['Name'], data['Version'])
 		self.jobdata['file']=filepath
-		self.movefile(filepath, 1, moveto)
+		assert(len(moveto) > 0)
+		self.movefile(self.jobdata["fid"], filepath, moveto)
 		return True
 
 	def run(self):
@@ -594,14 +591,10 @@ class Extract_metadata(UpqJob):
 			return UpqConfig().paths['broken']
 		raise Exception("Unknown status %s" %(status))
 
-	def movefile(self, srcfile, status, subdir):
-		prefix=self.getPathByStatus(status)
+	def movefile(self, fid, srcfile, subdir):
+		prefix=self.getPathByStatus(1)
 		dstfile=os.path.join(prefix, subdir, os.path.basename(srcfile))
 		filename=os.path.basename(srcfile)
-		if 'fid' in self.jobdata:
-			fid=int(self.jobdata['fid'])
-		else:
-			fid=0
 		if srcfile!=dstfile:
 			if os.path.exists(dstfile):
 				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, srcfile))
@@ -614,18 +607,17 @@ class Extract_metadata(UpqJob):
 					os.remove(srcfile)
 				except:
 					self.log.warn("Removing src file failed: %s" % (srcfile))
-			if fid>0:
-				UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%s" %(subdir, status, filename, int(fid)))
+			UpqDB().query("UPDATE file SET path='%s', filename='%s' WHERE fid=%s" %(subdir, filename, fid))
 			self.logger.debug("moved file to (abs)%s %s:(rel)%s" %(srcfile, prefix,subdir))
 		elif filename!=srcfile: #file is already in the destination dir, make filename relative
-			UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%d" %(subdir, status, filename, fid))
+			UpqDB().query("UPDATE file SET path='%s', filename='%s' WHERE fid=%d" %(subdir, filename, fid))
 		try:
 			os.chmod(dstfile, int("0444",8))
 		except OSError:
 			pass
 		self.logger.info("moved file to %s" % (dstfile))
 		return True
-	def normalizeFilename(self, srcfile, fid, name, version):
+	def normalizeFilename(self, srcfile, name, version):
 		""" normalize filename + renames file + updates filename in database """
 		name=name.lower()
 		if len(version)>0:
@@ -639,20 +631,7 @@ class Extract_metadata(UpqJob):
 				res+=c
 			else:
 				res+="_"
-		dstfile=os.path.join(os.path.dirname(srcfile), res)
-		if srcfile!=dstfile:
-			results=UpqDB().query("SELECT fid FROM file WHERE BINARY filename='%s' AND status=1" % (res))
-			row=results.first()
-			if row or os.path.exists(dstfile):
-				self.logger.error("Error renaming file: %s to %s already exists, deleting source + using dst!" % (srcfile, dstfile))
-				if os.path.isfile(srcfile):
-					os.remove(srcfile)
-			else:
-				shutil.move(srcfile, dstfile)
-			
-			UpqDB().query("UPDATE file SET filename='%s' WHERE fid=%s" %(res, fid))
-			self.logger.info("Normalized filename to %s "%(dstfile))
-		return dstfile
+		return os.path.join(os.path.dirname(srcfile), res)
 
 	def get_hash(self, filename):
 		"""

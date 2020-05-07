@@ -50,7 +50,7 @@ class Sf_sync(upqjob.UpqJob):
 		j = extract_metadata.Extract_metadata("extract_metadata", {})
 		for row in rows:
 			#print(row)
-			srcfile = j.normalizeFilename(row[0], row[1], row[2], row[3])
+			srcfile = j.normalizeFilename(row[0], row[2], row[3])
 			subdir = j.jobcfg['maps-path'] if row[4] == 1 else j.jobcfg['games-path']
 
 			status = row[5]
@@ -114,7 +114,7 @@ db.connect(upqconfig.UpqConfig().db['url'], upqconfig.UpqConfig().db['debug'])
 
 s = Sf_sync("sf_sync", dict())
 
-#s.FixPathes()
+s.FixPathes()
 
 s.run()
 
