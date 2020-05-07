@@ -292,6 +292,8 @@ class Extract_metadata(UpqJob):
 		self.jobdata['file']=filepath
 		assert(len(moveto) > 0)
 		self.movefile(self.jobdata["fid"], filepath, moveto)
+		if self.create_torrent(filepath, os.path.join(metadatapath, sdp, '.torrent')):
+			UpqDB().query("UPDATE file SET torrent=1 WHERE fid=%s" %(fid))
 		return True
 
 	def run(self):
@@ -663,3 +665,41 @@ class Extract_metadata(UpqJob):
 		fd.close()
 
 		return {'md5': md5.hexdigest(), 'sha1': sha1.hexdigest(), 'sha256': sha256.hexdigest()}
+
+	def create_torrent(self, filename, output):
+		if not os.path.exists(filename):
+			self.msg("File doesn't exist: %s" %(filename))
+			return False
+
+		if os.path.isdir(filename):
+			self.logger.debug("[skip] " +filename + "is a directory, can't create torrent")
+			return False
+		if os.path.isfile(output):
+			self.logger.debug("[skip] " +output + " already exists, skipping...")
+			return True
+		metalink._opts = { 'overwrite': False }
+		filesize=os.path.getsize(filename)
+		torrent = metalink.Torrent(filename)
+		m = metalink.Metafile()
+		m.hashes.filename=filename
+		if not m.scan_file(filename, True, 255, 1):
+			self.msg("Error scanning file %s" % (filename))
+			return False
+
+		m.hashes.get_multiple('ed2k')
+		torrent_options = {'files':[[metalink.encode_text(filename), int(filesize)]],
+			'piece length':int(m.hashes.piecelength),
+			'pieces':m.hashes.pieces,
+			'encoding':'UTF-8',
+			}
+		data=torrent.create(torrent_options)
+		if not isinstance(data, basestring):
+			self.msg("Error in creating torrent file: %s" % (str(data)))
+			return False
+
+		with open(output, "wb") as f:
+			f.write(data)
+			f.close()
+		os.chmod(output, int("0444",8))
+		self.logger.debug("[created] " +output +" ok")
+		return True
