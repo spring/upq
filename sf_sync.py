@@ -39,11 +39,6 @@ class Sf_sync(upqjob.UpqJob):
 		j = extract_metadata.Extract_metadata("extract_metadata", j.jobdata)
 		return j.run()
 
-	def synctosf(self):
-		from jobs import sf_sync
-		j = sf_sync.Sf_sync("sf_sync", {})
-		return j.run()
-
 	def FixPathes(self):
 		from jobs import extract_metadata
 		rows = UpqDB().query("select filename, fid, name, version, cid, status from file where filename like '/tmp%%'")
@@ -94,7 +89,6 @@ class Sf_sync(upqjob.UpqJob):
 			else:
 				row = UpqDB().query("SELECT fid FROM file WHERE md5='%s'" %(data["md5"])).first()
 				assert(row)
-		self.synctosf()
 		return True
 
 
