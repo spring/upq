@@ -277,12 +277,12 @@ class Extract_metadata(UpqJob):
 			gamearchivecount=usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
 			moveto=self.jobcfg['games-path']
-		data['sdp']=sdp
 		if (sdp == "") or (data['Name'] == ""): #mark as broken because sdp / name is missing
 			self.logger.error("Couldn't get name / filename")
 			return False
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
 		try:
+			data['sdp']=sdp
 			self.jobdata['fid']=self.insertData(data, filepath, hashes)
 		except UpqDBIntegrityError:
 			self.logger.error("Duplicate file detected: %s %s %s" % (filename, data['Name'], data['Version']))
