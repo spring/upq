@@ -60,7 +60,7 @@ class Sf_sync(upqjob.UpqJob):
 	def run(self):
 		#username=self.jobcfg['username']
 		#password=self.jobcfg['password']
-		proxy = ServerProxy(self.jobcfg['rpcurl'])
+		proxy = ServerProxy("https://springfiles.com/xmlrpc.php")
 
 		
 		row = UpqDB().query("SELECT MAX(sid) FROM sf_sync2").first()
