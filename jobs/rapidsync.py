@@ -89,29 +89,35 @@ class Rapidsync(UpqJob):
 		     "Oct", "Nov", "Dec"][dt.month - 1]
 		return "%s, %02d %s %04d %02d:%02d:%02d GMT" % (weekday, dt.day, month,	dt.year, dt.hour, dt.minute, dt.second)
 
-
-	def fetchListing(self, url, cache=True):
-		self.logger.debug("Fetching %s" % (url))
-		ParseResult=urlparse.urlparse(url)
-		absname=os.path.join(self.getcfg('temppath', '/tmp'), ParseResult.hostname, ParseResult.path.strip("/"))
+	def DownloadFile(self, url, filename, cache=True)
+		""" returns true, when file was updated """
 		dirname = os.path.dirname(absname)
 		if not os.path.exists(dirname):
 			os.makedirs(dirname)
-
 		headers = {}
-		if cache and os.path.isfile(absname):
+		if cache and os.path.isfile(filename):
 			file_time = datetime.datetime.fromtimestamp(os.path.getmtime(absname))
 			headers["If-Modified-Since"] = self.httpdate(file_time)
 
 		r = requests.get(url, timeout=10, headers=headers)
 		if r.status_code == 304:
 			self.logger.debug("Not modified")
-			return []
+			return False
 		with open(absname, "w") as f:
 			f.write(r.content)
 		url_date = datetime.datetime.strptime(r.headers["last-modified"], '%a, %d %b %Y %H:%M:%S GMT')
 		ts = int((time.mktime(url_date.timetuple()) + url_date.microsecond/1000000.0))
 		os.utime(absname, (ts, ts))
+		return True
+
+	def fetchListing(self, url, cache=True):
+		self.logger.debug("Fetching %s" % (url))
+		ParseResult=urlparse.urlparse(url)
+		absname=os.path.join(self.getcfg('temppath', '/tmp'), ParseResult.hostname, ParseResult.path.strip("/"))
+
+		if not DownloadFile(url, absname, cache):
+			return []
+
 		gz = gzip.open(absname)
 		lines=gz.readlines()
 		gz.close()

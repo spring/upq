@@ -21,8 +21,6 @@ class my_download(urllib.URLopener):
 
 class Versionfetch(UpqJob):
 	prefix = "http://springrts.com/dl/buildbot"
-	lobby = "lobby.springrts.com"
-	lobbyport = 8200
 	cats = {}
 	def escape(self, string):
 		return string.replace("%7b", "{").replace("%7d", "}")
