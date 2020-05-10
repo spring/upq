@@ -140,7 +140,7 @@ class UpqDB():
 		self.tables['sf_sync']=Table('sf_sync', self.meta,
 			Column('sid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
 			Column('command', INTEGER(display_width=10), nullable=False, autoincrement=False), #0=update 1=delete
-			Column('fid', Integer, ForeignKey("file.fid")),
+			Column('fid', Integer, ForeignKey("file.fid")))
 		self.tables['sf_sync2']=Table('sf_sync2', self.meta,
 			Column('sid', INTEGER(display_width=10), primary_key=False, nullable=False, unique=True),
 			Column('fid', Integer, ForeignKey("file.fid")),
