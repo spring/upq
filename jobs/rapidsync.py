@@ -22,56 +22,60 @@ from upqdb import UpqDB, UpqDBIntegrityError
 
 class Rapidsync(UpqJob):
 	cats = {}
+
+	def UpdateSDP(self, sdp):
+		"""
+		values = {
+				"tag"=sdp[0],
+				"md5"=sdp[1],
+				"depends"=sdp[2],
+				"name"=sdp[3],
+		}
+		"""
+		#check if file is already known
+		res=UpqDB().query("SELECT f.fid FROM file f \
+			LEFT JOIN tag t ON t.fid=f.fid \
+			WHERE sdp='%s'" % (sdp[1]))
+		row=res.first()
+		if row: #file is already known
+			#delete tag from existing files
+			UpqDB().query("DELETE FROM tag WHERE tag='%s'" % (sdp[0]))
+			#insert updated tag
+			UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (row['fid'], sdp[0]))
+			#self.logger.info("updated %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
+		else:
+			if not sdp[3]: #without a name, we can't do anything!
+				continue
+			cid = self.getCid("game")
+			try:
+				fid = UpqDB().insert("file", {
+					"filename" : sdp[3] + " (not available as sdz)",
+					"name": sdp[3],
+					"cid" : cid,
+					"md5" : sdp[1],
+					"sdp" : sdp[1],
+					"size" : 0,
+					"status" : 4, # special status for files that can only be downloaded via rapid
+					"uid" : 0,
+					"path" : "",
+					})
+				UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (fid, sdp[0]))
+				#self.logger.info("inserted %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
+			except Exception as e:
+				self.logger.error(str(e))
+				self.logger.error("Error from sdp: %s %s %s %s", sdp[3], sdp[2],sdp[1],sdp[0])
+				res=UpqDB().query("SELECT * FROM file f WHERE name='%s'" % sdp[3])
+				if res:
+					row=res.first()
+					self.logger.error("a file with this name already exists, fid=%s, sdp=%s" % (row['fid'], row['sdp']))
+
 	def run(self):
 		repos=self.fetchListing(self.getcfg('mainrepo', "http://repos.springrts.com/repos.gz"), False)
 		i=0
 		for repo in repos:
 			sdps=self.fetchListing(repo[1] + "/versions.gz")
 			for sdp in sdps:
-				"""
-				values = {
-						"tag"=sdp[0],
-						"md5"=sdp[1],
-						"depends"=sdp[2],
-						"name"=sdp[3],
-				}
-				"""
-				#check if file is already known
-				res=UpqDB().query("SELECT f.fid FROM file f \
-					LEFT JOIN tag t ON t.fid=f.fid \
-					WHERE sdp='%s'" % (sdp[1]))
-				row=res.first()
-				if row: #file is already known
-					#delete tag from existing files
-					UpqDB().query("DELETE FROM tag WHERE tag='%s'" % (sdp[0]))
-					#insert updated tag
-					UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (row['fid'], sdp[0]))
-					#self.logger.info("updated %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
-				else:
-					if not sdp[3]: #without a name, we can't do anything!
-						continue
-					cid = self.getCid("game")
-					try:
-						fid = UpqDB().insert("file", {
-							"filename" : sdp[3] + " (not available as sdz)",
-							"name": sdp[3],
-							"cid" : cid,
-							"md5" : sdp[1],
-							"sdp" : sdp[1],
-							"size" : 0,
-							"status" : 4, # special status for files that can only be downloaded via rapid
-							"uid" : 0,
-							"path" : "",
-							})
-						UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (fid, sdp[0]))
-						#self.logger.info("inserted %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
-					except Exception as e:
-						self.logger.error(str(e))
-						self.logger.error("Error from sdp: %s %s %s %s", sdp[3], sdp[2],sdp[1],sdp[0])
-						res=UpqDB().query("SELECT * FROM file f WHERE name='%s'" % sdp[3])
-						if res:
-							row=res.first()
-							self.logger.error("a file with this name already exists, fid=%s, sdp=%s" % (row['fid'], row['sdp']))
+				self.UpdateSDP(sdp)
 
 	def httpdate(self, dt):
 		"""Return a string representation of a date according to RFC 1123
