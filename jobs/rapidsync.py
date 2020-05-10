@@ -10,9 +10,9 @@
 # sets tags for already known files taken from the file list of the "rapid"
 # download system
 
-import urllib
 import gzip
 import urlparse
+import requests
 import os.path
 
 from upqjob import UpqJob
@@ -63,7 +63,7 @@ class Rapidsync(UpqJob):
 							})
 						UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (fid, sdp[0]))
 						#self.logger.info("inserted %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
-					except Exception, e:
+					except Exception as e:
 						self.logger.error(str(e))
 						self.logger.error("Error from sdp: %s %s %s %s", sdp[3], sdp[2],sdp[1],sdp[0])
 						res=UpqDB().query("SELECT * FROM file f WHERE name='%s'" % sdp[3])
@@ -79,7 +79,9 @@ class Rapidsync(UpqJob):
 		absname=os.path.join(dir, filename)
 		if not os.path.exists(dir):
 			os.makedirs(dir)
-		urllib.urlretrieve(url,absname)
+		r = requests.get(url, timeout=10)
+		with open(absname, "w") as f:
+			f.write(r.content)
 		gz = gzip.open(absname)
 		lines=gz.readlines()
 		gz.close()
