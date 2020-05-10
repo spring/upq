@@ -14,6 +14,8 @@ import gzip
 import urlparse
 import requests
 import os.path
+import datetime
+import time
 
 from upqjob import UpqJob
 from upqdb import UpqDB, UpqDBIntegrityError
@@ -21,7 +23,7 @@ from upqdb import UpqDB, UpqDBIntegrityError
 class Rapidsync(UpqJob):
 	cats = {}
 	def run(self):
-		repos=self.fetchListing(self.getcfg('mainrepo', "http://repos.springrts.com/repos.gz"))
+		repos=self.fetchListing(self.getcfg('mainrepo', "http://repos.springrts.com/repos.gz"), False)
 		i=0
 		for repo in repos:
 			sdps=self.fetchListing(repo[1] + "/versions.gz")
@@ -71,7 +73,20 @@ class Rapidsync(UpqJob):
 							row=res.first()
 							self.logger.error("a file with this name already exists, fid=%s, sdp=%s" % (row['fid'], row['sdp']))
 
-	def fetchListing(self, url):
+	def httpdate(self, dt):
+		"""Return a string representation of a date according to RFC 1123
+		(HTTP/1.1).
+
+		The supplied date must be in UTC.
+
+		"""
+		weekday = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][dt.weekday()]
+		month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
+		     "Oct", "Nov", "Dec"][dt.month - 1]
+		return "%s, %02d %s %04d %02d:%02d:%02d GMT" % (weekday, dt.day, month,	dt.year, dt.hour, dt.minute, dt.second)
+
+
+	def fetchListing(self, url, cache=True):
 		self.logger.debug("Fetching %s" % (url))
 		ParseResult=urlparse.urlparse(url)
 		dir=os.path.join(self.getcfg('temppath', '/tmp'), ParseResult.hostname)
@@ -79,9 +94,21 @@ class Rapidsync(UpqJob):
 		absname=os.path.join(dir, filename)
 		if not os.path.exists(dir):
 			os.makedirs(dir)
-		r = requests.get(url, timeout=10)
+
+		headers = {}
+		if cache and os.path.isfile(absname):
+			file_time = datetime.datetime.fromtimestamp(os.path.getmtime(absname))
+			headers["If-Modified-Since"] = self.httpdate(file_time)
+
+		r = requests.get(url, timeout=10, headers=headers)
+		if r.status_code == 304:
+			self.logger.debug("Not modified")
+			return []
 		with open(absname, "w") as f:
 			f.write(r.content)
+		url_date = datetime.datetime.strptime(r.headers["last-modified"], '%a, %d %b %Y %H:%M:%S GMT')
+		ts = int((time.mktime(url_date.timetuple()) + url_date.microsecond/1000000.0))
+		os.utime(absname, (ts, ts))
 		gz = gzip.open(absname)
 		lines=gz.readlines()
 		gz.close()
