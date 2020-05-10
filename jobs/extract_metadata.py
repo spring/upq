@@ -105,6 +105,7 @@ class Extract_metadata(UpqJob):
 		return self.escape(string)
 
 	def insertData(self, data, filename, hashes):
+		assert(os.path.basename(filename) == filename)
 		metadata=data.copy()
 		del metadata['Depends'] #remove redundant entries
 		del metadata['sdp']
@@ -281,6 +282,12 @@ class Extract_metadata(UpqJob):
 			self.logger.error("Couldn't get name / filename")
 			return False
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
+		filepath = self.normalizeFilename(filepath, data['Name'], data['Version'])
+		self.jobdata['file']=filepath
+		assert(len(moveto) > 0)
+		if not self.movefile(self.jobdata["fid"], filepath, moveto):
+			self.logger.error("Couldn't move filei %s" %(filepath))
+			return False
 		try:
 			data['sdp']=sdp
 			self.jobdata['fid']=self.insertData(data, filepath, hashes)
@@ -288,10 +295,6 @@ class Extract_metadata(UpqJob):
 			self.logger.error("Duplicate file detected: %s %s %s" % (filename, data['Name'], data['Version']))
 			return False
 
-		filepath = self.normalizeFilename(filepath, data['Name'], data['Version'])
-		self.jobdata['file']=filepath
-		assert(len(moveto) > 0)
-		self.movefile(self.jobdata["fid"], filepath, moveto)
 		if self.create_torrent(filepath, os.path.join(metadatapath, sdp, '.torrent')):
 			UpqDB().query("UPDATE file SET torrent=1 WHERE fid=%s" %(fid))
 		return True
