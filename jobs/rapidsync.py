@@ -89,11 +89,10 @@ class Rapidsync(UpqJob):
 	def fetchListing(self, url, cache=True):
 		self.logger.debug("Fetching %s" % (url))
 		ParseResult=urlparse.urlparse(url)
-		dir=os.path.join(self.getcfg('temppath', '/tmp'), ParseResult.hostname)
-		filename=os.path.basename(ParseResult.path)
-		absname=os.path.join(dir, filename)
-		if not os.path.exists(dir):
-			os.makedirs(dir)
+		absname=os.path.join(self.getcfg('temppath', '/tmp'), ParseResult.hostname, ParseResult.path.strip("/"))
+		dirname = os.path.dirname(absname)
+		if not os.path.exists(dirname):
+			os.makedirs(dirname)
 
 		headers = {}
 		if cache and os.path.isfile(absname):
