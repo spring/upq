@@ -105,7 +105,6 @@ class Extract_metadata(UpqJob):
 		return self.escape(string)
 
 	def insertData(self, data, filename, hashes):
-		assert(os.path.basename(filename) == filename)
 		metadata=data.copy()
 		del metadata['Depends'] #remove redundant entries
 		del metadata['sdp']
@@ -130,8 +129,8 @@ class Extract_metadata(UpqJob):
 				"cid": self.getCid(data['Type']),
 				"metadata": metadata,
 				"uid": 0,
-				"path": "",
-				"filename": filename,
+				"path": data["path"],
+				"filename": os.path.basename(filename),
 				"timestamp": UpqDB().now(), #fixme: use file timestamp
 				"size": os.path.getsize(filename),
 				"status": 1,
@@ -267,7 +266,7 @@ class Extract_metadata(UpqJob):
 			except Exception as e:
 				self.msg("Error extracting data: %s (%s), %s" %(str(e), usync.GetNextError(), traceback.format_exc(10)))
 				return False
-			moveto=self.jobcfg['maps-path']
+			data['path'] = self.jobcfg['maps-path']
 		else: # file is a game
 			idx=self.getGameIdx(usync,filename)
 			if idx<0:
@@ -277,20 +276,21 @@ class Extract_metadata(UpqJob):
 			archivepath=usync.GetArchivePath(filename)+filename
 			gamearchivecount=usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
-			moveto=self.jobcfg['games-path']
+			data['path'] = self.jobcfg['games-path']
 		if (sdp == "") or (data['Name'] == ""): #mark as broken because sdp / name is missing
 			self.logger.error("Couldn't get name / filename")
 			return False
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
-		filepath = self.normalizeFilename(filepath, data['Name'], data['Version'])
-		self.jobdata['file']=filepath
+		_, extension = os.path.splitext(filename)
+		moveto = os.path.join(self.getPathByStatus(1), data['path'], self.GetNormalizedFilename(data['Name'], data['Version'], extension))
+		self.jobdata['file']=moveto
 		assert(len(moveto) > 0)
-		if not self.movefile(self.jobdata["fid"], filepath, moveto):
+		if not self.movefile(filepath, moveto):
 			self.logger.error("Couldn't move filei %s" %(filepath))
 			return False
 		try:
 			data['sdp']=sdp
-			self.jobdata['fid']=self.insertData(data, filepath, hashes)
+			self.jobdata['fid']=self.insertData(data, moveto, hashes)
 		except UpqDBIntegrityError:
 			self.logger.error("Duplicate file detected: %s %s %s" % (filename, data['Name'], data['Version']))
 			return False
@@ -596,10 +596,7 @@ class Extract_metadata(UpqJob):
 			return UpqConfig().paths['broken']
 		raise Exception("Unknown status %s" %(status))
 
-	def movefile(self, fid, srcfile, subdir):
-		prefix=self.getPathByStatus(1)
-		dstfile=os.path.join(prefix, subdir, os.path.basename(srcfile))
-		filename=os.path.basename(srcfile)
+	def movefile(self, srcfile, dstfile):
 		if srcfile!=dstfile:
 			if os.path.exists(dstfile):
 				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, srcfile))
@@ -612,22 +609,18 @@ class Extract_metadata(UpqJob):
 					os.remove(srcfile)
 				except:
 					self.log.warn("Removing src file failed: %s" % (srcfile))
-			UpqDB().query("UPDATE file SET path='%s', filename='%s' WHERE fid=%s" %(subdir, filename, fid))
-			self.logger.debug("moved file to (abs)%s %s:(rel)%s" %(srcfile, prefix,subdir))
-		elif filename!=srcfile: #file is already in the destination dir, make filename relative
-			UpqDB().query("UPDATE file SET path='%s', filename='%s' WHERE fid=%d" %(subdir, filename, fid))
+			self.logger.debug("moved file to (abs)%s :(rel)%s" %(srcfile, dstfile))
 		try:
 			os.chmod(dstfile, int("0444",8))
 		except OSError:
 			pass
 		self.logger.info("moved file to %s" % (dstfile))
 		return True
-	def normalizeFilename(self, srcfile, name, version):
+	def GetNormalizedFilename(self, name, version, extension):
 		""" normalize filename + renames file + updates filename in database """
 		name=name.lower()
 		if len(version)>0:
 			name = str(name[:200] +"-" + version.lower())[:255]
-		_, extension = os.path.splitext(srcfile)
 		name += extension
 
 		res=""
@@ -636,7 +629,7 @@ class Extract_metadata(UpqJob):
 				res+=c
 			else:
 				res+="_"
-		return os.path.join(os.path.dirname(srcfile), res)
+		return res
 
 	def get_hash(self, filename):
 		"""
