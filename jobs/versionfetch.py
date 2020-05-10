@@ -24,19 +24,6 @@ class Versionfetch(UpqJob):
 	lobby = "lobby.springrts.com"
 	lobbyport = 8200
 	cats = {}
-	def getlobbyversion(self):
-		""" connects to the lobby server and returns the current spring version"""
-		version = ""
-		try:
-			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			s.connect((self.lobby, self.lobbyport))
-			data = s.recv(1024)
-			version = data.split(" ")[2]
-			s.send("EXIT")
-			s.close()
-		except Exception as e:
-			self.msg(str(e))
-		return version
 	def escape(self, string):
 		return string.replace("%7b", "{").replace("%7d", "}")
 	def getCID(self, category):
@@ -107,7 +94,6 @@ class Versionfetch(UpqJob):
 	def run(self):
 		dled = {}
 		url = self.prefix + '/list.php'
-		#print self.getlobbyversion()
 		f = my_download().open(url)
 		data = json.loads(str(f.read()))
 		res = UpqDB().query("SELECT mid from mirror WHERE url_prefix='%s'" % self.prefix)
