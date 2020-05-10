@@ -110,15 +110,15 @@ class UpqDB():
 			UniqueConstraint('filename', 'cid')
 			)
 		self.tables['image_file']=Table('image_file', self.meta,
-			Column('iid', INTEGER(display_width=10), nullable=False), #id of the image
-			Column('fid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
-			Column('filename', VARCHAR(length=255), nullable=False))
+			Column('iid', INTEGER(display_width=10), primary_key=True, autoincrement=True), #id of the image
+			Column('fid', Integer, ForeignKey("file.fid")),
+			Column('filename', VARCHAR(length=255), nullable=False, unique=True))
 		self.tables['image']=Table('image', self.meta,
 			Column('iid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
 			Column('md5', CHAR(length=32))) #md5 = path
 		self.tables['tag']=Table('tag', self.meta,
 			Column('tid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
-			Column('fid', INTEGER(display_width=10), ForeignKey("file.fid"), nullable=False),
+			Column('fid', Integer, ForeignKey("file.fid"), nullable=False),
 			Column('tag', VARCHAR(length=128), unique=True))
 		self.tables['categories']=Table('categories', self.meta, # file categories
 			Column('cid', INTEGER(display_width=11), primary_key=True, nullable=False, autoincrement=True),
