@@ -90,7 +90,7 @@ class Versionfetch(UpqJob):
 		filename = "/tmp/sprinvers.json"
 
 		if not self.DownloadFile(url, filename):
-			self.logger("list.php wasn't changed")
+			self.logger.info("list.php wasn't changed")
 			return True
 
 		with open(filename, "r") as f:
