@@ -18,9 +18,11 @@ import threading
 import log
 from upqqueuemngr import UpqQueueMngr
 import json
+import requests
 import upqconfig
-
-
+import os
+import datetime
+import time
 
 class UpqJob(object):
 	def __init__(self, jobname, jobdata):
@@ -152,3 +154,26 @@ class UpqJob(object):
 			return self.jobcfg[name]
 		else:
 			return default
+
+	def DownloadFile(self, url, filename, cache=True):
+		""" returns true, when file was updated """
+		dirname = os.path.dirname(filename)
+		if not os.path.exists(dirname):
+			os.makedirs(dirname)
+		headers = {}
+		if cache and os.path.isfile(filename):
+			file_time = datetime.datetime.fromtimestamp(os.path.getmtime(filename))
+			headers["If-Modified-Since"] = self.httpdate(file_time)
+
+		r = requests.get(url, timeout=10, headers=headers)
+		if r.status_code == 304:
+			self.logger.debug("Not modified")
+			return False
+		with open(filename, "w") as f:
+			f.write(r.content)
+		url_date = datetime.datetime.strptime(r.headers["last-modified"], '%a, %d %b %Y %H:%M:%S GMT')
+		ts = int((time.mktime(url_date.timetuple()) + url_date.microsecond/1000000.0))
+		os.utime(filename, (ts, ts))
+		return True
+
+

@@ -43,31 +43,31 @@ class Rapidsync(UpqJob):
 			#insert updated tag
 			UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (row['fid'], sdp[0]))
 			#self.logger.info("updated %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
-		else:
-			if not sdp[3]: #without a name, we can't do anything!
-				continue
-			cid = self.getCid("game")
-			try:
-				fid = UpqDB().insert("file", {
-					"filename" : sdp[3] + " (not available as sdz)",
-					"name": sdp[3],
-					"cid" : cid,
-					"md5" : sdp[1],
-					"sdp" : sdp[1],
-					"size" : 0,
-					"status" : 4, # special status for files that can only be downloaded via rapid
-					"uid" : 0,
-					"path" : "",
-					})
-				UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (fid, sdp[0]))
-				#self.logger.info("inserted %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
-			except Exception as e:
-				self.logger.error(str(e))
-				self.logger.error("Error from sdp: %s %s %s %s", sdp[3], sdp[2],sdp[1],sdp[0])
-				res=UpqDB().query("SELECT * FROM file f WHERE name='%s'" % sdp[3])
-				if res:
-					row=res.first()
-					self.logger.error("a file with this name already exists, fid=%s, sdp=%s" % (row['fid'], row['sdp']))
+			return
+		if not sdp[3]: #without a name, we can't do anything!
+			return
+		cid = self.getCid("game")
+		try:
+			fid = UpqDB().insert("file", {
+				"filename" : sdp[3] + " (not available as sdz)",
+				"name": sdp[3],
+				"cid" : cid,
+				"md5" : sdp[1],
+				"sdp" : sdp[1],
+				"size" : 0,
+				"status" : 4, # special status for files that can only be downloaded via rapid
+				"uid" : 0,
+				"path" : "",
+				})
+			UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (fid, sdp[0]))
+			#self.logger.info("inserted %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
+		except Exception as e:
+			self.logger.error(str(e))
+			self.logger.error("Error from sdp: %s %s %s %s", sdp[3], sdp[2],sdp[1],sdp[0])
+			res=UpqDB().query("SELECT * FROM file f WHERE name='%s'" % sdp[3])
+			if res:
+				row=res.first()
+				self.logger.error("a file with this name already exists, fid=%s, sdp=%s" % (row['fid'], row['sdp']))
 
 	def run(self):
 		repos=self.fetchListing(self.getcfg('mainrepo', "http://repos.springrts.com/repos.gz"), False)
@@ -89,33 +89,12 @@ class Rapidsync(UpqJob):
 		     "Oct", "Nov", "Dec"][dt.month - 1]
 		return "%s, %02d %s %04d %02d:%02d:%02d GMT" % (weekday, dt.day, month,	dt.year, dt.hour, dt.minute, dt.second)
 
-	def DownloadFile(self, url, filename, cache=True)
-		""" returns true, when file was updated """
-		dirname = os.path.dirname(absname)
-		if not os.path.exists(dirname):
-			os.makedirs(dirname)
-		headers = {}
-		if cache and os.path.isfile(filename):
-			file_time = datetime.datetime.fromtimestamp(os.path.getmtime(absname))
-			headers["If-Modified-Since"] = self.httpdate(file_time)
-
-		r = requests.get(url, timeout=10, headers=headers)
-		if r.status_code == 304:
-			self.logger.debug("Not modified")
-			return False
-		with open(absname, "w") as f:
-			f.write(r.content)
-		url_date = datetime.datetime.strptime(r.headers["last-modified"], '%a, %d %b %Y %H:%M:%S GMT')
-		ts = int((time.mktime(url_date.timetuple()) + url_date.microsecond/1000000.0))
-		os.utime(absname, (ts, ts))
-		return True
-
 	def fetchListing(self, url, cache=True):
 		self.logger.debug("Fetching %s" % (url))
 		ParseResult=urlparse.urlparse(url)
 		absname=os.path.join(self.getcfg('temppath', '/tmp'), ParseResult.hostname, ParseResult.path.strip("/"))
 
-		if not DownloadFile(url, absname, cache):
+		if not self.DownloadFile(url, absname, cache):
 			return []
 
 		gz = gzip.open(absname)

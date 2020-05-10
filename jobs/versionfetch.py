@@ -11,13 +11,7 @@
 from upqjob import UpqJob
 from upqdb import UpqDB, UpqDBIntegrityError
 import datetime
-import urllib
-import socket
 import json
-
-class my_download(urllib.URLopener):
-	def http_error_default(self, url, fp, errcode, errmsg, headers):
-		raise Exception("Error retrieving %s %d %s" %(url, errcode, errmsg))
 
 class Versionfetch(UpqJob):
 	prefix = "http://springrts.com/dl/buildbot"
@@ -92,14 +86,20 @@ class Versionfetch(UpqJob):
 	def run(self):
 		dled = {}
 		url = self.prefix + '/list.php'
-		f = my_download().open(url)
-		data = json.loads(str(f.read()))
+
+		filename = "/tmp/sprinvers.json"
+
+		if not self.DownloadFile(url, filename):
+			self.logger("list.php wasn't changed")
+			return True
+
+		with open(filename, "r") as f:
+			data = json.loads(str(f.read()))
 		res = UpqDB().query("SELECT mid from mirror WHERE url_prefix='%s'" % self.prefix)
 		mid = res.first()[0]
 		for row in data:
 			self.update(row, mid)
 		#delete files that wheren't updated this run (means removed from mirror)
 		UpqDB().query("DELETE FROM `mirror_file` WHERE `lastcheck` < NOW() - INTERVAL 1 HOUR AND mid = %s" %(mid))
-		urllib.urlcleanup()
 		return True
 
