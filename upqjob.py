@@ -169,7 +169,7 @@ class UpqJob(object):
 		if r.status_code == 304:
 			self.logger.debug("Not modified")
 			return False
-		with open(filename, "w") as f:
+		with open(filename, "wb") as f:
 			f.write(r.content)
 		url_date = datetime.datetime.strptime(r.headers["last-modified"], '%a, %d %b %Y %H:%M:%S GMT')
 		ts = int((time.mktime(url_date.timetuple()) + url_date.microsecond/1000000.0))

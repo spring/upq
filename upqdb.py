@@ -84,7 +84,7 @@ class UpqDB():
 		self.tables['mirror_file']=Table('mirror_file', self.meta, #table with files on file mirrors
 			Column('mfid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
 			Column('fid', Integer, ForeignKey("file.fid")),
-			Column('mid', INTEGER(display_width=4)), # mirror id
+			Column('mid', INTEGER(display_width=4), ForeignKey("mirror.mid")), # mirror id
 			Column('path', VARCHAR(length=1024)), # relative to (mfid.url_prefix) path
 			Column('lastcheck', DATETIME(timezone=False)), # last time checksum/existence was checked
 			Column('status', INTEGER(display_width=4)), # 0=inactive, 1 = active, 2 = marked for recheck, 3 = broken, 4 = archived (=possible deleted)
@@ -168,7 +168,7 @@ class UpqDB():
 	def insert(self, table, values):
 		strkeys=""
 		strvalues=""
-		if not self.tables.has_key(table): # load structure from table
+		if not table in self.tables: # load structure from table
 			self.tables[table]=Table(table, self.meta, autoload=True)
 		for key in values.keys():
 			if values[key].__class__==str:

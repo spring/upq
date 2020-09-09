@@ -50,7 +50,13 @@ class Versionfetch(UpqJob):
 		url = self.prefix +'/' + data['path']
 		cid = self.getCID(category)
 		#print "%s %s %s %s" % (filename, version, category, url)
-		try:
+		res = UpqDB().query("SELECT fid from file WHERE version='%s' and cid=%s" % (version, cid))
+		fid = res.first()
+		if fid:
+			fid = fid[0]
+			assert(fid > 0)
+			UpqDB().query("UPDATE file set md5='%s' WHERE fid=%s"%  (data['md5'], fid))
+		else:
 			fid = UpqDB().insert("file", {
 				"filename" : filename,
 				"name": "spring",
@@ -61,27 +67,23 @@ class Versionfetch(UpqJob):
 				#"timestamp": data['filectime'],
 				"size": data['filesize'],
 				"status": 1 })
-		except UpqDBIntegrityError, e:
-			try:
-				res = UpqDB().query("SELECT fid from file WHERE version='%s' and cid=%s" % (version, cid))
-				fid = res.first()[0]
-				UpqDB().query("UPDATE file set md5='%s' WHERE fid=%s"%  (data['md5'], fid))
-			except Exception, e:
-				self.logger.error("Error %s %s %s", version, cid, e)
-				return
-		relpath = self.escape(url[len(self.prefix)+1:])
-		try:
-			id = UpqDB().insert("mirror_file", {
+
+
+		res = UpqDB().query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (mid, fid))
+		mfid = res.first()
+		if mfid:
+			mfid = mfid[0]
+			assert(mid > 0)
+			UpqDB().query("UPDATE mirror_file SET lastcheck=NOW() WHERE mfid = %s"% (mfid))
+		else:
+			relpath = self.escape(url[len(self.prefix)+1:])
+			mfid = UpqDB().insert("mirror_file", {
 				"mid" : mid,
 				"path": relpath,
 				"status": 1,
 				"fid": fid,
 				"lastcheck": UpqDB().now()
 				})
-		except UpqDBIntegrityError:
-			res = UpqDB().query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (mid, fid))
-			id = res.first()[0]
-			UpqDB().query("UPDATE mirror_file SET lastcheck=NOW() WHERE mfid = %s"% (id))
 
 	def run(self):
 		dled = {}
@@ -97,6 +99,7 @@ class Versionfetch(UpqJob):
 			data = json.loads(str(f.read()))
 		res = UpqDB().query("SELECT mid from mirror WHERE url_prefix='%s'" % self.prefix)
 		mid = res.first()[0]
+		assert(mid > 0)
 		for row in data:
 			self.update(row, mid)
 		#delete files that wheren't updated this run (means removed from mirror)
