@@ -17,10 +17,7 @@ from upqdb import UpqDB
 import upqconfig
 
 import sys
-if sys.version_info[0] >= 3:
-	from xmlrpc.client import ServerProxy
-else:
-	from xmlrpclib import ServerProxy
+from xmlrpc.client import ServerProxy
 import logging
 
 import json

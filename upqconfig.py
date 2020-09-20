@@ -9,10 +9,7 @@
 import sys
 
 
-if sys.version_info >=  (3, 0):
-	import configparser as ConfigParser
-else:
-	import ConfigParser
+import configparser as ConfigParser
 import os, os.path
 from upqjob import UpqJob
 
