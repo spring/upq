@@ -174,17 +174,17 @@ class Extract_metadata(UpqJob):
 		os.environ["SPRING_LOG_SECTIONS"]="unitsync,ArchiveScanner,VFS"
 		usync = unitsync.Unitsync(libunitsync)
 		usync.Init(True,1)
-		version = usync.GetSpringVersion()
+		version = usync.GetSpringVersion().decode()
 		self.logger.debug("using unitsync version %s" %(version))
 		usync.RemoveAllArchives()
-		usync.AddArchive(filename)
-		usync.AddAllArchives(filename)
+		usync.AddArchive(filename.encode("ascii"))
+		usync.AddAllArchives(filename.encode("ascii"))
 		return usync
 
 	def openArchive(self, usync, filename):
-		archiveh=usync.OpenArchive(filename)
+		archiveh=usync.OpenArchive(filename.encode("ascii"))
 		if archiveh<=0:
-			self.logger.error("OpenArchive(%s) failed: %s" % (filename, usync.GetNextError()))
+			self.logger.error("OpenArchive(%s) failed: %s" % (filename, usync.GetNextError().decode()))
 			return False
 		return archiveh
 	def saveImage(self, image, size):
@@ -223,8 +223,8 @@ class Extract_metadata(UpqJob):
 					im=Image.open(ioobj)
 					res.append(self.saveImage(im, im.size))
 					count=count+1
-				except:
-					self.logger.error("Invalid image %s" % (f))
+				except Exception as e:
+					self.logger.error("Invalid image %s: %s" % (f, e))
 					pass
 		return res
 	def check(self):
@@ -251,14 +251,10 @@ class Extract_metadata(UpqJob):
 
 	def ExtractMetadata(self, usync, archiveh, filename, filepath, metadatapath, hashes):
 		filelist=self.getFileList(usync, archiveh)
-		try:
-			sdp = self.getSDPName(usync, archiveh)
-		except:
-			self.msg("couldn't get sdp hash")
-			return False
-		idx=self.getMapIdx(usync,filename)
+		sdp = self.getSDPName(usync, archiveh)
+		idx=self.getMapIdx(usync, filename.encode("ascii"))
 		if idx>=0: #file is map
-			archivepath=usync.GetArchivePath(filename)+filename
+			archivepath=usync.GetArchivePath(filename).decode()+filename
 			springname = usync.GetMapName(idx)
 			data=self.getMapData(usync, filename, idx, archiveh, springname)
 			try:
@@ -268,7 +264,7 @@ class Extract_metadata(UpqJob):
 				return False
 			data['path'] = self.jobcfg['maps-path']
 		else: # file is a game
-			idx=self.getGameIdx(usync,filename)
+			idx=self.getGameIdx(usync, filename.encode("ascii"))
 			if idx<0:
 				self.logger.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
 				return False
@@ -492,13 +488,13 @@ class Extract_metadata(UpqJob):
 			if fileh<0:
 				self.logger.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  ""+usync.GetNextError()))
 				return []
-			files.append(name.value)
+			files.append(name.value.decode())
 			del name
 			pos=pos+1
 		return files
 	def getFile(self, usync, archivehandle, filename):
 		""" returns the content of an archive"""
-		fileh=usync.OpenArchiveFile(archivehandle, filename)
+		fileh=usync.OpenArchiveFile(archivehandle, filename.encode("ascii"))
 		if (fileh<0):
 			self.logger.error("Couldn't open %s" %(filename))
 			raise Exception("Couldn't open %s" %(filename))
@@ -514,18 +510,15 @@ class Extract_metadata(UpqJob):
 	def getSDPName(self, usync, archiveh):
 		files=self.getFileList(usync, archiveh)
 		m=hashlib.md5()
-		files.sort(cmp = lambda a, b: cmp(a.lower(), b.lower()))
+		files = sorted(files, key=str.casefold)
 		if len(files)<=0:
 			raise Exception("Zero files found!")
 		i=0
 		for f in files:
 			# ignore directory entries
 			if f[-1] == '/': continue
-			try:
-				content = self.getFile(usync, archiveh, f)
-			except:
-				return ""
-			m.update(hashlib.md5(f.lower()).digest())
+			content = self.getFile(usync, archiveh, f)
+			m.update(hashlib.md5(f.encode("ascii").lower()).digest())
 			m.update(hashlib.md5(content).digest())
 			del content
 			i=i+1
