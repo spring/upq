@@ -45,7 +45,7 @@ logging.getLogger().setLevel(logging.DEBUG)
 logging.info("Started sf_sync")
 
 
-upqconfig.UpqConfig(configfile="upq2.cfg")
+upqconfig.UpqConfig()
 upqconfig.UpqConfig().readConfig()
 db = upqdb.UpqDB()
 db.connect(upqconfig.UpqConfig().db['url'], upqconfig.UpqConfig().db['debug'])

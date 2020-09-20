@@ -108,23 +108,9 @@ class UpqConfig():
 		for section in self.config.sections():
 			if section.startswith("job"):
 				job=section.split()[1]
-				if self.config.getboolean(section, "enabled"):
-					self.jobs[job]={} #initialize default values
-					self.jobs[job]['concurrent']=1
-					self.jobs[job]['notify_fail']=""
-					self.jobs[job]['notify_success']=""
-					for name, value in self.config.items(section):
-						if name=="concurrent":
-							self.jobs[job]['concurrent'] = self.config.getint(section, "concurrent")
-						elif name=="subjobs":
-							subjobs=value.strip().split(" ")
-							subjobs.reverse()
-							self.jobs[job]['subjobs'] = subjobs
-						else:
-							self.jobs[job][name]=value
-
-				else:
-					self.conf_log("   job '%s' is disabled" % job )
+				self.jobs[job]={} #initialize default values
+				for name, value in self.config.items(section):
+					self.jobs[job][name]=value
 
 		self.conf_log("paths='%s'" % self.paths)
 		self.conf_log("jobs:'%s'" % sorted(self.jobs.keys()))
