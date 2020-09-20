@@ -47,7 +47,7 @@ class UpqDB():
 		"""
 		created with this + some editing:
 
-		tables = ["upqueue",
+		tables = [
 			"file_mirror",
 			"file_mirror_paths",
 			"file_mirror_files",
@@ -127,15 +127,6 @@ class UpqDB():
 			Column('depends_fid', Integer, ForeignKey("file.fid"), nullable=True), #id of other file, if null(couldn't be resolved), use depends_string
 			Column('depends_string', VARCHAR(length=64), nullable=False),
 			UniqueConstraint('fid', 'depends_string'))
-		self.tables['upqueue']=Table('upqueue', self.meta,
-			Column('jobid', INTEGER(display_width=11), primary_key=True, nullable=False, autoincrement=True),
-			Column('jobname', VARCHAR(length=255), nullable=False),
-			Column('status', INTEGER(display_width=10)), # 0 = finished, 1 = running, 2 = new, 3 = broken/failed
-			Column('jobdata', TEXT(), nullable=False),
-			Column('result_msg', VARCHAR(length=255)),
-			Column('ctime', TIMESTAMP(timezone=False)),
-			Column('start_time', TIMESTAMP(timezone=False)),
-			Column('end_time', TIMESTAMP(timezone=False)))
 		self.tables['sf_sync']=Table('sf_sync', self.meta,
 			Column('sid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
 			Column('command', INTEGER(display_width=10), nullable=False, autoincrement=False), #0=update 1=delete
@@ -187,8 +178,6 @@ class UpqDB():
 			s.close()
 			self.logger.debug("%s (%s) id:%s", query, values, result)
 		return result
-	def tbl_upqueue(self):
-		return self.tbl_upqueue
 	def cleanup(self):
 		try:
 			self.engine.close()

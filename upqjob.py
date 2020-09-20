@@ -31,14 +31,6 @@ class UpqJob(object):
 		self.jobname = jobname
 		self.jobcfg  = upqconfig.UpqConfig().jobs[jobname] #settings from config-filea
 
-		# subjobs handling: if a runtime job is available, use it, else the configured ones
-		if "subjobs" in jobdata: #runtime set subjobs are available
-			jobdata['subjobs']=jobdata['subjobs']
-		elif "subjobs" in self.jobcfg:
-			# make copy of subjobs, as we modify them later
-			jobdata['subjobs']=self.jobcfg['subjobs'][:]
-		else:
-			jobdata['subjobs'] = [] # no subjobs defined, initialize empty
 		self.jobdata = jobdata #runtime parameters, these are stored into database and restored on re-run
 		self.logger  = log.getLogger("upq")
 		self.thread  = "T-none-0"
@@ -81,14 +73,6 @@ class UpqJob(object):
 			self.msgstr+=str(msg)
 		else:
 			self.logger.error("msg to long: --------%s-------" %(msg))
-
-	def append_job(self, job, params={}):
-		"""
-			append job, will be added as the first job
-		"""
-		self.jobdata['subjobs'].append(job)
-		for name in params:
-			self.jobdata[name]=params[name]
 
 	def __str__(self):
 		return "Job: "+self.jobname +" id:"+ str(self.jobid)+" jobdata:"+json.dumps(self.jobdata) +" thread: "+self.thread
