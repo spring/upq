@@ -73,18 +73,6 @@ class UpqConfig():
 		except Exception as e:
 			print >> sys.stderr, "Couldn't parse %s %s" % (self.configfile, e)
 			sys.exit(1)
-		self.logging = {}
-		self.setstr(self.logging,"logging", "loglevel", "info")
-		self.setstr(self.logging,"logging", "logformat", "%(asctime)s %(levelname)-8s %(name)s.%(module)s.%(funcName)s() l.%(lineno)03d : %(message)s")
-		self.setstr(self.logging,"logging", "logfile", "/var/log/upq.log")
-
-		self.daemon = {}
-		self.setbool(self.daemon, "daemon", "detach_process", False)
-		self.setint(self.daemon, "daemon", "umask", 22)
-		self.setstr(self.daemon, "daemon", "pidfile", None)
-		self.setstr(self.daemon, "daemon", "chroot_directory", None)
-		self.setint(self.daemon, "daemon", "uid", None)
-		self.setint(self.daemon, "daemon", "gid", None)
 
 		self.paths = {}
 		self.setpath(self.paths, "paths", "jobs_dir", "jobs")
@@ -114,4 +102,3 @@ class UpqConfig():
 		for job in sorted(self.jobs.keys()):
 			self.conf_log("  {0}: {1}".format(job, self.jobs[job]))
 		self.conf_log("db='%s'" % self.db)
-		self.conf_log("daemon='%s'" % self.daemon)
