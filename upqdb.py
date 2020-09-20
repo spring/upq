@@ -10,7 +10,6 @@
 # UpqDB: DB tool class
 
 import log
-import module_loader
 
 from sqlalchemy import create_engine, Index, Table, Column, Integer, String,DateTime,PickleType, MetaData, ForeignKey, Sequence, UniqueConstraint
 from sqlalchemy.orm import Session

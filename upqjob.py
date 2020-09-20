@@ -16,7 +16,6 @@
 import threading
 
 import log
-from upqqueuemngr import UpqQueueMngr
 import json
 import requests
 import upqconfig
@@ -71,20 +70,6 @@ class UpqJob(object):
 		# Save result in self.result.
 		return True
 
-	def enqueue_job(self):
-		"""
-		Put this job into the active queue
-		"""
-		UpqQueueMngr().enqueue_job(self)
-
-	def enqueue_newjob(self, jobname, params):
-		"""
-		Add a new job into queue, data a dict, for example:
-			{ "mail": "user@server.com",user1@server.com", "syslog" }
-		"""
-		job=UpqQueueMngr().new_job(jobname, params)
-		UpqQueueMngr().enqueue_job(job)
-
 	def __setstate__(self, dict):
 		# this is used to unpickle a job
 		self.__dict__.update(dict)
@@ -97,16 +82,6 @@ class UpqJob(object):
 		else:
 			self.logger.error("msg to long: --------%s-------" %(msg))
 
-	def start_subjobs(self,job):
-		"""
-			checks if a job has a subjob and runs it
-		"""
-		if self.jobdata.has_key('subjobs') and len(job.jobdata['subjobs'])>0:
-			jobname=job.jobdata['subjobs'].pop()
-			newjob=UpqQueueMngr().new_job(jobname, job.jobdata)
-			if newjob:
-				newjob.check()
-
 	def append_job(self, job, params={}):
 		"""
 			append job, will be added as the first job
@@ -114,34 +89,6 @@ class UpqJob(object):
 		self.jobdata['subjobs'].append(job)
 		for name in params:
 			self.jobdata[name]=params[name]
-
-	def notify(self, succeed):
-		"""
-		Notify someone responsible about job result.
-		"""
-		params = {}
-		if succeed:
-			if self.jobcfg['notify_success']:
-				params = UpqQueueMngr().getParams(self.jobcfg['notify_success'])
-				params['msg'] = self.msgstr
-				params['success'] = True
-		else:
-			if self.jobcfg['notify_fail']:
-				params = UpqQueueMngr().getParams(self.jobcfg['notify_fail'])
-				params['msg'] = self.msgstr
-				params['success'] = False
-		if params:
-			notify_job = UpqQueueMngr().new_job("notify", params)
-			if isinstance(notify_job, UpqJob):
-				# data of this job carried over to Notify job
-				notify_job.jobdata['job'] = {"jobname": self.jobname,
-								  "jobcfg" : self.jobcfg,
-								  "jobdata": self.jobdata,
-								  "jobid"  : self.jobid,
-								  "msgstr" : self.msgstr,
-								  "result" : self.result,
-								  "retries": self.retries}
-				UpqQueueMngr().enqueue_job(notify_job)
 
 	def __str__(self):
 		return "Job: "+self.jobname +" id:"+ str(self.jobid)+" jobdata:"+json.dumps(self.jobdata) +" thread: "+self.thread
