@@ -11,7 +11,7 @@
 # download system
 
 import gzip
-import urlparse
+from urllib.parse import urlparse
 import requests
 import os.path
 import datetime
@@ -80,7 +80,7 @@ class Rapidsync(UpqJob):
 
 	def fetchListing(self, url, cache=True):
 		self.logger.debug("Fetching %s" % (url))
-		ParseResult=urlparse.urlparse(url)
+		ParseResult = urlparse(url)
 		absname=os.path.join(self.getcfg('temppath', '/tmp'), ParseResult.hostname, ParseResult.path.strip("/"))
 
 		if not self.DownloadFile(url, absname, cache):
@@ -91,7 +91,7 @@ class Rapidsync(UpqJob):
 		gz.close()
 		res=[]
 		for line in lines:
-			res.append(line.strip("\n").split(","))
+			res.append(line.decode("utf-8").strip("\n").split(","))
 		return res
 
 	def getCid(self, name):
