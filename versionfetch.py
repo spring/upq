@@ -18,7 +18,6 @@ import upqconfig
 
 import sys
 from xmlrpc.client import ServerProxy
-import logging
 
 import json
 import os
@@ -34,13 +33,6 @@ class Sf_sync(upqjob.UpqJob):
 		return j.run()
 	def run(self):
 		self.versionfetch()
-
-handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s %(module)s.%(funcName)s:%(lineno)d %(message)s"))
-logging.getLogger().addHandler(handler)
-logging.getLogger().setLevel(logging.DEBUG)
-logging.info("Started sf_sync")
-
 
 upqconfig.UpqConfig()
 upqconfig.UpqConfig().readConfig()

@@ -17,7 +17,6 @@ from upqdb import UpqDB
 import upqconfig
 
 import sys
-import logging
 
 import json
 import os
@@ -33,13 +32,6 @@ class rapidsync(upqjob.UpqJob):
 		return j.run()
 	def run(self):
 		self.rapidsync()
-
-handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s %(module)s.%(funcName)s:%(lineno)d %(message)s"))
-logging.getLogger().addHandler(handler)
-logging.getLogger().setLevel(logging.DEBUG)
-logging.info("Started sf_sync")
-
 
 upqconfig.UpqConfig()
 upqconfig.UpqConfig().readConfig()
