@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # This file is part of the "upq" program used on springfiles.com to manage file
 # uploads, mirror distribution etc. It is published under the GPLv3.
 #

@@ -15,12 +15,8 @@ from upqconfig import UpqConfig
 import sys
 import os
 import ctypes
-if sys.version_info >=  (3, 0):
-	from PIL import Image
-	from io import StringIO
-else:
-	import Image
-	import StringIO
+from PIL import Image
+from io import StringIO
 import shutil
 import getopt
 import base64
@@ -30,6 +26,7 @@ import hashlib
 import json
 import gc
 import traceback
+import filecmp
 
 unitsyncpath=os.path.join(UpqConfig().paths['jobs_dir'],'unitsync')
 sys.path.append(unitsyncpath)
@@ -68,21 +65,24 @@ class Extract_metadata(UpqJob):
 			pass
 
 	def getMapIdx(self, usync, filename):
+		assert(isinstance(filename, str))
 		mapcount = usync.GetMapCount()
 		for i in range(0, mapcount):
 			usync.GetMapArchiveCount(usync.GetMapName(i)) # initialization for GetMapArchiveName()
-			mapfilename = os.path.basename(usync.GetMapArchiveName(0))
+			mapfilename = os.path.basename(usync.GetMapArchiveName(0).decode())
 			if filename==mapfilename:
 				return i
 		return -1
 	def getGameIdx(self, usync, filename):
-		gamecount=usync.GetPrimaryModCount()
+		assert(isinstance(filename, str))
+		gamecount = usync.GetPrimaryModCount()
 		for i in range(0, gamecount):
-			gamename=usync.GetPrimaryModArchive(i)
-			if filename==gamename:
+			gamename=usync.GetPrimaryModArchive(i).decode()
+			if filename == gamename:
 				return i
 		return -1
 	def escape(self, string):
+		assert(isinstance(string, str))
 		string=string.replace("'","''")
 #		string=string.replace('"','\"')
 		string=string.replace("%", "%%")
@@ -110,6 +110,7 @@ class Extract_metadata(UpqJob):
 		del metadata['sdp']
 		del metadata['Version']
 		del metadata['Name']
+		self.logger.debug(metadata)
 		metadata=json.dumps(metadata)
 		if 'fid' in self.jobdata: # detect already existing files
 			fid=self.jobdata['fid']
@@ -252,19 +253,15 @@ class Extract_metadata(UpqJob):
 	def ExtractMetadata(self, usync, archiveh, filename, filepath, metadatapath, hashes):
 		filelist=self.getFileList(usync, archiveh)
 		sdp = self.getSDPName(usync, archiveh)
-		idx=self.getMapIdx(usync, filename.encode("ascii"))
+		idx=self.getMapIdx(usync, filename)
 		if idx>=0: #file is map
-			archivepath=usync.GetArchivePath(filename).decode()+filename
-			springname = usync.GetMapName(idx)
+			archivepath = usync.GetArchivePath(filename.encode()).decode()+filename
+			springname = usync.GetMapName(idx).decode()
 			data=self.getMapData(usync, filename, idx, archiveh, springname)
-			try:
-				data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
-			except Exception as e:
-				self.msg("Error extracting data: %s (%s), %s" %(str(e), usync.GetNextError(), traceback.format_exc(10)))
-				return False
+			data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
 			data['path'] = self.jobcfg['maps-path']
 		else: # file is a game
-			idx=self.getGameIdx(usync, filename.encode("ascii"))
+			idx=self.getGameIdx(usync, filename)
 			if idx<0:
 				self.logger.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
 				return False
@@ -280,9 +277,12 @@ class Extract_metadata(UpqJob):
 		_, extension = os.path.splitext(filename)
 		moveto = os.path.join(self.getPathByStatus(1), data['path'], self.GetNormalizedFilename(data['Name'], data['Version'], extension))
 		self.jobdata['file']=moveto
+
+		assert(moveto != filepath)
 		assert(len(moveto) > 0)
+
 		if not self.movefile(filepath, moveto):
-			self.logger.error("Couldn't move filei %s" %(filepath))
+			self.logger.error("Couldn't move file %s -> %s" %(filepath, moveto))
 			return False
 		try:
 			data['sdp']=sdp
@@ -391,8 +391,8 @@ class Extract_metadata(UpqJob):
 		""" laods filename from archiveh, parses it and returns lua-tables as dict """
 		try:
 			luafile = self.getFile(usync, archiveh, filename)
-		except:
-			self.logger.error("file doesn't exist in archive: %s" %(filename))
+		except Exception as e:
+			self.logger.error("file doesn't exist in archive: %s %s" %(filename, e))
 			return {}
 		usync.lpOpenSource(luafile, "r")
 		usync.lpExecute()
@@ -418,27 +418,33 @@ class Extract_metadata(UpqJob):
 		res=[]
 		resourceCount=usync.GetMapResourceCount(idx)
 		for i in range (0, resourceCount):
-			res.append({"Name": usync.GetMapResourceName(idx, i),
+			res.append({"Name": usync.GetMapResourceName(idx, i).decode(),
 				"Max": usync.GetMapResourceMax(idx, i),
 				"ExtractorRadius": usync.GetMapResourceExtractorRadius(idx, i)})
 		return res
 
 	# extracts minimap from given file
 	def createMapImage(self, usync, mapname, size):
-		data=ctypes.string_at(usync.GetMinimap(mapname, 0), 1024*1024*2)
+		assert(isinstance(mapname, str))
+		data=ctypes.string_at(usync.GetMinimap(mapname.encode("ascii"), 0), 1024*1024*2)
 		im = Image.frombuffer("RGB", (1024, 1024), data, "raw", "BGR;16")
 		del data
 		return self.saveImage(im, size)
 
 	def createMapInfoImage(self, usync, mapname, maptype, byteperpx, decoder,decoderparm, size):
+		assert(isinstance(mapname, str))
+		assert(isinstance(maptype, str))
 		width = ctypes.pointer(ctypes.c_int())
 		height = ctypes.pointer(ctypes.c_int())
-		usync.GetInfoMapSize(mapname, maptype, width, height)
+		usync.GetInfoMapSize(mapname.encode("ascii"), maptype.encode("ascii"), width, height)
 		width = width.contents.value
 		height = height.contents.value
+		assert(width > 0)
+		assert(height > 0)
+		self.logger.debug("mapname: %s %dx%d"% (mapname, width, height))
 		data = ctypes.create_string_buffer(int(width*height*byteperpx*2))
 		data.restype = ctypes.c_void_p
-		ret=usync.GetInfoMap(mapname, maptype, data, byteperpx)
+		ret=usync.GetInfoMap(mapname.encode("ascii"), maptype.encode("ascii"), data, byteperpx)
 		if ret != 0:
 			im = Image.frombuffer(decoder, (width, height), data, "raw", decoderparm)
 			im=im.convert("L")
@@ -546,9 +552,9 @@ class Extract_metadata(UpqJob):
 				springname=springname[:len(springname)-1]
 
 		res['Type']= "game"
-		res['Name']= springname
+		res['Name']= springname.decode()
 		res['Description']= self.decodeString(usync.GetPrimaryModDescription(idx))
-		res['Version']= version
+		res['Version']= version.decode()
 		res['Depends']=self.getDepends(usync, archiveh, "modinfo.lua")
 		res['Units']=self.getUnits(usync, archivename)
 		return res
@@ -556,9 +562,9 @@ class Extract_metadata(UpqJob):
 	def getMapData(self, usync, filename, idx, archiveh, springname):
 		res={}
 		res['Type'] = "map"
-		mapname=usync.GetMapName(idx)
+		mapname=usync.GetMapName(idx).decode()
 		res['Name'] = mapname
-		res['Author'] = usync.GetMapAuthor(idx)
+		res['Author'] = usync.GetMapAuthor(idx).decode()
 		res['Description'] = self.decodeString(usync.GetMapDescription(idx))
 		res['Gravity'] = usync.GetMapGravity(idx)
 		res['MaxWind'] = usync.GetMapWindMax(idx)
@@ -569,14 +575,14 @@ class Extract_metadata(UpqJob):
 		res['Width'] = usync.GetMapWidth(idx) / 512
 
 		res['Gravity'] = usync.GetMapGravity(idx)
-		res['MapFileName'] = usync.GetMapFileName(idx)
+		res['MapFileName'] = usync.GetMapFileName(idx).decode()
 		res['MapMinHeight'] = usync.GetMapMinHeight(mapname)
 		res['MapMaxHeight'] = usync.GetMapMaxHeight(mapname)
 
 		res['Resources'] = self.getMapResources(usync, idx,filename)
 		res['Units'] = self.getUnits(usync, filename)
 
-		res['StartPos']=self.getMapPositions(usync,idx,filename)
+		res['StartPos']=self.getMapPositions(usync,idx,filename.encode("ascii"))
 		res['Depends']=self.getDepends(usync, archiveh, "mapinfo.lua")
 		version="" #TODO: add support
 		res['Version']=version
@@ -590,19 +596,22 @@ class Extract_metadata(UpqJob):
 		raise Exception("Unknown status %s" %(status))
 
 	def movefile(self, srcfile, dstfile):
-		if srcfile!=dstfile:
-			if os.path.exists(dstfile):
-				self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, srcfile))
-				return False
+		assert(srcfile!=dstfile)
+		if os.path.exists(dstfile):
+			if filecmp.cmp(srcfile, dstfile):
+				os.remove(srcfile)
+				return True
+			self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, srcfile))
+			return False
+		try:
+			shutil.move(srcfile, dstfile)
+		except: #move failed, try to copy + delete
+			shutil.copy(srcfile, dstfile)
 			try:
-				shutil.move(srcfile, dstfile)
-			except: #move failed, try to copy + delete
-				shutil.copy(srcfile, dstfile)
-				try:
-					os.remove(srcfile)
-				except:
-					self.log.warn("Removing src file failed: %s" % (srcfile))
-			self.logger.debug("moved file to (abs)%s :(rel)%s" %(srcfile, dstfile))
+				os.remove(srcfile)
+			except:
+				self.log.warn("Removing src file failed: %s" % (srcfile))
+		self.logger.debug("moved file to (abs)%s :(rel)%s" %(srcfile, dstfile))
 		try:
 			os.chmod(dstfile, int("0444",8))
 		except OSError:
@@ -611,6 +620,8 @@ class Extract_metadata(UpqJob):
 		return True
 	def GetNormalizedFilename(self, name, version, extension):
 		""" normalize filename + renames file + updates filename in database """
+		assert(isinstance(name, str))
+		assert(isinstance(version, str))
 		name=name.lower()
 		if len(version)>0:
 			name = str(name[:200] +"-" + version.lower())[:255]
