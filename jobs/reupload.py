@@ -15,7 +15,8 @@ from upqdb import UpqDB
 from time import sleep
 class Reupload(UpqJob):
 	def run(self):
-		results = UpqDB().query("SELECT count(mid) from mirror");
+		results = UpqDB().query("SELECT count(mid) from mirror")
+		# FIXME: this seems like a bug: res is used before being defined and the resulting count is never used after
 		count = res.first()[0]
 		results=UpqDB().query("SELECT f.mfid FROM mirror_file f LEFT JOIN mirror m ON f.mid=m.mid \
 			WHERE m.status=1 \

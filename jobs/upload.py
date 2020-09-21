@@ -94,8 +94,6 @@ GROUP BY f.fid HAVING count(f.fid) = 1")
 		res=results.first()
 		srcfilename=os.path.join(UpqConfig().paths['files'], res['path'], res['filename'])
 		dstfilename=os.path.join(res['path'], res['filename'])
-		filesize=res['size']
-		md5=res['md5']
 		#uploads a fid to all mirrors
 		results = UpqDB().query("SELECT m.mid, ftp_url, ftp_user, ftp_pass, ftp_dir, ftp_port, ftp_passive, ftp_ssl \
 						from file f  \

@@ -36,10 +36,6 @@ class DBQueue(Queue, object):
 
 	def task_done(self, job):
 		# update job state in DB
-		if job.result:
-			result=0
-		else:
-			result=1
 		if len(job.msgstr)>255: #limit string length
 			job.msgstr=job.msgstr[:255]
 		query="UPDATE upqueue SET status=0, end_time=NOW(), result_msg='%s' WHERE jobid = %s" % (upqdb.UpqDB().escape(job.msgstr), job.jobid)

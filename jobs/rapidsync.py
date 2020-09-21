@@ -71,7 +71,6 @@ class Rapidsync(UpqJob):
 
 	def run(self):
 		repos=self.fetchListing(self.getcfg('mainrepo', "http://repos.springrts.com/repos.gz"), False)
-		i=0
 		for repo in repos:
 			sdps=self.fetchListing(repo[1] + "/versions.gz")
 			for sdp in sdps:

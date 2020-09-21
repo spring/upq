@@ -24,8 +24,6 @@ def init_logging(conf):
 		if logfile[:2] == "./":
 			# convert relative to absolute path
 			logfile = os.path.realpath(os.path.dirname(__file__))+logfile[1:]
-	else:
-		filename=None
 
 	if conf.has_key('logformat'):
 		logformat = conf['logformat']

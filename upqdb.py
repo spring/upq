@@ -33,6 +33,7 @@ class UpqDB():
 	def __init__(self):
 		self.__dict__ = self.__shared_state
 		self.logger = log.getLogger("upq")
+
 	def version(self):
 		try:
 			results=self.query("SELECT VERSION()")
@@ -40,6 +41,7 @@ class UpqDB():
 			results=self.query("SELECT sqlite_version()")
 		for res in results:
 			self.logger.info("SQL version: %s", res[0])
+
 	def connect(self, databaseurl, debug):
 		self.cleanup()
 		self.engine = create_engine(databaseurl, encoding="utf-8", echo=debug, pool_recycle=True)
@@ -152,6 +154,7 @@ class UpqDB():
 		except Exception as e:
 			raise Exception("Unable to initialize database %s:%s" %(databaseurl, e))
 		self.meta.bind = self.engine
+
 	def query(self, query):
 		#self.logger.debug(query)
 		res=None
@@ -162,12 +165,11 @@ class UpqDB():
 		except Exception as e:
 			self.logger.error("Error %s executing query %s" % (str(e), str(query)))
 		return res
-	"""
-		insert values into tables, returns last insert id if primary key is autoincrement
-	"""
+
 	def insert(self, table, values):
-		strkeys=""
-		strvalues=""
+		"""
+			insert values into tables, returns last insert id if primary key is autoincrement
+		"""
 		if not table in self.tables: # load structure from table
 			self.tables[table]=Table(table, self.meta, autoload=True)
 		for key in values.keys():
@@ -188,15 +190,19 @@ class UpqDB():
 			s.close()
 			self.logger.debug("%s (%s) id:%s", query, values, result)
 		return result
+
 	def tbl_upqueue(self):
 		return self.tbl_upqueue
+
 	def cleanup(self):
 		try:
 			self.engine.close()
 			self.logger.info("(%s) Closed MySQL connection.", self.thread)
 		except:
 			pass
+
 	def now(self):
 		return func.now()
+
 	def escape(self, string):
 		return string.replace("'","").replace("%","")
