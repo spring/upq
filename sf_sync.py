@@ -49,8 +49,6 @@ class Sf_sync(upqjob.UpqJob):
 			status = row[5]
 	                #self.movefile(filepath, 1, moveto)
 
-			prefix=j.getPathByStatus(status)
-			dstfile=os.path.join(prefix, subdir, os.path.basename(srcfile))
 			filename=os.path.basename(srcfile)
 			UpqDB().query("UPDATE file SET path='%s', status=%d, filename='%s' WHERE fid=%d" %(subdir, status, filename, row[1]))
 
@@ -60,7 +58,7 @@ class Sf_sync(upqjob.UpqJob):
 		#password=self.jobcfg['password']
 		proxy = ServerProxy("https://springfiles.com/xmlrpc.php")
 
-		
+
 		row = UpqDB().query("SELECT MAX(sid) FROM sf_sync2").first()
 		if row:
 			lastsid = int(row[0]) if row[0] else 0
@@ -74,7 +72,7 @@ class Sf_sync(upqjob.UpqJob):
 			if row: # file found, nothing to do
 				self.logger.debug("File mapping found, continue")
 				continue
-			
+
 			self.logger.debug("%s %s" %(sid, data))
 			row= UpqDB().query("SELECT fid FROM file WHERE md5='%s'" %(data["md5"])).first()
 			if row:
