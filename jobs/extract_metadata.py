@@ -16,7 +16,7 @@ import sys
 import os
 import ctypes
 from PIL import Image
-from io import StringIO
+from io import BytesIO
 import shutil
 import getopt
 import base64
@@ -216,7 +216,7 @@ class Extract_metadata(UpqJob):
 			if f.lower().startswith('bitmaps/loadpictures'):
 				self.logger.debug("Reading %s" % (f))
 				buf=self.getFile(usync, archiveh, f)
-				ioobj=StringIO.StringIO()
+				ioobj=BytesIO()
 				ioobj.write(buf)
 				ioobj.seek(0)
 				del buf
@@ -266,7 +266,7 @@ class Extract_metadata(UpqJob):
 				self.logger.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
 				return False
 			self.logger.debug("Extracting data from "+filename)
-			archivepath=usync.GetArchivePath(filename)+filename
+			archivepath=usync.GetArchivePath(filename).decode()+filename
 			gamearchivecount=usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
 			data['path'] = self.jobcfg['games-path']
@@ -542,8 +542,8 @@ class Extract_metadata(UpqJob):
 
 	def getGameData(self, usync, idx, gamesarchivecount, archivename, archiveh):
 		res={}
-		springname=usync.GetPrimaryModName(idx)
-		version=usync.GetPrimaryModVersion(idx)
+		springname=usync.GetPrimaryModName(idx).decode()
+		version=usync.GetPrimaryModVersion(idx).decode()
 		if version==springname:
 			version=""
 		elif springname.endswith(version) : # Hack to get version independant string
@@ -552,9 +552,9 @@ class Extract_metadata(UpqJob):
 				springname=springname[:len(springname)-1]
 
 		res['Type']= "game"
-		res['Name']= springname.decode()
+		res['Name']= springname
 		res['Description']= self.decodeString(usync.GetPrimaryModDescription(idx))
-		res['Version']= version.decode()
+		res['Version']= version
 		res['Depends']=self.getDepends(usync, archiveh, "modinfo.lua")
 		res['Units']=self.getUnits(usync, archivename)
 		return res
