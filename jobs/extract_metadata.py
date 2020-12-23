@@ -359,7 +359,6 @@ class Extract_metadata(UpqJob):
 			elif typ == 3:#bool
 				res[key] = usync.lpGetStrKeyBoolVal(key, "")
 			elif typ == 4:#table
-				val = "table"
 				tables.append(key)
 		# int tables
 		count = usync.lpGetIntKeyListCount()
@@ -373,7 +372,6 @@ class Extract_metadata(UpqJob):
 			elif typ == 3:#bool
 				res[key] = usync.lpGetIntKeyBoolVal(key, "")
 			elif typ == 4:#table
-				val = "table"
 				inttables.append(key)
 		count = usync.lpGetStrKeyListCount()
 		for table in tables:
@@ -472,7 +470,7 @@ class Extract_metadata(UpqJob):
 		while usync.ProcessUnits()>0:
 			err=usync.GetNextError()
 			if err:
-				self.logger.error("Error processing units: %s" % (err));
+				self.logger.error("Error processing units: %s" % (err))
 		res = []
 		count=usync.GetUnitCount()
 		for i in range(0, count):
@@ -501,11 +499,11 @@ class Extract_metadata(UpqJob):
 	def getFile(self, usync, archivehandle, filename):
 		""" returns the content of an archive"""
 		fileh=usync.OpenArchiveFile(archivehandle, filename.encode("ascii"))
-		if (fileh<0):
+		if fileh < 0:
 			self.logger.error("Couldn't open %s" %(filename))
 			raise Exception("Couldn't open %s" %(filename))
 		size=usync.SizeArchiveFile(archivehandle, fileh)
-		if (size<0):
+		if size < 0:
 			self.logger.error("Error getting size of %s" % (filename))
 			raise Exception("Error getting size of %s" % (filename))
 		buf = ctypes.create_string_buffer(size)

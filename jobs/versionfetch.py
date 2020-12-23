@@ -45,8 +45,8 @@ class Versionfetch(UpqJob):
 		category = "engine_" + data['os']
 		branch = data['branch']
 		version = data['version']
-		if not data['branch'] in ('master'):
-			version = data['version'] + ' ' + data['branch']
+		if not branch in ('master'):
+			version = version + ' ' + branch
 		url = self.prefix +'/' + data['path']
 		cid = self.getCID(category)
 		#print "%s %s %s %s" % (filename, version, category, url)
@@ -86,7 +86,6 @@ class Versionfetch(UpqJob):
 				})
 
 	def run(self):
-		dled = {}
 		url = self.prefix + '/list.php'
 
 		filename = "/tmp/sprinvers.json"
