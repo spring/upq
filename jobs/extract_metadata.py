@@ -44,7 +44,7 @@ class Extract_metadata(UpqJob):
 	"""
 	def setupdir(self, filepath):
 		if not os.path.exists(filepath):
-			self.msg("error setting up temp dir, file doesn't exist %s" %(filepath))
+			self.logger.error("error setting up temp dir, file doesn't exist %s" %(filepath))
 			raise Exception(self.msgstr)
 		temppath=tempfile.mkdtemp(dir=UpqConfig().paths['tmp'])
 		archivetmp=os.path.join(temppath, "games")
@@ -162,10 +162,10 @@ class Extract_metadata(UpqJob):
 				id=row['fid']
 			try:
 				UpqDB().insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
-				self.msg("Added %s '%s' version '%s' to the mirror-system" % (data['Type'], data['Name'], data['Version']))
+				self.logger.info("Added %s '%s' version '%s' to the mirror-system" % (data['Type'], data['Name'], data['Version']))
 			except UpqDBIntegrityError:
 				pass
-		self.msg("Updated %s '%s' version '%s' sdp '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version'], data['sdp']))
+		self.logger.info("Updated %s '%s' version '%s' sdp '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version'], data['sdp']))
 		return fid
 
 	def initUnitSync(self, tmpdir, filename):
@@ -303,7 +303,7 @@ class Extract_metadata(UpqJob):
 		metadatapath=UpqConfig().paths['metadata']
 
 		if not os.path.exists(filepath):
-			self.msg("File doesn't exist: %s" %(filepath))
+			self.logger.error("File doesn't exist: %s" %(filepath))
 			return False
 
 		hashes = self.get_hash(filepath)
@@ -452,7 +452,7 @@ class Extract_metadata(UpqJob):
 			del data
 			return res
 		del data
-		self.msg("Error creating image %s" % (usync.usync.GetNextError()))
+		self.logger.error("Error creating image %s" % (usync.usync.GetNextError()))
 		raise Exception("Error creating image")
 
 	def dumpmap(self, usync, springname, outpath, filename, idx):
@@ -564,7 +564,8 @@ class Extract_metadata(UpqJob):
 		res['Type'] = "map"
 		mapname=usync.GetMapName(idx).decode()
 		res['Name'] = mapname
-		res['Author'] = usync.GetMapAuthor(idx).decode()
+		author = usync.GetMapAuthor(idx)
+		res['Author'] = author.decode() if author else ""
 		res['Description'] = self.decodeString(usync.GetMapDescription(idx))
 		res['Gravity'] = usync.GetMapGravity(idx)
 		res['MaxWind'] = usync.GetMapWindMax(idx)
@@ -601,7 +602,7 @@ class Extract_metadata(UpqJob):
 			if filecmp.cmp(srcfile, dstfile):
 				os.remove(srcfile)
 				return True
-			self.msg("Destination file already exists: dst: %s src: %s" %(dstfile, srcfile))
+			self.logger.error("Destination file already exists: dst: %s src: %s" %(dstfile, srcfile))
 			return False
 		try:
 			shutil.move(srcfile, dstfile)
@@ -668,7 +669,7 @@ class Extract_metadata(UpqJob):
 
 	def create_torrent(self, filename, output):
 		if not os.path.exists(filename):
-			self.msg("File doesn't exist: %s" %(filename))
+			self.logger.error("File doesn't exist: %s" %(filename))
 			return False
 
 		if os.path.isdir(filename):
@@ -683,7 +684,7 @@ class Extract_metadata(UpqJob):
 		m = metalink.Metafile()
 		m.hashes.filename=filename
 		if not m.scan_file(filename, True, 255, 1):
-			self.msg("Error scanning file %s" % (filename))
+			self.logger.error("Error scanning file %s" % (filename))
 			return False
 
 		m.hashes.get_multiple('ed2k')
@@ -694,7 +695,7 @@ class Extract_metadata(UpqJob):
 			}
 		data=torrent.create(torrent_options)
 		if not isinstance(data, basestring):
-			self.msg("Error in creating torrent file: %s" % (str(data)))
+			self.logger.error("Error in creating torrent file: %s" % (str(data)))
 			return False
 
 		with open(output, "wb") as f:

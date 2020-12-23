@@ -86,6 +86,7 @@ class Sf_sync(upqjob.UpqJob):
 				self.logger.error("Error adding %s"%(data))
 			else:
 				row = UpqDB().query("SELECT fid FROM file WHERE md5='%s'" %(data["md5"])).first()
+				self.logger.error("Couldn't find file with md5=%s" %(data["md5"]))
 				assert(row)
 		return True
 
