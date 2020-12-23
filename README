@@ -11,43 +11,18 @@ TOC
 
 WHAT IS THIS
 ------------
-This is basically a job dispatcher. For inexplicable reasons it's called "upq".
-Atm this project is hosted at https://github.com/springfiles/upq
-
-* Jobs
-Jobs are written as modules that can be run with arguments through a command on
-a UNIX/NET socket. Each module defines a "Job"-type. A queue is automatically
-created for each Job-type. A per-Job-type configurable amount of worker threads
-consume from each queue. Jobs run in their own thread. The standard Python Queue
-was extended to make Jobs persistent in a MySQL DB to withstand (upq) server
-crash/restart. After the server starts it looks in the DB to see if any jobs
-have not finished, and restarts them.
-
-* Notifications
-There is a basic notification system that atm can send emails and log to syslog
-if a task finishes un/successful. Configuration is per-UpqJob in upq.cfg in
-section [job xyz] -> "notify_fail" and  "notify_success".
-
-* Naming conventions
-The server accepts commands of the form "my_command argument". If there is a
-section "[job my_command]" in upq.cfg it will search and load a module called
-"my_command.py". It searches in the path configured in upq.cfg in section
-[paths] variable "jobs_dir". In the file "my_command.py" it expects to find a
-class "My_command" (first letter of module name upper case) that is derived from
-the "UpqJob" class. 
-In section "[job my_command]" all variables are availe through
-self.jobcfg['variablename'] inside a job.
+This are some scripts to download files and extract metadata from maps and games from the spring engine. For inexplicable reasons it's called "upq".
+Atm this project is hosted at https://github.com/spring/upq
 
 REQUIREMENTS
 ------------
-Python >= 2.6 (< 3.0)
+Python >= 3.0
 SQLAlchemy 0.6
 MySQL
-python-daemon (http://pypi.python.org/pypi/python-daemon)
 
 on ubuntu run:
 
-apt-get install python-sqlalchemy python-mysqldb python-daemon python-imaging
+apt-get install python3-sqlalchemy python3-mysqldb python3-daemon python3-imaging
 
 LICENSING
 ---------
@@ -57,70 +32,8 @@ Future additions of Jobs and Tasks may be done by other developers and my have
 different licensing. Please look at the top of each file for an author and
 license note.
 
-
-INSTALLATION AND CONFIGURATION
-------------------------------
-You can put all of this software wherever you like - probably something like
-/usr/local/upq. The directories for UpqJobs and UpqTasks are configurable.
-
-For Job persistence data is stored in a Database. Configuration is in section
-"[db]". Just edit the section to configure the db and start up upq. Tables
-are created automaticly.
-
-Configuration in upq.cfg is pretty self explanatory. Important: UpqJobs will
-only be loaded if they have a section in upq.cfg!
-Atm changes in upq.cfg need a server restart to take effect.
-
-The server does not need (and should not) be started as a privileged user.
-Choice of user account is dependent on what it should be able to do on your
-files. By itself it only needs write permissions on its socket ([paths]->socket)
-and log file ([logging]->logfile).
-
-
-CREATING NEW JOBS
------------------
-The whole point of upq is to be able to easily write and schedule Jobs by just
-deriving from a class and editing an ini-file.
-
-To create a new job do:
-* Create a file job_name.py in the directory [paths]->jobs_dir.
-* job_name.py must contain a "class Job_name(UpqJob)" deriving from UpqJob.
-* Create a section "[job job_name]" in upq.cfg. The section should define
-variables "enabled = <bool>", "concurrent = <int>",
-"notify_fail = [syslog xyz | mail <email address list>]",
-"notify_success = [syslog xyz | mail <email address list>]".
-* If you wish to call another UpqJob from within an UpqJob and use its
-<job>.result, use <job>.finished.wait() to block the calling UpqJob until
-<job>.run() finishes. (The queue worker thread will release the lock.)
-
-After restarting the server it is possible to start the new Job. Testing can be
-performed with "upq-cli.py" like this:
-$ ./upq-cli "verify_local_file fid:50"
-
-
-FILES
------
-COPYING                 GNU General Public License Version 3
-dbqueue.py              Python Queue class with persistent state in DB
-log.py                  logging
-module_loader.py        finds and loads job and task modules
-notify.py               admin notification system
-parseconfig.py          parse upq.cfg
-upqjob.py               Job classes derive from this
-upq.cfg                 [ini]-style configuration file
-upq-cli.py              cmd line client for testing purposes
-upqdb.py                DB tool class, all DB code is in this file
-upq.py                  main(), invoke this with "$ ./upq.py"
-upqqueuemngr.py         queue management
-upqserver.py            socket server & request handler code
-jobs/                   UpqJob modules reside inside this directory, deployment
-                        location is configurable in upq.cfg, for description
-                        of files in this directory look into the header of
-                        the file
-
-
 BUG / FEATURE REQUESTS
 ----------------------
 
-Please report to https://github.com/springfiles/upq/issues
+Please report to https://github.com/spring/upq/issues
 
