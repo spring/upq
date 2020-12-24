@@ -609,7 +609,7 @@ class Extract_metadata(UpqJob):
 			try:
 				os.remove(srcfile)
 			except:
-				self.log.warn("Removing src file failed: %s" % (srcfile))
+				self.logger.warn("Removing src file failed: %s" % (srcfile))
 		self.logger.debug("moved file to (abs)%s :(rel)%s" %(srcfile, dstfile))
 		try:
 			os.chmod(dstfile, int("0444",8))

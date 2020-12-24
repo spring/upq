@@ -95,6 +95,8 @@ db.connect(upqconfig.UpqConfig().db['url'], upqconfig.UpqConfig().db['debug'])
 
 s = Sf_sync("sf_sync", dict())
 
+#s.download_and_add_file("https://example.com/techno_lands_final_v5.5.sdz")
+
 s.FixPathes()
 
 s.run()
