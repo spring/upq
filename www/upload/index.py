@@ -96,5 +96,5 @@ form = cgi.FieldStorage()
 
 msgs = SaveUploadedFile(form)
 
-ShowForm({"messages": "<pre>" + html.escape(msgs).replace("\n") + "</pre>"})
+ShowForm({"messages": "<pre>" + html.escape(msgs) + "</pre>"})
 
