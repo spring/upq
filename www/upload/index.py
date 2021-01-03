@@ -4,10 +4,10 @@ import cgi, os
 
 print("Content-type: text/html\n")
 
-def ShowForm(vars):
+def ShowForm(tplvars):
 	with open("form.html", "r") as f:
 		content = f.read()
-	for k, v in vars:
+	for k, v in tplvars.items():
 		content = content.replace("%" + k + "%", v)
 	print(content)
 
@@ -27,7 +27,9 @@ def CheckAuth(username, password):
 	import xmlrpc.client
 	proxy = xmlrpc.client.ServerProxy("https://springrts.com/api/uber/xmlrpc")
 	res = proxy.get_account_info(username, password)
+	#FIXME
 	print(res)
+	assert(False)
 
 def CheckFields(form, required):
 	for k in required:
@@ -37,20 +39,41 @@ def CheckFields(form, required):
 
 def SaveUploadedFile(form):
 	if not CheckFields(form, ["filename", "username", "password"]):
-		return
+		return ""
 	username = form["username"]
 	password = form["password"]
 	if not CheckAuth(username, password):
-		return
+		return ""
 	fileitem = form["filename"]
 	if not fileitem.file:
-		return
-	filename = save_uploaded_file(fileitem, "/tmp/springfiles-upload")
-	#FIXME: parse and add to db/mirror using pyseccomp
+		return ""
+	return save_uploaded_file(fileitem, "/tmp/springfiles-upload")
+
+def ParseAndAddFile(filename):
+	upqdir = "/home/springfiles/upq"
+	assert(os.path.isdir(upqdir))
+	sys.path.append(upqdir)
+
+	upqconfig.UpqConfig()
+	upqconfig.UpqConfig().readConfig()
+	db = upqdb.UpqDB()
+	db.connect(upqconfig.UpqConfig().db['url'], upqconfig.UpqConfig().db['debug'])
+
+	from jobs import extraxt_metadata
+	jobdata = {
+		"file": filename,
+	}
+	#FIXME: parse and add to db/mirror using pyseccompa
+	j = extract_metadata.Extract_metadata("extract_metadata", jobdata)
+	return j.run()
 
 form = cgi.FieldStorage()
 
-SaveUploadedFile(form)
+filename = SaveUploadedFile(form)
+msgs = ""
+if filename:
+	msgs = ParseAndAddFile(filename)
 
-ShowForm({})
+ShowForm({"messages": msgs})
+
 
