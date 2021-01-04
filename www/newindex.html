@@ -26,11 +26,26 @@
         }
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
-                document.getElementById("livesearch").innerHTML = xmlhttp.responseText;
+ 		var objs = JSON.parse(xmlhttp.responseText);
+		var html = "<ul>";
+		for (const k in objs) {
+			html += "<li>";
+			html += "<h2>" + objs[k]["springname"] + "</h2>";
+			if ("mirrors" in objs[k] && "0" in objs[k]["mirrors"]) {
+				html += '<a href="' + objs[k]["mirrors"][0] + '">download</a><br/>';
+			}
+			if ("mapimages" in objs[k]) {
+				html += '<img src="' + objs[k]["mapimages"][0] + '"</img>';
+			}
+			html += objs[k]["category"];
+			html += "</li>";
+		}
+		html += "</ul>";
+                document.getElementById("livesearch").innerHTML = html;
                 document.getElementById("livesearch").style.border = "1px solid #A5ACB2";
             }
         }
-        xmlhttp.open("GET","newindex.php?q="+str,true);
+        xmlhttp.open("GET","json.php?nosensitive=on&images=on&springname=*" + str + "*" ,true);
         xmlhttp.send();
     }
     function validate() {
