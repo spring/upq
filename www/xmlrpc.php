@@ -9,14 +9,6 @@ require("include/upq.inc");
 
 //this script requires >= php 5.25
 
-/**
-	logs an xml-rpc request to database
-*/
-function xml_log($req, $method){
-	db_query("INSERT INTO xmlrpc_log (ip, method, data, agent) VALUES ('%s', '%s', '%s', '%s')", array($_SERVER['REMOTE_ADDR'], $method, json_encode($req), $_SERVER['HTTP_USER_AGENT']));
-	
-}
-
 function xmlrpc_tobase64($str){
 	$res = new stdClass();
 	$res->is_base64=true;
@@ -26,7 +18,6 @@ function xmlrpc_tobase64($str){
 }
 
 function xmlrpc_search($req){
-	xml_log($req, 'search');
 	$res=search($req);
 	for($i=0; $i<count($res); $i++){
 		$res[$i]['timestamp']=xmlrpc_date($res[$i]['timestamp']);
@@ -38,7 +29,6 @@ function xmlrpc_search($req){
 }
 
 function xmlrpc_upload($req){
-	xml_log($req, 'upload');
 	if (!(array_key_exists('url', $req))){
 		return "Error: Url not set in request!";
 	}
