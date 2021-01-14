@@ -184,7 +184,7 @@ class UpqDB():
 	def cleanup(self):
 		try:
 			self.engine.close()
-			self.logger.info("(%s) Closed MySQL connection.", self.thread)
+			self.logger.info("Closed MySQL connection.")
 		except:
 			pass
 

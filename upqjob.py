@@ -13,8 +13,6 @@
 # the first letter upper case!
 #
 
-import threading
-
 import log
 import json
 import requests
@@ -33,11 +31,9 @@ class UpqJob(object):
 
 		self.jobdata = jobdata #runtime parameters, these are stored into database and restored on re-run
 		self.logger  = log.getLogger("upq")
-		self.thread  = "T-none-0"
 		self.jobid   = -1
 		self.msgstr  = ""
 		self.result  = False
-		self.finished= threading.Event()
 		self.retries = 0
 
 	def run(self):
@@ -63,7 +59,7 @@ class UpqJob(object):
 			self.logger.error("msg to long: --------%s-------" %(msg))
 
 	def __str__(self):
-		return "Job: "+self.jobname +" id:"+ str(self.jobid)+" jobdata:"+json.dumps(self.jobdata) +" thread: "+self.thread
+		return "Job: "+self.jobname +" id:"+ str(self.jobid)+" jobdata:"+json.dumps(self.jobdata)
 
 	def getcfg(self, name, default):
 		"""
