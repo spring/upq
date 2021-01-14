@@ -21,13 +21,6 @@ class Download(UpqJob):
 	"""
 		"download url:$url"
 	"""
-	def check(self):
-		if not 'url' in self.jobdata:
-			return False
-		self.enqueue_job()
-		self.logger.debug("Downloading " + self.jobdata['url'])
-		return True
-
 	def run(self):
 		url=self.jobdata['url']
 		filename=os.path.basename(url)

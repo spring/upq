@@ -228,27 +228,6 @@ class Extract_metadata(UpqJob):
 					self.logger.error("Invalid image %s: %s" % (f, e))
 					pass
 		return res
-	def check(self):
-		if 'file' in self.jobdata:
-			if not os.path.exists(self.jobdata['file']):
-				self.logger.error("File %s doesn't exist" % self.jobdata['file'])
-				return False
-		elif 'fid' in self.jobdata:
-			results=UpqDB().query("SELECT filename, path, status FROM file WHERE fid=%s" % (int(self.jobdata['fid'])))
-			res=results.first()
-			if not res:
-				self.logger.error("Fid not found in db")
-				return False
-			prefix=self.getPathByStatus(res['status'])
-			self.jobdata['file']=os.path.join(prefix, res['path'], res['filename'] )
-			if not os.path.exists(self.jobdata['file']):
-				self.logger.error("filepath from db doesn't exist %s" %(self.jobdata['file']))
-				return False
-		else:
-			self.logger.error("Either fid or file has to be set")
-			return False
-		self.enqueue_job()
-		return True
 
 	def ExtractMetadata(self, usync, archiveh, filename, filepath, metadatapath, hashes):
 		filelist=self.getFileList(usync, archiveh)

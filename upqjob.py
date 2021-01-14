@@ -40,18 +40,6 @@ class UpqJob(object):
 		self.finished= threading.Event()
 		self.retries = 0
 
-	def check(self):
-		"""
-		Check if job is feasable and possibly queue it.
-		Overwrite this method in your job class.
-
-		Returns True + sets jobid
-		"""
-		# check if file is readable (or similar)
-		# return True when jobdata is fine to call run(), when returning False sets self.msg
-		self.enqueue_job()
-		return True
-
 	def run(self):
 		"""
 		Do the actual job work, save result in self.result.
