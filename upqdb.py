@@ -42,29 +42,9 @@ class UpqDB():
 			self.logger.info("SQL version: %s", res[0])
 
 	def connect(self, databaseurl, debug):
-		self.cleanup()
 		self.engine = create_engine(databaseurl, encoding="utf-8", echo=debug, pool_recycle=True)
 		self.logger.info("Opened DB connection.")
 		self.meta=MetaData()
-		"""
-		created with this + some editing:
-
-		tables = [
-			"file_mirror",
-			"file_mirror_paths",
-			"file_mirror_files",
-			"springdata_archives",
-			"springdata_categories",
-			"springdata_depends",
-			"springdata_startpos",
-			"files",
-			"filehash" ]
-		meta=MetaData()
-		meta.bind = UpqDB().engine
-		for t in tables:
-			tbl=Table(t, meta, autoload=True)
-		pprint.pprint(meta.tables)
-		"""
 		self.tables['mirror']=Table('mirror', self.meta, #table with file mirrors
 			Column('mid', INTEGER(display_width=10),  primary_key=True, nullable=False, autoincrement=True),
 			Column('title', VARCHAR(length=64)),
@@ -180,13 +160,6 @@ class UpqDB():
 			s.close()
 			self.logger.debug("%s (%s) id:%s", query, values, result)
 		return result
-
-	def cleanup(self):
-		try:
-			self.engine.close()
-			self.logger.info("Closed MySQL connection.")
-		except:
-			pass
 
 	def now(self):
 		return func.now()
