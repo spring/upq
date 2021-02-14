@@ -207,7 +207,11 @@ hr {
 }
 
 
-
+.search_thumbnail {
+	max-width: 6vw;
+	max-height: 3vw;
+	float:right;
+}
 
 .res_row {
 	background-color: rgba(0,0,0,0.3);
