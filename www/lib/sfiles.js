@@ -22,6 +22,19 @@ var contentUsageTipByCategory = {
 	"map" : "<span class=\"content_h4\">What to do with this file?</span><br>First you need to download the Spring engine to play on this map.<br><br>Maps are .sd7 or .sdz files. To install this files move them into (Unix) ~/.spring/maps or (Windows) \"My Documents\\My Games\\Spring\\maps\".<br><br>Use the \"Reload maps/games\" option from the \"Tools\" menu in SpringLobby."
 }
 
+var gameThumbnailsRegex = [
+{regex : /^metal factions[.]*/, thumbnail : "thumb_mf.jpg" },
+{regex : /spring[:]* 1944[.]*/, thumbnail : "thumb_s44.png" },
+{regex : /tech annihilation[.]*/, thumbnail : "thumb_techa.jpg" },
+{regex : /^zero\-k[.]*/, thumbnail : "thumb_zk.png" },
+{regex : /^nota[.]*/, thumbnail : "thumb_nota.jpg" },
+{regex : /^balanced annihilation[.]*/, thumbnail : "thumb_ba.jpg" },
+{regex : /^evolution rts[.]*/, thumbnail : "thumb_evo.jpg" },
+{regex : /^imperial winter[.]*/, thumbnail : "thumb_swiw.jpg" },
+{regex : /^kernel panic[.]*/, thumbnail : "thumb_kp.jpg" },
+{regex : /^the cursed[.]*/, thumbnail : "thumb_cursed.jpg" }
+];
+
 // go to url
 function fGo(url) {
 	window.location = url;
@@ -125,6 +138,32 @@ function sendRequest(sfQuery,query) {
 	});
 }
 
+// get item thumbnail
+function getItemThumbnail(item) {
+	var img = "images/unknown.jpg";
+	try {
+		var category = item.category.toUpperCase();
+		var lcName = item.springname.toLowerCase();
+		if (item.mapimages && item.mapimages[0]) {
+			img = item.mapimages[0];
+		} else {
+			if (category.indexOf("ENGINE") >= 0) {
+				img = "images/spring_logo.png";
+			} else if (category == "GAME") {
+				for (var j=0; j<gameThumbnailsRegex.length; j++ ) {
+					var obj = gameThumbnailsRegex[j];
+					if (obj.regex.test(lcName)) {
+						img = "images/games/"+obj.thumbnail;
+						break;
+					}
+				}
+			}
+		}
+	} catch(ex) {
+		img = "images/unknown.jpg";
+	}
+	return img;
+}
 
 // process data and generate view
 function processData(data) {
@@ -156,10 +195,7 @@ function processData(data) {
 				var name = item.springname;
 				var date = item.timestamp;
 				var mirrors = item.mirrors;
-				var img = "images/unknown.jpg";
-				if (item.mapimages && item.mapimages[0]) {
-					img = item.mapimages[0];
-				}
+				var img = getItemThumbnail(item);
 				var category = item.category.toUpperCase();
 				var sdp = item.sdp;
 				var md5 = item.md5;
@@ -168,7 +204,7 @@ function processData(data) {
 				h += '<tr class="res_row'+(i%2 ? '_':'')+'"><td style="width:10px;">#' + (i + 1) + '</td><td style="width:100%"><table style="width: 100%;">';
 				
 				h+='<tr><td>'+date+'</td><td align="right"><span class="category"> '+category+' </span></td></tr>';
-				h+='<tr><td>'+name+(version ? '<br><span style="font-size:70%">version '+version+'</span>':'')+'</td><td rowspan="2"><img style="width:6vw; height: 3vw; float:right" src="'+img+'"></td></tr>';
+				h+='<tr><td>'+name+(version ? '<br><span style="font-size:70%">version '+version+'</span>':'')+'</td><td rowspan="2" style="width:6vw;"><img class="search_thumbnail" src="'+img+'"></td></tr>';
 				h+='<tr><td><button onclick="go('+TYPE_DETAILS+',\''+md5+'\')">view details...</button></td></tr>';
 				
 				h += '</table></td></tr>';
@@ -199,11 +235,8 @@ function processData(data) {
 					var name = item.springname;
 					var date = item.timestamp;
 					var mirrors = item.mirrors;
-					var img = "images/unknown.jpg";
-					if (item.mapimages && item.mapimages[0]) {
-						img = item.mapimages[0];
-					}
 					var category = item.category.toUpperCase();
+					var img = getItemThumbnail(item);
 					var sdp = item.sdp;
 					var md5 = item.md5;
 					var version = item.version;
@@ -211,7 +244,7 @@ function processData(data) {
 					h += '<tr class="res_row'+(i%2 ? '_':'')+'"><td style="width:1vw;">#' + (i + 1) + '</td><td style="width:100%"><table style="width: 100%;">';
 					
 					h+='<tr><td>'+date+'</td><td align="right"><span class="category"> '+category+' </span></td></tr>';
-					h+='<tr><td>'+name+(version ? '<br><span style="font-size:70%">version '+version+'</span>':'')+'</td><td rowspan="2"><img style="width:6vw; height: 3vw; float:right" src="'+img+'"></td></tr>';
+					h+='<tr><td>'+name+(version ? '<br><span style="font-size:70%">version '+version+'</span>':'')+'</td><td rowspan="2" style="width:6vw;"><img class="search_thumbnail" src="'+img+'"></td></tr>';
 					h+='<tr><td><button onclick="go(TYPE_DETAILS,\''+md5+'\')">view details...</button></td></tr>';
 					
 					h += '</table></td></tr>';
@@ -237,8 +270,9 @@ function processData(data) {
 				var size = item.size;
 				var tags = item.tags;
 				var filename = item.filename;
-				var description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sed purus magna. Ut pharetra vestibulum mauris, ac hendrerit tortor tincidunt vel. Vestibulum sit amet turpis fringilla, interdum mi non, pharetra orci. Cras at cursus quam. Nullam at est quis velit viverra euismod nec at libero. Vestibulum accumsan purus mauris, at tristique felis ultricies sit amet. Aliquam consequat lacinia magna, id euismod erat euismod ac. Morbi posuere elit ut eleifend dictum. Sed congue volutpat consequat. Sed auctor augue odio, non laoreet risus vulputate vel. Morbi ac eros vel lacus ullamcorper posuere. Aliquam vulputate volutpat mi, non efficitur sapien pulvinar sit amet. Phasellus pulvinar tempus pellentesque. Maecenas hendrerit leo erat, eget porttitor leo dictum in.<br><br>Ut venenatis risus sit amet lectus lacinia, ut tincidunt orci tempus. Curabitur vitae tincidunt magna. Integer semper, magna eu pretium lobortis, orci dolor porttitor nibh, sit amet imperdiet justo quam a urna. Etiam semper nibh ligula, cursus hendrerit odio dignissim vel. Sed accumsan fringilla justo, at ultrices ante facilisis non. Vivamus in ipsum id sapien pharetra pharetra. Aliquam eleifend mollis ex, ac bibendum risus viverra ut. Morbi vel bibendum mi, sit amet luctus risus. In malesuada massa vel turpis consequat, id tincidunt felis aliquet. Nunc elit felis, condimentum sit amet hendrerit vel, fringilla in leo. Suspendisse potenti.<br><br>Cras scelerisque vestibulum pulvinar. Aenean vitae massa vitae mi dignissim porta. Etiam ultricies fermentum tellus, a sollicitudin metus semper at. Sed mattis consequat varius. Donec eu bibendum leo. Curabitur egestas justo mauris, nec fringilla justo tincidunt vel. Maecenas ac ex a justo ornare mollis vel quis nisl. Suspendisse id eros commodo, fringilla nibh a, semper eros. Aliquam nec porttitor odio, ultricies lacinia erat. Etiam luctus ipsum et massa hendrerit, ut pellentesque sapien molestie. Nunc eget arcu posuere, efficitur dolor non, rutrum diam. Duis aliquet libero id sem aliquam, non varius nulla consequat.<br><br>Morbi laoreet libero eu turpis semper, sit amet feugiat dolor efficitur. Proin interdum nibh id dui eleifend porttitor. Praesent pulvinar nulla in semper tincidunt. Donec commodo ligula ultricies facilisis elementum. Mauris varius blandit diam, in pretium erat pretium quis. Nullam aliquet sem et dolor iaculis, at cursus sem tincidunt. Praesent varius maximus congue. Etiam laoreet gravida nibh, a laoreet tellus tincidunt vel. Duis vulputate enim eget nibh maximus pulvinar. Integer hendrerit elit et dapibus cursus. Ut venenatis tellus vitae placerat molestie. Nunc tempus, ante non sollicitudin mattis, nibh sem sagittis ante, vitae mollis lacus enim nec libero. Aliquam erat volutpat. Sed velit enim, tincidunt sit amet purus eget, convallis lobortis urna.";
-				
+				//var description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sed purus magna. Ut pharetra vestibulum mauris, ac hendrerit tortor tincidunt vel. Vestibulum sit amet turpis fringilla, interdum mi non, pharetra orci. Cras at cursus quam. Nullam at est quis velit viverra euismod nec at libero. Vestibulum accumsan purus mauris, at tristique felis ultricies sit amet. Aliquam consequat lacinia magna, id euismod erat euismod ac. Morbi posuere elit ut eleifend dictum. Sed congue volutpat consequat. Sed auctor augue odio, non laoreet risus vulputate vel. Morbi ac eros vel lacus ullamcorper posuere. Aliquam vulputate volutpat mi, non efficitur sapien pulvinar sit amet. Phasellus pulvinar tempus pellentesque. Maecenas hendrerit leo erat, eget porttitor leo dictum in.<br><br>Ut venenatis risus sit amet lectus lacinia, ut tincidunt orci tempus. Curabitur vitae tincidunt magna. Integer semper, magna eu pretium lobortis, orci dolor porttitor nibh, sit amet imperdiet justo quam a urna. Etiam semper nibh ligula, cursus hendrerit odio dignissim vel. Sed accumsan fringilla justo, at ultrices ante facilisis non. Vivamus in ipsum id sapien pharetra pharetra. Aliquam eleifend mollis ex, ac bibendum risus viverra ut. Morbi vel bibendum mi, sit amet luctus risus. In malesuada massa vel turpis consequat, id tincidunt felis aliquet. Nunc elit felis, condimentum sit amet hendrerit vel, fringilla in leo. Suspendisse potenti.<br><br>Cras scelerisque vestibulum pulvinar. Aenean vitae massa vitae mi dignissim porta. Etiam ultricies fermentum tellus, a sollicitudin metus semper at. Sed mattis consequat varius. Donec eu bibendum leo. Curabitur egestas justo mauris, nec fringilla justo tincidunt vel. Maecenas ac ex a justo ornare mollis vel quis nisl. Suspendisse id eros commodo, fringilla nibh a, semper eros. Aliquam nec porttitor odio, ultricies lacinia erat. Etiam luctus ipsum et massa hendrerit, ut pellentesque sapien molestie. Nunc eget arcu posuere, efficitur dolor non, rutrum diam. Duis aliquet libero id sem aliquam, non varius nulla consequat.<br><br>Morbi laoreet libero eu turpis semper, sit amet feugiat dolor efficitur. Proin interdum nibh id dui eleifend porttitor. Praesent pulvinar nulla in semper tincidunt. Donec commodo ligula ultricies facilisis elementum. Mauris varius blandit diam, in pretium erat pretium quis. Nullam aliquet sem et dolor iaculis, at cursus sem tincidunt. Praesent varius maximus congue. Etiam laoreet gravida nibh, a laoreet tellus tincidunt vel. Duis vulputate enim eget nibh maximus pulvinar. Integer hendrerit elit et dapibus cursus. Ut venenatis tellus vitae placerat molestie. Nunc tempus, ante non sollicitudin mattis, nibh sem sagittis ante, vitae mollis lacus enim nec libero. Aliquam erat volutpat. Sed velit enim, tincidunt sit amet purus eget, convallis lobortis urna.";
+				var description = "";
+
 				// update document title
 				document.title = item.springname;
 				
