@@ -8,6 +8,12 @@ var TYPE_DETAILS = 2;
 
 var type = TYPE_GENERAL;
 
+var MAX_RECENT_ITEMS = 10;
+var DEFAULT_SEARCH_ITEMS = 10;
+var MAX_SEARCH_ITEMS = 60;
+var SEARCH_LIMIT = 100;  // server-side code limits results to 64
+var latestData = null;
+
 var hovermenuTimer = -1;
 var HOVERMENU_TIME_MS = 3000;
 
@@ -18,8 +24,8 @@ var allCategories = {
 }
 
 var contentUsageTipByCategory = {
-	"game" : "<span class=\"content_h4\">What to do with this file?</span><br>First you need to download the Spring engine to play this game.<br><br>Games for Spring are .sd7 or .sdz files. To install this files move them into (Unix) ~/.spring/games or (Windows) \"My Documents\\My Games\\Spring\\games\".<br><br>Use the \"Reload maps/games\" option from the \"Tools\" menu in SpringLobby.",
-	"map" : "<span class=\"content_h4\">What to do with this file?</span><br>First you need to download the Spring engine to play on this map.<br><br>Maps are .sd7 or .sdz files. To install this files move them into (Unix) ~/.spring/maps or (Windows) \"My Documents\\My Games\\Spring\\maps\".<br><br>Use the \"Reload maps/games\" option from the \"Tools\" menu in SpringLobby."
+	"game" : "<span class=\"content_h4\">What to do with this file?</span><br>First you need to download the Spring engine to play this game.<br><br>Games for Spring are .sd7 or .sdz files. To install these files move them into (Unix) ~/.spring/games or (Windows) \"My Documents\\My Games\\Spring\\games\".<br><br>Use the \"Reload maps/games\" option from the \"Tools\" menu in SpringLobby.",
+	"map" : "<span class=\"content_h4\">What to do with this file?</span><br>First you need to download the Spring engine to play on this map.<br><br>Maps are .sd7 or .sdz files. To install these files move them into (Unix) ~/.spring/maps or (Windows) \"My Documents\\My Games\\Spring\\maps\".<br><br>Use the \"Reload maps/games\" option from the \"Tools\" menu in SpringLobby."
 }
 
 var gameThumbnailsRegex = [
@@ -32,7 +38,9 @@ var gameThumbnailsRegex = [
 {regex : /^evolution rts[.]*/, thumbnail : "thumb_evo.jpg" },
 {regex : /^imperial winter[.]*/, thumbnail : "thumb_swiw.jpg" },
 {regex : /^kernel panic[.]*/, thumbnail : "thumb_kp.jpg" },
-{regex : /^the cursed[.]*/, thumbnail : "thumb_cursed.jpg" }
+{regex : /^the cursed[.]*/, thumbnail : "thumb_cursed.jpg" },
+{regex : /^xta[.]*/, thumbnail : "thumb_xta.jpg" },
+{regex : /^beyond all reason[.]*/, thumbnail : "thumb_bar.jpg" }
 ];
 
 // go to url
@@ -166,14 +174,14 @@ function getItemThumbnail(item) {
 }
 
 // process data and generate view
-function processData(data) {
+function processData(data,showAll) {
 	if (data != null) {
 		var h = '<table width="100%" ><tr><td align="center">';
 		if (type == TYPE_GENERAL) {
 			h+='<table width="100%"><tr>';
 			
 			// general description
-			h+='<td colspan="3"><span style="font-size: 80%">This is a content repository for the <a class="abutton" href="https://www.springrts.com">Spring RTS Engine</a>, which features large 3D ground, air and naval battles on large maps with deformable terrain, supporting thousands of units, realistic simulation of projectiles and explosions and several 3D camera modes with complete freedom in movement.<br><br>To start playing SpringRTS games using content downloaded from this web site, you\'ll likely want to install a lobby client, but you can also download and run the engine by itself. You can find download links for the recommended lobby client <a class="abutton" href="https://springrts.com/wiki/Download">here</a>.</span><hr/></td></tr>';
+			h+='<td colspan="3"><span style="font-size: 80%">This is a content repository for the <a class="abutton" href="https://www.springrts.com">Spring RTS Engine</a>, which runs games featuring large 3D ground, air and naval battles on large maps with deformable terrain, supporting thousands of units, realistic simulation of projectiles and explosions and several 3D camera modes with complete freedom in movement.<br><br>To start playing SpringRTS games using content downloaded from this web site, you\'ll likely want to install a lobby client, but you can also download and run the engine by itself. You can find download links for the recommended lobby client <a class="abutton" href="https://springrts.com/wiki/Download">here</a>.</span><hr/></td></tr>';
 			
 			h+='<tr>';
 			// quick find - categories
@@ -208,6 +216,9 @@ function processData(data) {
 				h+='<tr><td><button onclick="go('+TYPE_DETAILS+',\''+md5+'\')">view details...</button></td></tr>';
 				
 				h += '</table></td></tr>';
+				if (i >= MAX_RECENT_ITEMS -1) {
+					break;
+				}
 			}
 			h += '</table>';
 			h+='</td>';
@@ -227,8 +238,10 @@ function processData(data) {
 			h+='</tr></table>';
 		} else if (type == TYPE_SEARCH) {
 			// list of matching items
-			h += '<table cellpadding="5" cellspacing="0" border="0" class="search_results" style="width:70%"><tr><th colspan="2" align="center"><span class="content_h1">Search Results</span></th></tr>';
-				if (data && data.length > 0) {
+			h += '<table cellpadding="5" cellspacing="0" border="0" class="search_results" style="width:70%"><tr><th colspan="2" align="center"><span class="content_h1">Search Results<br><span style="font-size:50%">'+(data.length > MAX_SEARCH_ITEMS ? (Math.min(data.length,MAX_SEARCH_ITEMS)+"+") : data.length )+' matches</span></span></th></tr>';
+			if (data && data.length > 0) {
+				latestData = data;
+				var resultsShown = 0;
 				for (var i = 0; i < data.length; i++) {
 					var item = data[i];
 					
@@ -248,6 +261,13 @@ function processData(data) {
 					h+='<tr><td><button onclick="go(TYPE_DETAILS,\''+md5+'\')">view details...</button></td></tr>';
 					
 					h += '</table></td></tr>';
+					resultsShown++;
+					if (!showAll && resultsShown >= DEFAULT_SEARCH_ITEMS || (resultsShown >= MAX_SEARCH_ITEMS)) {
+						break;
+					}
+				}
+				if (!showAll && data.length > resultsShown) {
+					h += '<tr><td colspan="2" align="center"><button type="button" onclick="processData(latestData,true)"> ... more ...</button></td></tr>';
 				}
 			} else {
 				h+= '<tr><td>No results found.</td></tr>';
@@ -290,7 +310,8 @@ function processData(data) {
 				if (filename) {
 					h+='<tr><td><span class="label">Filename:</span> '+filename+'</td></tr>';
 				}
-				h+='<tr><td><span class="label">Size:</span> '+size+' bytes</td></tr>';
+				var sizeMb = size/(1024*1024);
+				h+='<tr><td><span class="label">Size:</span> '+sizeMb.toFixed(1)+' MB ('+size+' bytes)</td></tr>';
 				var tagsStr = "";
 				if (tags && tags.length > 0) {
 					for (var i=0; i< tags.length; i++) {
@@ -365,6 +386,9 @@ function go(t,filter,category,tags) {
 	}
 	if (!filter) {
 		filter = $('#filter').val().trim();	
+		// replace spaces and separators with * for easier matching
+		filter = filter.replace(/[ \-_]/g,"*");
+		$('#filter').val(filter);
 	}
 	if (!filter) {
 		filter = getGETParameter('filter');
@@ -411,7 +435,7 @@ function go(t,filter,category,tags) {
 		break;
 		case (TYPE_SEARCH):
 			query = "?type=" + TYPE_SEARCH+"&filter="+filter+"&category="+category+"&tags="+tags;	
-			sfQuery = "?nosensitive=on&images=on&springname=*"+filter+"*&category=*"+category+"*&tags=*"+tags+"*";
+			sfQuery = "?nosensitive=on&images=on&springname=*"+filter+"*&category=*"+category+"*&tags=*"+tags+"*&limit="+SEARCH_LIMIT;
 		break;		
 		case (TYPE_DETAILS):
 			query = "?type=" + TYPE_DETAILS + "&filter=" + filter;
