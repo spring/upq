@@ -1,4 +1,4 @@
-var SFILES_URL = 'https://api.springfiles.com/json.php';
+var SFILES_URL = '/json.php';
 var REQUEST_TIMEOUT_MS = 7000;
 
 
@@ -94,7 +94,7 @@ function getGETParameter(name) {
 // set hover menu content
 function setHoverMenuContent() {
 	var h = '<table cellpadding="0" cellspacing="0" border="0">';
-	h += '<tr><td class="hovermenu_row"><button type="button" onclick="fGo(\'https://api.springfiles.com/upload/\')" class="hovermenu_button">Upload</button></td></tr>';
+	h += '<tr><td class="hovermenu_row"><button type="button" onclick="fGo(\'/upload/\')" class="hovermenu_button">Upload</button></td></tr>';
 	h += '<tr><td class="hovermenu_row"><button type="button" onclick="fGo(\'https://github.com/spring/upq\')" class="hovermenu_button">About</button></td></tr>';
 	h += '</table>';
 
