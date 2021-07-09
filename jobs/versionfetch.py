@@ -14,7 +14,7 @@ import datetime
 import json
 
 class Versionfetch(UpqJob):
-	prefix = "http://springrts.com/dl/buildbot"
+	prefix = "https://springrts.com/dl/buildbot"
 	cats = {}
 	def escape(self, string):
 		return string.replace("%7b", "{").replace("%7d", "}")
