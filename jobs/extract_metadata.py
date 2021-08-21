@@ -28,13 +28,8 @@ import gc
 import traceback
 import filecmp
 
-unitsyncpath=os.path.join(UpqConfig().paths['jobs_dir'],'unitsync')
-sys.path.append(unitsyncpath)
-
-try:
-	from unitsync import unitsync
-except ImportError:
-	import unitsync
+sys.path.append(os.path.dirname(__file__))
+from unitsync import unitsync
 
 class Extract_metadata(UpqJob):
 
@@ -43,15 +38,15 @@ class Extract_metadata(UpqJob):
 		creates <tempdir>/games and symlinks archive file into that directory
 	"""
 	def setupdir(self, filepath):
-		if not os.path.exists(filepath):
+		if not os.path.isfile(filepath):
 			self.logger.error("error setting up temp dir, file doesn't exist %s" %(filepath))
 			raise Exception(self.msgstr)
 		temppath=tempfile.mkdtemp(dir=UpqConfig().paths['tmp'])
 		archivetmp=os.path.join(temppath, "games")
 		os.mkdir(archivetmp)
 		self.tmpfile=os.path.join(archivetmp, os.path.basename(filepath))
-		self.logger.debug("symlinking %s %s" % (filepath,self.tmpfile))
-		os.symlink(filepath,self.tmpfile)
+		self.logger.debug("symlinking %s %s" % (filepath, self.tmpfile))
+		os.symlink(filepath, self.tmpfile)
 		return temppath
 
 	def savedelete(self,file):
@@ -169,7 +164,7 @@ class Extract_metadata(UpqJob):
 		return fid
 
 	def initUnitSync(self, tmpdir, filename):
-		libunitsync=self.jobcfg['unitsync']
+		libunitsync=UpqConfig().paths['unitsync']
 		os.environ["SPRING_DATADIR"]=tmpdir
 		os.environ["HOME"]=tmpdir
 		os.environ["SPRING_LOG_SECTIONS"]="unitsync,ArchiveScanner,VFS"
@@ -269,14 +264,14 @@ class Extract_metadata(UpqJob):
 			self.logger.error("Duplicate file detected: %s %s %s" % (filename, data['Name'], data['Version']))
 			return False
 
-		if self.create_torrent(filepath, os.path.join(metadatapath, sdp, '.torrent')):
-			UpqDB().query("UPDATE file SET torrent=1 WHERE fid=%s" %(fid))
+		#if self.create_torrent(moveto, os.path.join(metadatapath, sdp, '.torrent')):
+		#	UpqDB().query("UPDATE file SET torrent=1 WHERE fid=%s" %(fid))
 		return True
 
 	def run(self):
 		gc.collect()
 		#filename of the archive to be scanned
-		filepath=self.jobdata['file']
+		filepath=os.path.abspath(self.jobdata['file'])
 		filename=os.path.basename(filepath) # filename only (no path info)
 		metadatapath=UpqConfig().paths['metadata']
 
@@ -303,7 +298,7 @@ class Extract_metadata(UpqJob):
 		del usync
 		#print(self.jobcfg)
 		if not "keeptemp" in self.jobcfg or self.jobcfg["keeptemp"] != "yes":
-			assert(tmpdir.startswith("/home/upq/upq/tmp/"))
+			assert(tmpdir.startswith("/home/springfiles/upq/tmp/"))
 			shutil.rmtree(tmpdir)
 		return res
 
@@ -646,6 +641,7 @@ class Extract_metadata(UpqJob):
 		return {'md5': md5.hexdigest(), 'sha1': sha1.hexdigest(), 'sha256': sha256.hexdigest()}
 
 	def create_torrent(self, filename, output):
+		from metalink import metalink
 		if not os.path.exists(filename):
 			self.logger.error("File doesn't exist: %s" %(filename))
 			return False

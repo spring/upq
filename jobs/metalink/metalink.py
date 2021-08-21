@@ -98,7 +98,7 @@ def check_rfc822_date(date):
         _date = re.sub(r' (GMT|\+0000)$', '', date)
         try:
             time.strptime(_date, "%a, %d %b %Y %H:%M:%S")
-        except ValueError, e:
+        except ValueError as e:
             return False
     return True
 
@@ -149,8 +149,8 @@ def get_url(url):
     try:
         f = urllib2.urlopen(req)
         return uncompress(f)
-    except Exception, e: # urllib2.URLError
-        print 'Download error:', e
+    except Exception as e: # urllib2.URLError
+        print('Download error:', e)
 
     return ''
 
@@ -353,7 +353,7 @@ def main(args=[]):
 
     # Metalink update mode
     if not files and len(_metalinks):
-        print 'Metalink update mode (apply options and create torrents)'
+        print('Metalink update mode (apply options and create torrents)')
         for filename, file in _metalinks.items():
             m = Metalink(False)
             m.load_file(file, False)
@@ -399,7 +399,7 @@ def main(args=[]):
         usage_and_exit(None, optParser.getHelp()) # 'No files to process'
 
     for filename, file in files.items():
-        print 'Processing %s' % file
+        print('Processing %s' % file)
         m = Metalink()
 
         # Parse metalink template
@@ -558,7 +558,7 @@ class Metafile(object):
         return True
 
     def scan_file(self, filename, use_chunks=True, max_chunks=255, chunk_size=256, progresslistener=None):
-        if verbose: print "Scanning file..."
+        if verbose: print("Scanning file...")
         # Filename and size
         self.filename = os.path.basename(filename)
         if not self.hashes.filename:
@@ -578,7 +578,7 @@ class Metafile(object):
             self.hashes.piecelength = 1024
             while size / self.hashes.piecelength > max_chunks or self.hashes.piecelength < minlength:
                 self.hashes.piecelength *= 2
-            if verbose: print "Using piecelength", self.hashes.piecelength, "(" + str(self.hashes.piecelength / 1024) + " KiB)"
+            if verbose: print("Using piecelength", self.hashes.piecelength, "(" + str(self.hashes.piecelength / 1024) + " KiB)")
             numpieces = size / self.hashes.piecelength
             if numpieces < 2: use_chunks = False
         hashes = {}
@@ -598,7 +598,7 @@ class Metafile(object):
                 hashes['md4'] = Crypto.Hash.MD4.new()
             except:
                 hashes['md4'] = None
-            print "Hashlib not available. No support for SHA-256%s" % (hashes['md4'] and "." or " and ED2K.")
+            print("Hashlib not available. No support for SHA-256%s" % (hashes['md4'] and "." or " and ED2K."))
             hashes['md5'] = md5.new()
             hashes['sha1'] = sha.new()
             hashes['sha256'] = None
@@ -641,7 +641,7 @@ class Metafile(object):
                     progress += 1
                     result = progresslistener.Update(progress)
                     if get_first(result) == False:
-                        if verbose: print "Cancelling scan!"
+                        if verbose: print("Cancelling scan!")
                         return False
             # Process the data
             if hashes['md5']: hashes['md5'].update(data)
@@ -683,15 +683,15 @@ class Metafile(object):
                     data = data[numbytes:]
                     left -= numbytes
                 if length == self.hashes.piecelength:
-                    if verbose: print "Done with piece hash", len(self.hashes.pieces)
+                    if verbose: print("Done with piece hash", len(self.hashes.pieces))
                     self.hashes.pieces.append(piecehash.hexdigest())
                     piecehash = sha1hash_copy.copy()
                     length = 0
         if use_chunks:
             if length > 0:
-                if verbose: print "Done with piece hash", len(self.hashes.pieces)
+                if verbose: print("Done with piece hash", len(self.hashes.pieces))
                 self.hashes.pieces.append(piecehash.hexdigest())
-            if verbose: print "Total number of pieces:", len(self.hashes.pieces)
+            if verbose: print("Total number of pieces:", len(self.hashes.pieces))
         fp.close()
         if hashes['md4']:
             if md4piecehash and length_ed2k:
@@ -704,7 +704,7 @@ class Metafile(object):
         if len(self.hashes.pieces) < 2: self.hashes.pieces = []
         # Convert to string
         self.hashes.piecelength = str(self.hashes.piecelength)
-        if verbose: print "done"
+        if verbose: print("done")
         if progresslistener: progresslistener.Update(100)
         return True
 
@@ -1017,7 +1017,7 @@ class Metalink(object):
             fp = open(filename, "wb")
             fp.write(data)
             fp.close()
-            print 'Generated:', filename
+            print('Generated:', filename)
 
             if _opts['create_torrent']:
                 torrent = filename.endswith('.new') and filename[:-4] or filename
@@ -1026,7 +1026,7 @@ class Metalink(object):
                     torrent += '.new'
                 _errors = self.create_torrent(_opts['create_torrent'], torrent)
                 if _errors:
-                    print 'ERROR while generating %s:\n%s' % (torrent, "\n".join(_errors))
+                    print('ERROR while generating %s:\n%s' % (torrent, "\n".join(_errors)))
             return True
         return data
 
@@ -1118,7 +1118,7 @@ class Metalink(object):
                             for hash in pieces.getElementsByTagName("hash"):
                                 self.file.hashes.pieces.append(self.get_text(hash).lower())
                         else:
-                            print "Load error: missing attributes in <pieces>"
+                            print("Load error: missing attributes in <pieces>")
                 resources = self.get_tag(file, "resources")
                 num_urls = 0
                 if resources is not None:
@@ -1570,13 +1570,13 @@ class Mirrors(object):
             _location = self.parse_location(group[0], location)
             if group[0] in self.urls:
                 if check_duplicate:
-                    print 'Duplicate mirror found:', group[0]
+                    print('Duplicate mirror found:', group[0])
                     return None
             else:
                 self.urls.append(group[0])
             preference = self.parse_preference(group[0], type)
             return [group[0], type, _location, preference]
-        print 'Invalid mirror link:', link
+        print('Invalid mirror link:', link)
         return None
 
     # Return location if a valid 2-letter country code can be found
@@ -1593,7 +1593,7 @@ class Mirrors(object):
             if location:
                 self.domains[group[1]] = location
                 return location
-            print 'Country unknown for:', group[0]
+            print('Country unknown for:', group[0])
         return ''
 
     def parse_preference(self, link, type):

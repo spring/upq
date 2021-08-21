@@ -83,6 +83,7 @@ class UpqConfig():
 		self.setpath(self.paths, "paths", "metadata", "metadata")
 		self.setpath(self.paths, "paths", "broken", "paths")
 		self.setpath(self.paths, "paths", "tmp", "tmp")
+		self.setpath(self.paths, "paths", "unitsync", "libunitsync.so")
 
 		self.setint(self.paths, "paths", "socket_chmod", 660)
 
