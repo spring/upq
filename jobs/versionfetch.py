@@ -18,6 +18,7 @@ class Versionfetch(UpqJob):
 	cats = {}
 	def escape(self, string):
 		return string.replace("%7b", "{").replace("%7d", "}")
+
 	def getCID(self, category):
 		if category in self.cats:
 			return self.cats[category]
@@ -66,7 +67,8 @@ class Versionfetch(UpqJob):
 				"timestamp": datetime.datetime.fromtimestamp(data['filectime']),
 				#"timestamp": data['filectime'],
 				"size": data['filesize'],
-				"status": 1 })
+				"status": 1,
+				})
 
 
 		res = UpqDB().query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (mid, fid))
