@@ -226,11 +226,7 @@ class Extract_metadata(UpqJob):
 
 	def ExtractMetadata(self, usync, archiveh, filename, filepath, metadatapath, hashes):
 		filelist=self.getFileList(usync, archiveh)
-		try:
-			sdp = self.getSDPName(usync, archiveh)
-		except Exception as e:
-			self.logger.error(str(e))
-			return False
+		sdp = self.getSDPName(usync, archiveh)
 
 		idx=self.getMapIdx(usync, filename)
 		if idx>=0: #file is map
@@ -288,7 +284,11 @@ class Extract_metadata(UpqJob):
 		usync=self.initUnitSync(tmpdir, filename)
 		archiveh=self.openArchive(usync, os.path.join("games",filename))
 
-		res  = self.ExtractMetadata(usync, archiveh, filename, filepath, metadatapath, hashes)
+		try:
+			res  = self.ExtractMetadata(usync, archiveh, filename, filepath, metadatapath, hashes)
+		except Exception as e:
+			self.logger.error(str(e))
+			return False
 
 		err=usync.GetNextError()
 		while not err==None:
