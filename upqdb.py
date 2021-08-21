@@ -78,7 +78,6 @@ class UpqDB():
 			Column('size', INTEGER(display_width=11), nullable=False), # file size
 			Column('status', INTEGER(display_width=11), nullable=False), # 0=inactive, 1 = active, 2 = marked for recheck, 3 = broken
 			Column('timestamp', TIMESTAMP(timezone=False)),
-			Column('torrent', INTEGER(display_width=1)), # 1 = torrent created, 0 = not
 			Column('md5', CHAR(length=32), unique=True),
 			Column('sha1', CHAR(length=40)),
 			Column('sha256', CHAR(length=64)),

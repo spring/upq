@@ -21,9 +21,6 @@ function xmlrpc_search($req){
 	$res=search($req);
 	for($i=0; $i<count($res); $i++){
 		$res[$i]['timestamp']=xmlrpc_date($res[$i]['timestamp']);
-		if(array_key_exists('torrent', $res[$i])){
-			$res[$i]['torrent']=xmlrpc_tobase64($res[$i]['torrent']);
-		}
 	}
 	return $res;
 }
@@ -40,7 +37,6 @@ function xmlrpc_upload($req){
 function main($argv){
 	$req=array(
 		"springname"=>"%",
-		"torrent"=>"true",
 	);
 	$res=xmlrpc_search($req);
 	$r=xmlrpc_value($res);

@@ -27,14 +27,6 @@ function _file_mirror_createquery(&$query, &$vars, $logical,$condition, $request
 		array_push($vars, $val);
 }
 
-function _file_mirror_gettorrent($filename){
-	if (is_readable($filename)){
-		return file_get_contents($filename);
-	}
-	watchdog("file_mirror", "no torrent info for $filename");
-	return "";
-}
-
 /**
 * return images
 */
@@ -181,10 +173,6 @@ function search($req){
 		while($row = db_fetch_array($result)){
 			$res[$i]['tags'][]=$row['tag'];
 		}
-		$torrent_file='metadata/'.$res[$i]['sdp'].'.torrent';
-		if(array_key_exists('torrent', $req) && file_exists($torrent_file)){
-			$res[$i]['torrent']=_file_mirror_gettorrent($torrent_file);
-		}
 		$metadata=_get_metadata($res[$i]['metadata']);
 		if (array_key_exists('images', $req)){
 			if (array_key_exists('splash', $metadata))
@@ -209,7 +197,6 @@ function search($req){
 			$res[$i]['springname']=$res[$i]['name']." ".$res[$i]['version'];
 		unset($res[$i]['fid']);
 		unset($res[$i]['path']);
-		unset($res[$i]['torrent_file']);
 		ksort($res[$i]);
 	}
 	return $res;
