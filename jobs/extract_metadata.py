@@ -226,7 +226,12 @@ class Extract_metadata(UpqJob):
 
 	def ExtractMetadata(self, usync, archiveh, filename, filepath, metadatapath, hashes):
 		filelist=self.getFileList(usync, archiveh)
-		sdp = self.getSDPName(usync, archiveh)
+		try:
+			sdp = self.getSDPName(usync, archiveh)
+		except Exception as e:
+			self.logger.error(str(e))
+			return False
+
 		idx=self.getMapIdx(usync, filename)
 		if idx>=0: #file is map
 			archivepath = usync.GetArchivePath(filename.encode()).decode()+filename
