@@ -15,7 +15,7 @@ sys.path.append(unitsyncpath)
 
 from jobs import extract_metadata
 
-files = glob.glob("/home/springfiles/www/maps/*")
+files = glob.glob("/home/springfiles/www/games/*") + glob.glob("/home/springfiles/www/maps/*")
 
 
 for f in files:
