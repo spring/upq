@@ -56,7 +56,7 @@ def SaveUploadedFile(form):
 	if not filename:
 		return "Couldn't store file"
 
-	upqdir = "/home/upq/upq"
+	upqdir = "/home/springfiles/upq"
 	assert(os.path.isdir(upqdir))
 	oldcwd = os.getcwd()
 	os.chdir(upqdir)
