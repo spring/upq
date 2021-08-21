@@ -257,8 +257,7 @@ class Extract_metadata(UpqJob):
 		moveto = os.path.join(self.getPathByStatus(1), data['path'], self.GetNormalizedFilename(data['Name'], data['Version'], extension))
 		self.jobdata['file']=moveto
 
-		assert(moveto != filepath)
-		assert(len(moveto) > 0)
+		assert(len(moveto) > 10)
 
 		if not self.movefile(filepath, moveto):
 			self.logger.error("Couldn't move file %s -> %s" %(filepath, moveto))
@@ -574,7 +573,9 @@ class Extract_metadata(UpqJob):
 		raise Exception("Unknown status %s" %(status))
 
 	def movefile(self, srcfile, dstfile):
-		assert(srcfile!=dstfile)
+		if srcfile == dstfile:
+			self.logger.info("File already in place: %s" %(srcfile))
+			return True
 		if os.path.exists(dstfile):
 			if filecmp.cmp(srcfile, dstfile):
 				os.remove(srcfile)
