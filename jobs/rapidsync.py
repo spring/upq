@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# This file is part of the "upq" program used on springfiles.com to manage file
+# This file is part of the "upq" program used on springfiles.springrts.com to manage file
 # uploads, mirror distribution etc. It is published under the GPLv3.
 #
 #Copyright (C) 2011 Matthias Ableitner (spring #at# abma #dot# de)

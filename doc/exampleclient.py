@@ -7,6 +7,6 @@ searchparams = {
 	"limit": 1
 }
 
-r = requests.get('https://api.springfiles.com/json.php', params=searchparams)
+r = requests.get('https://api.springfiles.springrts.com/json.php', params=searchparams)
 
 print(r.json())

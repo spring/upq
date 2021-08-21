@@ -124,7 +124,7 @@ concurrent = 1
 [job sf_sync]
 enabled = true
 concurrent = 1
-rpcurl = http://springfiles.com/xmlrpc.php
+rpcurl = http://springfiles.springrts.com/xmlrpc.php
 username = upq
 password = upq
 maxrequests = 10
