@@ -25,15 +25,6 @@ function xmlrpc_search($req){
 	return $res;
 }
 
-function xmlrpc_upload($req){
-	if (!(array_key_exists('url', $req))){
-		return "Error: Url not set in request!";
-	}
-	//FIXME: authentification!
-	return upq_run("download url:".$req['url']);
-}
-
-
 function main($argv){
 	$req=array(
 		"springname"=>"%",
@@ -57,7 +48,6 @@ if (array_key_exists('argv', $_SERVER)) {
 	if ($_SERVER['REQUEST_METHOD']=="POST"){
 		$callbacks = array(
 			"springfiles.search" => "xmlrpc_search",
-			"springfiles.upload" => "xmlrpc_upload",
 		);
 		xmlrpc_server($callbacks);
 	} else {
