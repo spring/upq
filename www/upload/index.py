@@ -94,7 +94,10 @@ def ParseAndAddFile(filename):
 
 form = cgi.FieldStorage()
 
-msgs = SaveUploadedFile(form)
+if os.environ['REQUEST_METHOD'] == 'POST':
+	msgs = SaveUploadedFile(form)
+else:
+	msgs = ""
 
 ShowForm({"messages": "<pre>" + html.escape(msgs) + "</pre>"})
 
