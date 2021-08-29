@@ -96,33 +96,6 @@ for row in res:
 
 """
 /**
-* @param query resulting query, for example "AND filename='%s'"
-* @param vars data for query, for example "Zero-K v0.51"
-* @param logical how the queries are assigned, AND/OR
-* @param condition SQL condition, for example "LIKE filename '%s'" or "filename='%s'"
-* @param request the request array
-* @param values values that are used from the request array (i.e.  $request[$values[0]], $request[$values[1], ...])
-*/
-
-function _file_mirror_createquery(&$query, &$vars, $logical,$condition, $request, $values=array()){
-	$data=array();
-	foreach($values as $val){ //if values are fine, push into data array
-		if (!array_key_exists($val, $request)) //check if key exists in request
-			return;
-		if (strlen($request[$val])<=0) //empty values are ignored
-			return;
-		array_push($data, $request[$val]);
-	}
-
-	if($query=="") $logical="";
-
-	$query.=" ".$logical." ".$condition;
-	$data=str_replace(array("_", "?", "*"),array("\_", "_", "%"),$data); // escape _ as it is a wildcard in sql
-	foreach($data as $val) //append values to vars (will be used to replace %s/%d in mysql query)
-		array_push($vars, $val);
-}
-
-/**
 * return images
 */
 function _get_metadata($row){
@@ -152,74 +125,10 @@ function _add_metadata_path($arr){
 	
 }
 
-// return LIMIT 0,X for sql query
-function getlimit(&$req) {
-	if(isset($req['limit'])) {
-		$max = min(intval($req['limit']), 64);
-		if ($max > 0 ) {
-			return "LIMIT 0,".$max;
-		} else {
-			return "";
-		}
-	}
-	return "LIMIT 0,10";
-}
 /**
 *	implementation of the xml-rpc call
 */
 function search($req){
-	global $config;
-	if (!is_array($req))
-		return "Invalid request";
-	$res="";
-	$category="%";
-	$query="";
-	$vars=array();
-
-	if(isset($req['logical'])&&($req['logical']=="or")){
-		$logical="OR";
-	}else{
-		$logical="AND";
-	}
-	if(isset($req['nosensitive'])) //default to case-sensitive search
-		$BINARY="";
-	else
-		$BINARY="BINARY";
-	_file_mirror_createquery($query, $vars, $logical, "t.tag LIKE $BINARY '%s'", $req, array('tag'));
-	_file_mirror_createquery($query, $vars, $logical, "f.filename LIKE $BINARY '%s'", $req, array('filename'));
-	_file_mirror_createquery($query, $vars, $logical, "c.name LIKE $BINARY '%s'", $req, array('category'));
-	_file_mirror_createquery($query, $vars, $logical, "f.name LIKE $BINARY '%s'", $req, array('name'));
-	_file_mirror_createquery($query, $vars, $logical, "f.version LIKE $BINARY '%s'", $req, array('version'));
-	_file_mirror_createquery($query, $vars, $logical, "f.sdp LIKE $BINARY '%s'", $req, array('sdp'));
-	_file_mirror_createquery($query, $vars, $logical, "( CONCAT(f.name,' ',f.version) LIKE $BINARY '%s' OR f.name LIKE $BINARY '%s' OR f.version LIKE $BINARY '%s' )",$req,  array('springname','springname', 'springname'));
-	_file_mirror_createquery($query, $vars, $logical, "f.md5 = '%s'", $req, array('md5'));
-	if($query!="")
-		$query=" AND (".$query.")";
-	$limit = getlimit($req);
-
-	$result=db_query("SELECT
-		distinct(f.fid) as fid,
-		f.name as name,
-		f.filename as filename,
-		f.path as path,
-		f.md5 as md5,
-		f.sdp as sdp,
-		f.version as version,
-		LOWER(c.name) as category,
-		f.size as size,
-		f.timestamp as timestamp,
-		f.metadata as metadata
-		FROM file as f
-		LEFT JOIN categories as c ON f.cid=c.cid
-		LEFT JOIN tag as t ON  f.fid=t.fid
-		WHERE c.cid>0
-		AND f.status=1
-		$query
-		ORDER BY f.timestamp DESC
-		$limit
-		",
-		$vars
-	);
 	$res=array();
 	while($row = db_fetch_array($result)){
 		#inject local file as mirror
