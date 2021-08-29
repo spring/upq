@@ -31,18 +31,6 @@ class UpqJob(object):
 		self.jobcfg  = upqconfig.UpqConfig().jobs[jobname] #settings from config-filea
 
 		self.jobdata = jobdata #runtime parameters, these are stored into database and restored on re-run
-		self.result  = False
-		self.retries = 0
-
-	def run(self):
-		"""
-		Do the actual job work, save result in self.result.
-		Returning boolean indicates success or failure for notification system.
-
-		Overwrite this method in your job class.
-		"""
-		# Save result in self.result.
-		return True
 
 	def __setstate__(self, dict):
 		# this is used to unpickle a job
