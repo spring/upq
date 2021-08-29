@@ -64,7 +64,7 @@ class Versionfetch(upqjob.UpqJob):
 				})
 
 
-		res = uqpdb.UpqDB().query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (mid, fid))
+		res = upqdb.UpqDB().query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (mid, fid))
 		mfid = res.first()
 		if mfid:
 			mfid = mfid[0]
