@@ -5,9 +5,24 @@ cfg.readConfig()
 db = upqdb.UpqDB()
 db.connect(cfg.db['url'], cfg.db['debug'])
 
-lowerlimit = 0
-upperlimit = 10
 wherecond = ""
+
+
+
+
+def getlimit(request):
+	offset = 0
+	limit = 10
+	if "offset" in request:
+		offset = int(request["offset"])
+	if "limit" in request:
+		limit = min(64, int(request["limit"]))
+	return "LIMIT %d, %d" %(offset, limit)
+request = {
+	"offset": "10",
+	"limit": "3",
+}
+
 
 res = db.query("""SELECT
 distinct(f.fid) as fid,
@@ -28,8 +43,8 @@ WHERE c.cid>0
 AND f.status=1
 %s
 ORDER BY f.timestamp DESC
-limit %d, %d
-"""%(wherecond, lowerlimit, upperlimit))
+%s
+"""%(wherecond, getlimit(request)))
 
 
 for row in res:
