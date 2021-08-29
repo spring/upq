@@ -46,7 +46,7 @@ class Rapidsync(upqjob.UpqJob):
 			return
 		if not sdp[3]: #without a name, we can't do anything!
 			return
-		cid = upqdb.getCid("game")
+		cid = upqdb.getCID("game")
 		try:
 			fid = upqdb.UpqDB().insert("file", {
 				"filename" : sdp[3] + " (not available as sdz)",
