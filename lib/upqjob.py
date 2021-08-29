@@ -36,13 +36,3 @@ class UpqJob(object):
 	def __str__(self):
 		return "Job: "+self.jobname +" jobdata:"+json.dumps(self.jobdata)
 
-	def getcfg(self, name, default):
-		"""
-			returns a config value or default, if config isn't set
-		"""
-		if name in  self.jobcfg:
-			return self.jobcfg[name]
-		else:
-			return default
-
-

@@ -70,7 +70,7 @@ class Rapidsync(upqjob.UpqJob):
 				logging.error("a file with this name already exists, fid=%s, sdp=%s" % (row['fid'], row['sdp']))
 
 	def run(self):
-		repos=self.fetchListing(self.getcfg('mainrepo', "http://repos.springrts.com/repos.gz"), False)
+		repos=self.fetchListing("https://repos.springrts.com/repos.gz", False)
 		for repo in repos:
 			sdps=self.fetchListing(repo[1] + "/versions.gz")
 			for sdp in sdps:
@@ -80,7 +80,7 @@ class Rapidsync(upqjob.UpqJob):
 	def fetchListing(self, url, cache=True):
 		logging.debug("Fetching %s" % (url))
 		ParseResult = urlparse(url)
-		absname=os.path.join(self.getcfg('temppath', '/tmp'), ParseResult.hostname, ParseResult.path.strip("/"))
+		absname=os.path.join(self.cfg.paths['tmp'], ParseResult.hostname, ParseResult.path.strip("/"))
 
 		if not download.DownloadFile(url, absname, cache):
 			return []
