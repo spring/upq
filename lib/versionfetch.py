@@ -43,15 +43,15 @@ class Versionfetch():
 		url = self.prefix +'/' + data['path']
 		cid = upqdb.getCID(category)
 		#print "%s %s %s %s" % (filename, version, category, url)
-		res = upqdb.UpqDB().query("SELECT fid, md5 from file WHERE version='%s' and cid=%s" % (version, cid))
+		res = self.db.query("SELECT fid, md5 from file WHERE version='%s' and cid=%s" % (version, cid))
 		fileinfo = res.first()
 		if fileinfo:
 			fid = fileinfo[0]
 			assert(fid > 0)
 			if data["md5"] != fileinfo[1]:
-				upqdb.UpqDB().query("UPDATE file set md5='%s' WHERE fid=%s"%  (data['md5'], fid))
+				self.db.query("UPDATE file set md5='%s' WHERE fid=%s"%  (data['md5'], fid))
 		else:
-			fid = upqdb.UpqDB().insert("file", {
+			fid = self.db.insert("file", {
 				"filename" : filename,
 				"name": "spring",
 				"version": version,
@@ -64,14 +64,14 @@ class Versionfetch():
 				})
 
 
-		res = upqdb.UpqDB().query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (mid, fid))
+		res = self.db.query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (mid, fid))
 		mfid = res.first()
 		if mfid:
 			mfid = mfid[0]
 			assert(mid > 0)
-			upqdb.UpqDB().query("UPDATE mirror_file SET lastcheck=NOW(), path='%s' WHERE mfid = %s"% (data['path'], mfid))
+			self.db.query("UPDATE mirror_file SET lastcheck=NOW(), path='%s' WHERE mfid = %s"% (data['path'], mfid))
 		else:
-			mfid = upqdb.UpqDB().insert("mirror_file", {
+			mfid = self.db.insert("mirror_file", {
 				"mid" : mid,
 				"path": data['path'],
 				"status": 1,
@@ -81,8 +81,8 @@ class Versionfetch():
 
 	def run(self):
 		url = self.prefix + '/list.php'
-
 		filename = "/tmp/sprinvers.json"
+		self.db = upqdb.UpqDB()
 
 		if not download.DownloadFile(url, filename):
 			logging.info("list.php wasn't changed")
@@ -90,12 +90,12 @@ class Versionfetch():
 
 		with open(filename, "r") as f:
 			data = json.loads(str(f.read()))
-		res = upqdb.UpqDB().query("SELECT mid from mirror WHERE url_prefix='%s'" % self.prefix)
+		res = self.db.query("SELECT mid from mirror WHERE url_prefix='%s'" % self.prefix)
 		mid = res.first()[0]
 		assert(mid > 0)
 		for row in data:
 			self.update(row, mid)
 		#delete files that wheren't updated this run (means removed from mirror)
-		upqdb.UpqDB().query("DELETE FROM `mirror_file` WHERE `lastcheck` < NOW() - INTERVAL 1 HOUR AND mid = %s" %(mid))
+		self.db.query("DELETE FROM `mirror_file` WHERE `lastcheck` < NOW() - INTERVAL 1 HOUR AND mid = %s" %(mid))
 		return True
 

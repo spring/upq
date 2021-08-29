@@ -274,7 +274,7 @@ class Extract_metadata():
 				"uid": 0,
 				"path": data["path"],
 				"filename": os.path.basename(filename),
-				"timestamp": upqdb.UpqDB().now(), #fixme: use file timestamp
+				"timestamp": upqdb.now(), #fixme: use file timestamp
 				"size": os.path.getsize(filename),
 				"status": 1,
 				"md5": hashes["md5"],
@@ -296,7 +296,7 @@ class Extract_metadata():
 		# remove already existing depends
 		self.db.query("DELETE FROM file_depends WHERE fid = %s" % (fid) )
 		for depend in data['Depends']:
-			res=UpqDB().query("SELECT fid FROM file WHERE CONCAT(name,' ',version)='%s'" % (depend))
+			res=self.db.query("SELECT fid FROM file WHERE CONCAT(name,' ',version)='%s'" % (depend))
 			row=res.first()
 			if not row:
 				id=0
@@ -305,7 +305,7 @@ class Extract_metadata():
 			try:
 				self.db.insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
 				logging.info("Added %s '%s' version '%s' to the mirror-system" % (data['Type'], data['Name'], data['Version']))
-			except UpqDBIntegrityError:
+			except upqdb.UpqDBIntegrityError:
 				pass
 		logging.info("Updated %s '%s' version '%s' sdp '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version'], data['sdp']))
 		return fid
