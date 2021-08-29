@@ -17,8 +17,6 @@ from upqdb import UpqDB
 import upqconfig
 
 import sys
-from xmlrpc.client import ServerProxy
-
 import json
 import os
 import upqjob
