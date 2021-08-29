@@ -28,6 +28,9 @@ def getCID(category):
 	cats[category]=res.first()[0] # cache result
 	return cats[category]
 
+def now(self):
+	return func.now()
+
 class UpqDBIntegrityError(Exception):
 	def __init__(self, value):
 		self.value = value
@@ -168,8 +171,6 @@ class UpqDB():
 			logging.debug("%s (%s) id:%s", query, values, result)
 		return result
 
-	def now(self):
-		return func.now()
 
 	def escape(self, string):
 		return string.replace("'","").replace("%","")

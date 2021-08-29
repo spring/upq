@@ -257,7 +257,7 @@ class Extract_metadata():
 		del metadata['Name']
 		logging.debug(metadata)
 		metadata=json.dumps(metadata)
-		results=upqdb.UpqDB().query("SELECT fid FROM file WHERE sdp='%s' or md5='%s'"% (data['sdp'], hashes['md5']))
+		results = self.db.query("SELECT fid FROM file WHERE sdp='%s' or md5='%s'"% (data['sdp'], hashes['md5']))
 		res=results.first()
 		if res:
 			fid=res['fid']
@@ -265,7 +265,7 @@ class Extract_metadata():
 			fid=0
 
 		if fid<=0:
-			fid=upqdb.UpqDB().insert("file", {
+			fid=self.db.insert("file", {
 				"name": escape(data['Name']),
 				"version": escape(data['Version']),
 				"sdp": data['sdp'],
@@ -282,7 +282,7 @@ class Extract_metadata():
 				"sha256": hashes["sha256"],
 				})
 		else:
-			upqdb.UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s', md5='%s', sha1='%s', sha256='%s', status=1 WHERE fid=%s" %(
+			self.db.query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s', md5='%s', sha1='%s', sha256='%s', status=1 WHERE fid=%s" %(
 				escape(data['Name']),
 				data['Version'],
 				data['sdp'],
@@ -294,7 +294,7 @@ class Extract_metadata():
 				fid
 				))
 		# remove already existing depends
-		upqdb.UpqDB().query("DELETE FROM file_depends WHERE fid = %s" % (fid) )
+		self.db.query("DELETE FROM file_depends WHERE fid = %s" % (fid) )
 		for depend in data['Depends']:
 			res=UpqDB().query("SELECT fid FROM file WHERE CONCAT(name,' ',version)='%s'" % (depend))
 			row=res.first()
@@ -303,7 +303,7 @@ class Extract_metadata():
 			else:
 				id=row['fid']
 			try:
-				upqdb.UpqDB().insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
+				self.db.insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
 				logging.info("Added %s '%s' version '%s' to the mirror-system" % (data['Type'], data['Name'], data['Version']))
 			except UpqDBIntegrityError:
 				pass
@@ -354,6 +354,7 @@ class Extract_metadata():
 
 	def ExtractMetadata(self, cfg, usync, archiveh, filename, filepath, metadatapath, hashes):
 		self.jobcfg=cfg
+		self.db = upqdb.UpqDB()
 
 		filelist = getFileList(usync, archiveh)
 		sdp = getSDPName(usync, archiveh)

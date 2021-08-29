@@ -76,7 +76,7 @@ class Versionfetch():
 				"path": data['path'],
 				"status": 1,
 				"fid": fid,
-				"lastcheck": upqdb.UpqDB().now()
+				"lastcheck": upqdb.now()
 				})
 
 	def run(self):
