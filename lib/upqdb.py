@@ -25,10 +25,7 @@ def getCID(category):
 	if category in cats:
 		return cats[category]
 	res = UpqDB().query("SELECT cid from categories WHERE name='%s'" % (category))
-	try:
-		cats[category]=res.first()[0] # cache result
-	except:
-		logging.error("Invalid category: %s" % category)
+	cats[category]=res.first()[0] # cache result
 	return cats[category]
 
 class UpqDBIntegrityError(Exception):
