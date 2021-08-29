@@ -29,7 +29,6 @@ class Sf_sync(upqjob.UpqJob):
 	def versionfetch(self):
 		from jobs import versionfetch 
 		j = versionfetch.Versionfetch("versionfetch", {})
-		j.run()
 		return j.run()
 	def run(self):
 		self.versionfetch()
