@@ -32,7 +32,6 @@ class UpqJob(object):
 
 		self.jobdata = jobdata #runtime parameters, these are stored into database and restored on re-run
 		self.jobid   = -1
-		self.msgstr  = ""
 		self.result  = False
 		self.retries = 0
 
@@ -49,13 +48,6 @@ class UpqJob(object):
 	def __setstate__(self, dict):
 		# this is used to unpickle a job
 		self.__dict__.update(dict)
-
-	def msg(self, msg):
-		logging.debug(msg)
-		if len(self.msgstr)+len(msg)<=500:
-			self.msgstr+=str(msg)
-		else:
-			logging.error("msg to long: --------%s-------" %(msg))
 
 	def __str__(self):
 		return "Job: "+self.jobname +" id:"+ str(self.jobid)+" jobdata:"+json.dumps(self.jobdata)

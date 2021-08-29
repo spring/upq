@@ -41,7 +41,7 @@ class Extract_metadata(UpqJob):
 	def setupdir(self, filepath):
 		if not os.path.isfile(filepath):
 			logging.error("error setting up temp dir, file doesn't exist %s" %(filepath))
-			raise Exception(self.msgstr)
+			raise Exception()
 		temppath=tempfile.mkdtemp(dir=UpqConfig().paths['tmp'])
 		archivetmp=os.path.join(temppath, "games")
 		os.mkdir(archivetmp)
