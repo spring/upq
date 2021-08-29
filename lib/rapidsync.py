@@ -23,7 +23,7 @@ from lib import download, upqdb
 class Rapidsync():
 	cats = {}
 
-	def UpdateSDP(self, sdp):
+	def UpdateSDP(self, db, sdp):
 		"""
 		values = {
 				"tag"=sdp[0],
@@ -33,22 +33,22 @@ class Rapidsync():
 		}
 		"""
 		#check if file is already known
-		res=upqdb.UpqDB().query("SELECT f.fid FROM file f \
+		res=db.query("SELECT f.fid FROM file f \
 			LEFT JOIN tag t ON t.fid=f.fid \
 			WHERE sdp='%s'" % (sdp[1]))
 		row=res.first()
 		if row: #file is already known
 			#delete tag from existing files
-			upqdb.UpqDB().query("DELETE FROM tag WHERE tag='%s'" % (sdp[0]))
+			db.query("DELETE FROM tag WHERE tag='%s'" % (sdp[0]))
 			#insert updated tag
-			upqdb.UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (row['fid'], sdp[0]))
+			db.query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (row['fid'], sdp[0]))
 			#logging.info("updated %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
 			return
 		if not sdp[3]: #without a name, we can't do anything!
 			return
 		cid = upqdb.getCID("game")
 		try:
-			fid = upqdb.UpqDB().insert("file", {
+			fid = db.insert("file", {
 				"filename" : sdp[3] + " (not available as sdz)",
 				"name": sdp[3],
 				"cid" : cid,
@@ -59,23 +59,24 @@ class Rapidsync():
 				"uid" : 0,
 				"path" : "",
 				})
-			upqdb.UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (fid, sdp[0]))
+			db.query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (fid, sdp[0]))
 			#logging.info("inserted %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
 		except Exception as e:
 			logging.error(str(e))
 			logging.error("Error from sdp: %s %s %s %s", sdp[3], sdp[2],sdp[1],sdp[0])
-			res=upqdb.UpqDB().query("SELECT * FROM file f WHERE name='%s'" % sdp[3])
+			res = db.query("SELECT * FROM file f WHERE name='%s'" % sdp[3])
 			if res:
 				row=res.first()
 				logging.error("a file with this name already exists, fid=%s, sdp=%s" % (row['fid'], row['sdp']))
 
 	def run(self, cfg):
 		self.cfg = cfg
-		repos=self.fetchListing("https://repos.springrts.com/repos.gz", False)
+		repos = self.fetchListing("https://repos.springrts.com/repos.gz", False)
+		db = upqdb.UpqDB()
 		for repo in repos:
 			sdps=self.fetchListing(repo[1] + "/versions.gz")
 			for sdp in sdps:
-				self.UpdateSDP(sdp)
+				self.UpdateSDP(db, sdp)
 
 
 	def fetchListing(self, url, cache=True):
