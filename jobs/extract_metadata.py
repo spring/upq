@@ -293,7 +293,7 @@ class Extract_metadata(UpqJob):
 
 		err=usync.GetNextError()
 		while not err==None:
-			logging.error(err)
+			logging.error(err.decode())
 			err=usync.GetNextError()
 
 		usync.CloseArchive(archiveh)
@@ -427,7 +427,7 @@ class Extract_metadata(UpqJob):
 			del data
 			return res
 		del data
-		logging.error("Error creating image %s" % (usync.usync.GetNextError()))
+		logging.error("Error creating image %s" % (usync.usync.GetNextError().decode()))
 		raise Exception("Error creating image")
 
 	def dumpmap(self, usync, springname, outpath, filename, idx):
@@ -445,7 +445,7 @@ class Extract_metadata(UpqJob):
 
 	def getUnits(self, usync, archive):
 		while usync.ProcessUnits()>0:
-			err=usync.GetNextError()
+			err=usync.GetNextError().decode()
 			if err:
 				logging.error("Error processing units: %s" % (err))
 		res = []
@@ -467,7 +467,7 @@ class Extract_metadata(UpqJob):
 				break
 			fileh=usync.OpenArchiveFile(archiveh, name.value)
 			if fileh<0:
-				logging.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  ""+usync.GetNextError()))
+				logging.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  ""+usync.GetNextError().decode()))
 				return []
 			files.append(name.value.decode())
 			del name
