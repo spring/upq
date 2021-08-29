@@ -15,21 +15,24 @@ import datetime
 import json
 import logging
 
+def escape(string):
+	return string.replace("%7b", "{").replace("%7d", "}")
+
+cats = {}
+def getCID(category):
+	global cats
+	if category in cats:
+		return cats[category]
+	res = UpqDB().query("SELECT cid from categories WHERE name='%s'" % (category))
+	try:
+		cats[category]=res.first()[0] # cache result
+	except:
+		logging.error("Invalid category: %s" % category)
+	return cats[category]
+
 class Versionfetch(UpqJob):
 	prefix = "https://springrts.com/dl/buildbot"
-	cats = {}
-	def escape(self, string):
-		return string.replace("%7b", "{").replace("%7d", "}")
 
-	def getCID(self, category):
-		if category in self.cats:
-			return self.cats[category]
-		res = UpqDB().query("SELECT cid from categories WHERE name='%s'" % (category))
-		try:
-			self.cats[category]=res.first()[0] # cache result
-		except:
-			logging.error("Invalid category: %s" % category)
-		return self.cats[category]
 
 	def update(self, data, mid):
 		"""
@@ -44,7 +47,7 @@ class Versionfetch(UpqJob):
 		"""
 		if data['version'] == "testing":
 			return
-		filename = self.escape(data['path'][data['path'].rfind("/")+1:])
+		filename = escape(data['path'][data['path'].rfind("/")+1:])
 		category = "engine_" + data['os']
 		branch = data['branch']
 		version = data['version']
