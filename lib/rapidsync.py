@@ -18,11 +18,9 @@ import datetime
 import time
 import logging
 
-from lib import download
-from lib.upqjob import UpqJob
-from lib.upqdb import UpqDB, UpqDBIntegrityError
+from lib import download, upqdb, upqjob
 
-class Rapidsync(UpqJob):
+class Rapidsync(upqjob.UpqJob):
 	cats = {}
 
 	def UpdateSDP(self, sdp):
@@ -35,22 +33,22 @@ class Rapidsync(UpqJob):
 		}
 		"""
 		#check if file is already known
-		res=UpqDB().query("SELECT f.fid FROM file f \
+		res=upqdb.UpqDB().query("SELECT f.fid FROM file f \
 			LEFT JOIN tag t ON t.fid=f.fid \
 			WHERE sdp='%s'" % (sdp[1]))
 		row=res.first()
 		if row: #file is already known
 			#delete tag from existing files
-			UpqDB().query("DELETE FROM tag WHERE tag='%s'" % (sdp[0]))
+			upqdb.UpqDB().query("DELETE FROM tag WHERE tag='%s'" % (sdp[0]))
 			#insert updated tag
-			UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (row['fid'], sdp[0]))
+			upqdb.UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (row['fid'], sdp[0]))
 			#logging.info("updated %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
 			return
 		if not sdp[3]: #without a name, we can't do anything!
 			return
-		cid = self.getCid("game")
+		cid = upqdb.getCid("game")
 		try:
-			fid = UpqDB().insert("file", {
+			fid = upqdb.UpqDB().insert("file", {
 				"filename" : sdp[3] + " (not available as sdz)",
 				"name": sdp[3],
 				"cid" : cid,
@@ -61,12 +59,12 @@ class Rapidsync(UpqJob):
 				"uid" : 0,
 				"path" : "",
 				})
-			UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (fid, sdp[0]))
+			upqdb.UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (fid, sdp[0]))
 			#logging.info("inserted %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
 		except Exception as e:
 			logging.error(str(e))
 			logging.error("Error from sdp: %s %s %s %s", sdp[3], sdp[2],sdp[1],sdp[0])
-			res=UpqDB().query("SELECT * FROM file f WHERE name='%s'" % sdp[3])
+			res=upqdb.UpqDB().query("SELECT * FROM file f WHERE name='%s'" % sdp[3])
 			if res:
 				row=res.first()
 				logging.error("a file with this name already exists, fid=%s, sdp=%s" % (row['fid'], row['sdp']))
@@ -95,14 +93,3 @@ class Rapidsync(UpqJob):
 			res.append(line.decode("utf-8").strip("\n").split(","))
 		return res
 
-	def getCid(self, name):
-		if name in self.cats:
-			return self.cats[name]
-		result=UpqDB().query("SELECT cid from categories WHERE name='%s'" % name)
-		res=result.first()
-		if res:
-			cid=res['cid']
-		else:
-			cid=UpqDB().insert("categories", {"name": name})
-		self.cats[name] = cid
-		return cid
