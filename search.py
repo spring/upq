@@ -19,10 +19,6 @@ def getlimit(request):
 	return "LIMIT %d, %d" %(offset, limit)
 
 
-def sqlescape(string):
-	#FIXME!!!!!
-	return string
-
 request = {
 	#"offset": "10",
 	#"limit": "3",
@@ -41,12 +37,12 @@ if "nosensitive" in request:
 else:
 	binary="BINARY"
 
-def GetQuery(request, binary, tag, cond):
+def GetQuery(db, request, binary, tag, cond):
 	if not tag in request:
 		return []
 	params = {
 		"binary": binary,
-		tag : sqlescape(request[tag])
+		tag : db.escape(request[tag])
 	}
 	#print(params)
 	return [cond.format(**params)]
@@ -66,7 +62,7 @@ conditions = {
 
 wheres = []
 for tag, condition in conditions.items():
-	wheres += GetQuery(request, binary, tag, condition)
+	wheres += GetQuery(db, request, binary, tag, condition)
 
 wherecond = logical.join(wheres)
 if wherecond:
@@ -150,4 +146,4 @@ for row in rows:
 	d["timestamp"] = d["timestamp"].isoformat()
 	clientres.append(d)
 
-json.dumps(clientres)
+print(json.dumps(clientres))
