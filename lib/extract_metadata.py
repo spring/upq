@@ -364,7 +364,6 @@ class Extract_metadata():
 			springname = usync.GetMapName(idx).decode()
 			data=self.getMapData(usync, filename, idx, archiveh, springname)
 			data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
-			logging.error(self.cfg)
 			data['path'] = os.path.join(self.cfg.paths['files'], "maps")
 		else: # file is a game
 			idx=self.getGameIdx(usync, filename)
