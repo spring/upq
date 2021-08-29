@@ -16,7 +16,6 @@ class UpqConfig():
 	paths  = {}
 	jobs   = {}
 	db	 = {}
-	config_log = "Log replay from config parsing:\n"
 	config = ""
 
 	def setstr(self,obj, section, value, default):
@@ -31,9 +30,8 @@ class UpqConfig():
 		except:
 			if default!=None:
 				self.setstr(obj, section, value, os.path.abspath(default))
-		if directory and not os.path.exists(obj[value]):
-			os.mkdir(obj[value])
-			self.conf_log("created '%s' because it didn't exist." % (obj[value]))
+		if not os.path.exists(obj[value]):
+			logging.error("%s doesn't exist" % (obj[value]))
 
 	def setbool(self,obj, section, value, default):
 		try:
@@ -47,9 +45,6 @@ class UpqConfig():
 		except:
 			if default!=None:
 				obj[value]=default
-
-	def conf_log(self, msg):
-		self.config_log += msg+"\n"
 
 	def readConfig(self, configfile = "upq.cfg"):
 		logging.info("reading %s" %(configfile))
@@ -84,8 +79,8 @@ class UpqConfig():
 				for name, value in self.config.items(section):
 					self.jobs[job][name]=value
 
-		self.conf_log("paths='%s'" % self.paths)
-		self.conf_log("jobs:'%s'" % sorted(self.jobs.keys()))
+		logging.info("paths='%s'" % self.paths)
+		logging.info("jobs:'%s'" % sorted(self.jobs.keys()))
 		for job in sorted(self.jobs.keys()):
-			self.conf_log("  {0}: {1}".format(job, self.jobs[job]))
-		self.conf_log("db='%s'" % self.db)
+			logging.info("  {0}: {1}".format(job, self.jobs[job]))
+		logging.info("db='%s'" % self.db)
