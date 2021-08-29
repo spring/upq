@@ -58,19 +58,18 @@ class Versionfetch(UpqJob):
 			assert(fid > 0)
 			if data["md5"] != fileinfo[1]:
 				UpqDB().query("UPDATE file set md5='%s' WHERE fid=%s"%  (data['md5'], fid))
-			return
-
-		fid = UpqDB().insert("file", {
-			"filename" : filename,
-			"name": "spring",
-			"version": version,
-			"cid" : cid,
-			"md5" : data['md5'],
-			"timestamp": datetime.datetime.fromtimestamp(data['filectime']),
-			#"timestamp": data['filectime'],
-			"size": data['filesize'],
-			"status": 1,
-			})
+		else:
+			fid = UpqDB().insert("file", {
+				"filename" : filename,
+				"name": "spring",
+				"version": version,
+				"cid" : cid,
+				"md5" : data['md5'],
+				"timestamp": datetime.datetime.fromtimestamp(data['filectime']),
+				#"timestamp": data['filectime'],
+				"size": data['filesize'],
+				"status": 1,
+				})
 
 
 		res = UpqDB().query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (mid, fid))
@@ -78,7 +77,7 @@ class Versionfetch(UpqJob):
 		if mfid:
 			mfid = mfid[0]
 			assert(mid > 0)
-			UpqDB().query("UPDATE mirror_file SET lastcheck=NOW() WHERE mfid = %s"% (mfid))
+			UpqDB().query("UPDATE mirror_file SET lastcheck=NOW(), path='%s' WHERE mfid = %s"% (data['path'], mfid))
 		else:
 			relpath = self.escape(url[len(self.prefix)+1:])
 			mfid = UpqDB().insert("mirror_file", {
