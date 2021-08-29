@@ -102,17 +102,6 @@ def setupdir(filepath, tmpdir):
 
 class Extract_metadata(upqjob.UpqJob):
 
-
-	def savedelete(self,file):
-		try:
-			os.remove(file)
-		except:
-			pass
-		try:
-			os.rmdir(file)
-		except:
-			pass
-
 	def getMapIdx(self, usync, filename):
 		assert(isinstance(filename, str))
 		mapcount = usync.GetMapCount()
