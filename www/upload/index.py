@@ -72,7 +72,7 @@ def SetupLogger(job):
 	import logging
 	job.log_stream = StringIO()
 	logging.basicConfig(stream=job.log_stream)
-	logging.getLogger("upq").addHandler(logging.StreamHandler(stream=job.log_stream))
+	logging.getLogger().addHandler(logging.StreamHandler(stream=job.log_stream))
 
 def ParseAndAddFile(filename):
 	import upqconfig, upqdb
