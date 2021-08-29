@@ -7,9 +7,6 @@ db.connect(cfg.db['url'], cfg.db['debug'])
 
 wherecond = ""
 
-
-
-
 def getlimit(request):
 	offset = 0
 	limit = 10
@@ -18,11 +15,58 @@ def getlimit(request):
 	if "limit" in request:
 		limit = min(64, int(request["limit"]))
 	return "LIMIT %d, %d" %(offset, limit)
+
+
+def sqlescape(string):
+	#FIXME!!!!!
+	return string
+
 request = {
-	"offset": "10",
-	"limit": "3",
+	#"offset": "10",
+	#"limit": "3",
+	#"nosensitive": "",
+	#"logical": "or",
+	"springname": "DeltaSiegeDry",
 }
 
+if "logical" in request and request["logical"] == "or":
+	logical = " OR "
+else:
+	logical = " AND "
+
+if "nosensitive" in request:
+	binary=""
+else:
+	binary="BINARY"
+
+def GetQuery(request, binary, tag, cond):
+	if not tag in request:
+		return []
+	params = {
+		"binary": binary,
+		tag : sqlescape(request[tag])
+	}
+	print(params)
+	return [cond.format(**params)]
+
+
+wheres = []
+wheres += GetQuery(request, binary, "tag", "t.tag LIKE {binary} '{tag}'")
+wheres += GetQuery(request, binary, "filename", "f.filename LIKE {binary} '{filename}'")
+wheres += GetQuery(request, binary, "category", "c.name LIKE {binary} '{category}'")
+wheres += GetQuery(request, binary, "name", "f.name LIKE {binary} '{name}'");
+
+wheres += GetQuery(request, binary, "version", "f.version LIKE {binary}'{version}'")
+wheres += GetQuery(request, binary, "sdp", "f.sdp LIKE {binary} '{sdp}'")
+wheres += GetQuery(request, binary, "springname", "( (CONCAT(f.name,' ',f.version) LIKE {binary} '{springname}') OR (f.name LIKE {binary} '{springname}' OR f.version LIKE {binary} '{springname}') )")
+wheres += GetQuery(request, binary, "md5", "f.md5 = '{md5}'")
+
+
+wherecond = logical.join(wheres)
+if wherecond:
+	wherecond = " AND " + wherecond
+
+print(wherecond)
 
 res = db.query("""SELECT
 distinct(f.fid) as fid,
