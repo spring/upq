@@ -57,7 +57,6 @@ class UpqConfig():
 			raise Exception("Couldn't parse %s %s" % (configfile, e))
 
 		self.paths = {}
-		self.setpath(self.paths, "paths", "socket", "/var/run/upq-incoming.sock", False)
 
 		self.setpath(self.paths, "paths", "uploads", "uploads")
 		self.setpath(self.paths, "paths", "files", "files")
