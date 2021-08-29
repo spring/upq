@@ -9,7 +9,6 @@
 # fetches version information from 
 
 from lib import log, upqdb, download
-from lib.upqjob import UpqJob
 import datetime
 import socket
 import json
@@ -21,7 +20,7 @@ stabledl =  prefix + "/stable/springlobby-%s-win32.zip"
 develver =  prefix + "/develop/version-develop.txt"
 develdl =   prefix + "/develop/springloby-%s-win32.zip"
 
-class Springlobbyfetch(UpqJob):
+class Springlobbyfetch():
 
 	def update(self, data, mid):
 		"""
