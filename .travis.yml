@@ -3,3 +3,4 @@ python:
   - "3.9"
 script:
   - tests/testapi.py
+  - lib/extract_metadata.py

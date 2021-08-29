@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # This file is part of the "upq" program used on springfiles.springrts.com to manage file
 # uploads, mirror distribution etc. It is published under the GPLv3.
 #
@@ -37,8 +38,6 @@ def escape(string):
 	"""
 	>>> escape("blabla%stest")
 	'blabla%%stest'
-	>>> escape("äöü")
-	''
 	"""
 	assert(isinstance(string, str))
 	string=string.replace("'","''")
