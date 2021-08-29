@@ -7,10 +7,9 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-
-
+import logging
 import configparser as ConfigParser
-import os, os.path
+import os
 
 class UpqConfig():
 	__shared_state = {}
@@ -19,8 +18,6 @@ class UpqConfig():
 	db	 = {}
 	config_log = "Log replay from config parsing:\n"
 	config = ""
-	configfile = "upq.cfg"
-	logfile = ""
 
 	def setstr(self,obj, section, value, default):
 		try:
@@ -51,29 +48,20 @@ class UpqConfig():
 			if default!=None:
 				obj[value]=default
 
-	def __init__(self, configfile="", logfile=""):
-		self.__dict__ = self.__shared_state
-		if len(configfile)>0:
-			self.configfile=configfile
-		if len(logfile)>0:
-			self.logfile=logfile
-
 	def conf_log(self, msg):
 		self.config_log += msg+"\n"
 
-	def readConfig(self):
-		if not os.access(self.configfile, os.R_OK):
-			print >> sys.stderr, "Cannot read config file \"%s\"."%self.configfile
-			sys.exit(1)
+	def readConfig(self, configfile = "upq.cfg"):
+		logging.info("reading %s" %(configfile))
+		if not os.access(configfile, os.R_OK):
+			raise Exception("Cannot read config file \"%s\"." % configfile)
 		try:
 			self.config = ConfigParser.RawConfigParser()
-			self.config.read(self.configfile)
+			self.config.read(configfile)
 		except Exception as e:
-			print >> sys.stderr, "Couldn't parse %s %s" % (self.configfile, e)
-			sys.exit(1)
+			raise Exception("Couldn't parse %s %s" % (configfile, e))
 
 		self.paths = {}
-		self.setpath(self.paths, "paths", "jobs_dir", "jobs")
 		self.setpath(self.paths, "paths", "socket", "/var/run/upq-incoming.sock", False)
 
 		self.setpath(self.paths, "paths", "uploads", "uploads")

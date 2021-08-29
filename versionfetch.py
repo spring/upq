@@ -19,10 +19,10 @@ import json
 import os
 
 
-upqconfig.UpqConfig()
-upqconfig.UpqConfig().readConfig()
+cfg = upqconfig.UpqConfig()
+cfg.readConfig()
 db = upqdb.UpqDB()
-db.connect(upqconfig.UpqConfig().db['url'], upqconfig.UpqConfig().db['debug'])
+db.connect(cfg.db['url'], cfg.db['debug'])
 
 from lib import versionfetch
 j = versionfetch.Versionfetch("versionfetch", {})
