@@ -25,6 +25,7 @@ request = {
 	#"nosensitive": "",
 	#"logical": "or",
 	"springname": "DeltaSiegeDry",
+	"callback": "123",
 }
 
 if "logical" in request and request["logical"] == "or":
@@ -37,12 +38,12 @@ if "nosensitive" in request:
 else:
 	binary="BINARY"
 
-def GetQuery(db, request, binary, tag, cond):
+def GetQuery(request, binary, tag, cond):
 	if not tag in request:
 		return []
 	params = {
 		"binary": binary,
-		tag : db.escape(request[tag])
+		tag : upqdb.escape(request[tag])
 	}
 	#print(params)
 	return [cond.format(**params)]
@@ -62,7 +63,7 @@ conditions = {
 
 wheres = []
 for tag, condition in conditions.items():
-	wheres += GetQuery(db, request, binary, tag, condition)
+	wheres += GetQuery(request, binary, tag, condition)
 
 wherecond = logical.join(wheres)
 if wherecond:
@@ -146,4 +147,10 @@ for row in rows:
 	d["timestamp"] = d["timestamp"].isoformat()
 	clientres.append(d)
 
-print(json.dumps(clientres))
+if "callback" in request:
+	# strip anything except a-Z0-9
+	cb = upqdb.escape(request["callback"], set("abcdefhijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"));
+	print( cb + "(" +  json.dumps(clientres) + ");")
+else:
+	print(json.dumps(clientres))
+

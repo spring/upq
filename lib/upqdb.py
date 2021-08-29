@@ -28,6 +28,9 @@ def getCID(category):
 	cats[category]=res.first()[0] # cache result
 	return cats[category]
 
+def escape(string, whitelist=set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789-._")):
+	return ''.join(c for c in string if c in whitelist)
+
 def now(self):
 	return func.now()
 
@@ -172,6 +175,3 @@ class UpqDB():
 		return result
 
 
-	def escape(self, string):
-		whitelist = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789-._")
-		return ''.join(c for c in string if c in whitelist)
