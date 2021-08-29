@@ -31,7 +31,6 @@ class UpqJob(object):
 		self.jobcfg  = upqconfig.UpqConfig().jobs[jobname] #settings from config-filea
 
 		self.jobdata = jobdata #runtime parameters, these are stored into database and restored on re-run
-		self.jobid   = -1
 		self.result  = False
 		self.retries = 0
 
@@ -50,7 +49,7 @@ class UpqJob(object):
 		self.__dict__.update(dict)
 
 	def __str__(self):
-		return "Job: "+self.jobname +" id:"+ str(self.jobid)+" jobdata:"+json.dumps(self.jobdata)
+		return "Job: "+self.jobname +" jobdata:"+json.dumps(self.jobdata)
 
 	def getcfg(self, name, default):
 		"""
