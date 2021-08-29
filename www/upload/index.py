@@ -75,13 +75,12 @@ def SetupLogger(job):
 	logging.getLogger().addHandler(logging.StreamHandler(stream=job.log_stream))
 
 def ParseAndAddFile(filename):
-	from lib import upqconfig, upqdb
+	from lib import log, upqconfig, upqdb, extract_metadata
 	cfg = upqconfig.UpqConfig()
 	cfg.readConfig()
 	db = upqdb.UpqDB()
 	db.connect(upqconfig.UpqConfig().db['url'], upqconfig.UpqConfig().db['debug'])
 
-	from jobs import extract_metadata
 	jobdata = {
 		"file": filename,
 	}
