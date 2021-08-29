@@ -51,24 +51,26 @@ class Versionfetch(UpqJob):
 		url = self.prefix +'/' + data['path']
 		cid = self.getCID(category)
 		#print "%s %s %s %s" % (filename, version, category, url)
-		res = UpqDB().query("SELECT fid from file WHERE version='%s' and cid=%s" % (version, cid))
-		fid = res.first()
-		if fid:
-			fid = fid[0]
+		res = UpqDB().query("SELECT fid, md5 from file WHERE version='%s' and cid=%s" % (version, cid))
+		fileinfo = res.first()
+		if fileinfo:
+			fid = fileinfo[0]
 			assert(fid > 0)
-			UpqDB().query("UPDATE file set md5='%s' WHERE fid=%s"%  (data['md5'], fid))
-		else:
-			fid = UpqDB().insert("file", {
-				"filename" : filename,
-				"name": "spring",
-				"version": version,
-				"cid" : cid,
-				"md5" : data['md5'],
-				"timestamp": datetime.datetime.fromtimestamp(data['filectime']),
-				#"timestamp": data['filectime'],
-				"size": data['filesize'],
-				"status": 1,
-				})
+			if data["md5"] != fileinfo[1]:
+				UpqDB().query("UPDATE file set md5='%s' WHERE fid=%s"%  (data['md5'], fid))
+			return
+
+		fid = UpqDB().insert("file", {
+			"filename" : filename,
+			"name": "spring",
+			"version": version,
+			"cid" : cid,
+			"md5" : data['md5'],
+			"timestamp": datetime.datetime.fromtimestamp(data['filectime']),
+			#"timestamp": data['filectime'],
+			"size": data['filesize'],
+			"status": 1,
+			})
 
 
 		res = UpqDB().query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (mid, fid))
