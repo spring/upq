@@ -24,6 +24,6 @@ upqconfig.UpqConfig().readConfig()
 db = upqdb.UpqDB()
 db.connect(upqconfig.UpqConfig().db['url'], upqconfig.UpqConfig().db['debug'])
 
-from jobs import versionfetch
+from lib import versionfetch
 j = versionfetch.Versionfetch("versionfetch", {})
 j.run()

@@ -26,7 +26,7 @@ upqconfig.UpqConfig().readConfig()
 db = upqdb.UpqDB()
 db.connect(upqconfig.UpqConfig().db['url'], upqconfig.UpqConfig().db['debug'])
 
-from jobs import rapidsync
+from lib import rapidsync
 j = rapidsync.Rapidsync("versionfetch", {})
 j.run()
 

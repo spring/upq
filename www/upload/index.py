@@ -75,7 +75,7 @@ def SetupLogger(job):
 	logging.getLogger().addHandler(logging.StreamHandler(stream=job.log_stream))
 
 def ParseAndAddFile(filename):
-	import upqconfig, upqdb
+	from lib import upqconfig, upqdb
 	cfg = upqconfig.UpqConfig()
 	cfg.readConfig()
 	db = upqdb.UpqDB()

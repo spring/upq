@@ -8,9 +8,9 @@
 
 # extracts metadata from a spring map / game and adds it into the db
 
-from upqjob import UpqJob
-from upqdb import UpqDB,UpqDBIntegrityError
-from upqconfig import UpqConfig
+from lib.upqjob import UpqJob
+from lib.upqdb import UpqDB,UpqDBIntegrityError
+from lib.upqconfig import UpqConfig
 
 import sys
 import os

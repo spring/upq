@@ -1,5 +1,5 @@
 
-from lib import upqconfig, upqdb
+from lib import upqconfig, upqdb, extract_metadata
 import glob
 import sys, os
 
@@ -14,7 +14,6 @@ print(cfg.paths)
 unitsyncpath=cfg.paths['unitsync']
 sys.path.append(unitsyncpath)
 
-from jobs import extract_metadata
 
 files = glob.glob("/home/springfiles/www/downloads/spring/spring-maps/*") + glob.glob("/home/springfiles/www/downloads/spring/games/*")
 
