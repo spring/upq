@@ -8,8 +8,7 @@
 
 # extracts metadata from a spring map / game and adds it into the db
 
-from lib.upqjob import UpqJob
-from lib.upqdb import UpqDB,UpqDBIntegrityError
+from lib import log, upqdb, upqjob
 
 import sys
 import os
@@ -53,23 +52,56 @@ def decodeString(string):
 		return ""
 	return escape(string)
 
-class Extract_metadata(UpqJob):
 
+def get_hash(filename):
 	"""
-		setup temporary directory.
-		creates <tempdir>/games and symlinks archive file into that directory
+	Calculate hashes (md5, sha1, sha256) of a given file
+
+	filename is absolute path to file
+
+	returns: {'md5': 'x', 'sha1': 'y', 'sha256': 'z'}
 	"""
-	def setupdir(self, filepath):
-		if not os.path.isfile(filepath):
-			logging.error("error setting up temp dir, file doesn't exist %s" %(filepath))
-			raise Exception()
-		temppath=tempfile.mkdtemp(dir=self.cfg.paths['tmp'])
-		archivetmp=os.path.join(temppath, "games")
-		os.mkdir(archivetmp)
-		self.tmpfile=os.path.join(archivetmp, os.path.basename(filepath))
-		logging.debug("symlinking %s %s" % (filepath, self.tmpfile))
-		os.symlink(filepath, self.tmpfile)
-		return temppath
+
+	md5 = hashlib.md5()
+	sha1 = hashlib.sha1()
+	sha256 = hashlib.sha256()
+
+	try:
+		fd = open(filename, "rb", 4096)
+	except IOError as ex:
+		msg = "Unable to open '%s' for reading: '%s'." % (filename, ex)
+		logging.error(msg)
+		raise Exception(msg)
+
+	while True:
+		data = fd.read(4096)
+		if not data: break
+		md5.update(data)
+		sha1.update(data)
+		sha256.update(data)
+
+	fd.close()
+
+	return {'md5': md5.hexdigest(), 'sha1': sha1.hexdigest(), 'sha256': sha256.hexdigest()}
+
+"""
+	setup temporary directory.
+	creates <tempdir>/games and symlinks archive file into that directory
+"""
+def setupdir(filepath, tmpdir):
+	if not os.path.isfile(filepath):
+		logging.error("error setting up temp dir, file doesn't exist %s" %(filepath))
+		raise Exception()
+	temppath=tempfile.mkdtemp(dir=tmpdir)
+	archivetmp=os.path.join(temppath, "games")
+	os.mkdir(archivetmp)
+	tmpfile=os.path.join(archivetmp, os.path.basename(filepath))
+	logging.debug("symlinking %s %s" % (filepath, tmpfile))
+	os.symlink(filepath, tmpfile)
+	return temppath
+
+class Extract_metadata(upqjob.UpqJob):
+
 
 	def savedelete(self,file):
 		try:
@@ -110,7 +142,7 @@ class Extract_metadata(UpqJob):
 		if 'fid' in self.jobdata: # detect already existing files
 			fid=self.jobdata['fid']
 		else:
-			results=UpqDB().query("SELECT fid FROM file WHERE sdp='%s' or md5='%s'"% (data['sdp'], hashes['md5']))
+			results=upqdb.UpqDB().query("SELECT fid FROM file WHERE sdp='%s' or md5='%s'"% (data['sdp'], hashes['md5']))
 			res=results.first()
 			if res:
 				fid=res['fid']
@@ -118,16 +150,16 @@ class Extract_metadata(UpqJob):
 				fid=0
 
 		if fid<=0:
-			fid=UpqDB().insert("file", {
+			fid=upqdb.UpqDB().insert("file", {
 				"name": escape(data['Name']),
 				"version": escape(data['Version']),
 				"sdp": data['sdp'],
-				"cid": self.getCid(data['Type']),
+				"cid": upqdb.getCID(data['Type']),
 				"metadata": metadata,
 				"uid": 0,
 				"path": data["path"],
 				"filename": os.path.basename(filename),
-				"timestamp": UpqDB().now(), #fixme: use file timestamp
+				"timestamp": upqdb.UpqDB().now(), #fixme: use file timestamp
 				"size": os.path.getsize(filename),
 				"status": 1,
 				"md5": hashes["md5"],
@@ -135,11 +167,11 @@ class Extract_metadata(UpqJob):
 				"sha256": hashes["sha256"],
 				})
 		else:
-			UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s', md5='%s', sha1='%s', sha256='%s', status=1 WHERE fid=%s" %(
+			upqdb.UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s', md5='%s', sha1='%s', sha256='%s', status=1 WHERE fid=%s" %(
 				escape(data['Name']),
 				data['Version'],
 				data['sdp'],
-				self.getCid(data['Type']),
+				upqdb.getCID(data['Type']),
 				metadata,
 				hashes["md5"],
 				hashes["sha1"],
@@ -147,7 +179,7 @@ class Extract_metadata(UpqJob):
 				fid
 				))
 		# remove already existing depends
-		UpqDB().query("DELETE FROM file_depends WHERE fid = %s" % (fid) )
+		upqdb.UpqDB().query("DELETE FROM file_depends WHERE fid = %s" % (fid) )
 		for depend in data['Depends']:
 			res=UpqDB().query("SELECT fid FROM file WHERE CONCAT(name,' ',version)='%s'" % (depend))
 			row=res.first()
@@ -156,7 +188,7 @@ class Extract_metadata(UpqJob):
 			else:
 				id=row['fid']
 			try:
-				UpqDB().insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
+				upqdb.UpqDB().insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
 				logging.info("Added %s '%s' version '%s' to the mirror-system" % (data['Type'], data['Name'], data['Version']))
 			except UpqDBIntegrityError:
 				pass
@@ -261,7 +293,7 @@ class Extract_metadata(UpqJob):
 		try:
 			data['sdp']=sdp
 			self.jobdata['fid']=self.insertData(data, moveto, hashes)
-		except UpqDBIntegrityError:
+		except upqdb.UpqDBIntegrityError:
 			logging.error("Duplicate file detected: %s %s %s" % (filename, data['Name'], data['Version']))
 			return False
 
@@ -279,8 +311,8 @@ class Extract_metadata(UpqJob):
 			logging.error("File doesn't exist: %s" %(filepath))
 			return False
 
-		hashes = self.get_hash(filepath)
-		tmpdir=self.setupdir(filepath) #temporary directory for unitsync
+		hashes = get_hash(filepath)
+		tmpdir = setupdir(filepath, self.cfg.paths['tmp']) #temporary directory for unitsync
 
 		usync=self.initUnitSync(tmpdir, filename)
 		archiveh=self.openArchive(usync, os.path.join("games",filename))
@@ -505,15 +537,6 @@ class Extract_metadata(UpqJob):
 			i=i+1
 		logging.debug("SDP %s" % m.hexdigest())
 		return m.hexdigest()
-	""" returns the category id specified by name"""
-	def getCid(self, name):
-		result=UpqDB().query("SELECT cid from categories WHERE name='%s'" % name)
-		res=result.first()
-		if res:
-			cid=res['cid']
-		else:
-			cid=UpqDB().insert("categories", {"name": name})
-		return cid
 
 	def getGameData(self, usync, idx, gamesarchivecount, archivename, archiveh):
 		res={}
@@ -613,34 +636,4 @@ class Extract_metadata(UpqJob):
 				res+="_"
 		return res
 
-	def get_hash(self, filename):
-		"""
-		Calculate hashes (md5, sha1, sha256) of a given file
-
-		filename is absolute path to file
-
-		returns: {'md5': 'x', 'sha1': 'y', 'sha256': 'z'}
-		"""
-
-		md5 = hashlib.md5()
-		sha1 = hashlib.sha1()
-		sha256 = hashlib.sha256()
-
-		try:
-			fd = open(filename, "rb", 4096)
-		except IOError as ex:
-			msg = "Unable to open '%s' for reading: '%s'." % (filename, ex)
-			logging.error(msg)
-			raise Exception(msg)
-
-		while True:
-			data = fd.read(4096)
-			if not data: break
-			md5.update(data)
-			sha1.update(data)
-			sha256.update(data)
-
-		fd.close()
-
-		return {'md5': md5.hexdigest(), 'sha1': sha1.hexdigest(), 'sha256': sha256.hexdigest()}
 
