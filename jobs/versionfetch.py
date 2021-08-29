@@ -13,6 +13,7 @@ from upqdb import UpqDB, UpqDBIntegrityError
 import datetime
 import json
 import logging
+import download
 
 class Versionfetch(UpqJob):
 	prefix = "https://springrts.com/dl/buildbot"
@@ -93,7 +94,7 @@ class Versionfetch(UpqJob):
 
 		filename = "/tmp/sprinvers.json"
 
-		if not self.DownloadFile(url, filename):
+		if not download.DownloadFile(url, filename):
 			logging.info("list.php wasn't changed")
 			return True
 

@@ -20,6 +20,7 @@ import logging
 
 from upqjob import UpqJob
 from upqdb import UpqDB, UpqDBIntegrityError
+import download
 
 class Rapidsync(UpqJob):
 	cats = {}
@@ -83,7 +84,7 @@ class Rapidsync(UpqJob):
 		ParseResult = urlparse(url)
 		absname=os.path.join(self.getcfg('temppath', '/tmp'), ParseResult.hostname, ParseResult.path.strip("/"))
 
-		if not self.DownloadFile(url, absname, cache):
+		if not download.DownloadFile(url, absname, cache):
 			return []
 
 		gz = gzip.open(absname)
