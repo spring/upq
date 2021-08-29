@@ -29,8 +29,7 @@ import traceback
 import filecmp
 import logging
 
-sys.path.append(os.path.dirname(__file__))
-from unitsync import unitsync
+from lib.unitsync import unitsync
 
 class Extract_metadata(UpqJob):
 
