@@ -16,6 +16,7 @@ import requests
 import os.path
 import datetime
 import time
+import logging
 
 from upqjob import UpqJob
 from upqdb import UpqDB, UpqDBIntegrityError
@@ -42,7 +43,7 @@ class Rapidsync(UpqJob):
 			UpqDB().query("DELETE FROM tag WHERE tag='%s'" % (sdp[0]))
 			#insert updated tag
 			UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (row['fid'], sdp[0]))
-			#self.logger.info("updated %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
+			#logging.info("updated %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
 			return
 		if not sdp[3]: #without a name, we can't do anything!
 			return
@@ -60,14 +61,14 @@ class Rapidsync(UpqJob):
 				"path" : "",
 				})
 			UpqDB().query("INSERT INTO tag (fid, tag) VALUES (%s, '%s')" % (fid, sdp[0]))
-			#self.logger.info("inserted %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
+			#logging.info("inserted %s %s %s %s",sdp[3],sdp[2],sdp[1],sdp[0])
 		except Exception as e:
-			self.logger.error(str(e))
-			self.logger.error("Error from sdp: %s %s %s %s", sdp[3], sdp[2],sdp[1],sdp[0])
+			logging.error(str(e))
+			logging.error("Error from sdp: %s %s %s %s", sdp[3], sdp[2],sdp[1],sdp[0])
 			res=UpqDB().query("SELECT * FROM file f WHERE name='%s'" % sdp[3])
 			if res:
 				row=res.first()
-				self.logger.error("a file with this name already exists, fid=%s, sdp=%s" % (row['fid'], row['sdp']))
+				logging.error("a file with this name already exists, fid=%s, sdp=%s" % (row['fid'], row['sdp']))
 
 	def run(self):
 		repos=self.fetchListing(self.getcfg('mainrepo', "http://repos.springrts.com/repos.gz"), False)
@@ -78,7 +79,7 @@ class Rapidsync(UpqJob):
 
 
 	def fetchListing(self, url, cache=True):
-		self.logger.debug("Fetching %s" % (url))
+		logging.debug("Fetching %s" % (url))
 		ParseResult = urlparse(url)
 		absname=os.path.join(self.getcfg('temppath', '/tmp'), ParseResult.hostname, ParseResult.path.strip("/"))
 

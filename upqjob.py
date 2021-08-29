@@ -20,6 +20,7 @@ import upqconfig
 import os
 import datetime
 import time
+import logging
 
 class UpqJob(object):
 	def __init__(self, jobname, jobdata):
@@ -30,7 +31,6 @@ class UpqJob(object):
 		self.jobcfg  = upqconfig.UpqConfig().jobs[jobname] #settings from config-filea
 
 		self.jobdata = jobdata #runtime parameters, these are stored into database and restored on re-run
-		self.logger  = log.getLogger("upq")
 		self.jobid   = -1
 		self.msgstr  = ""
 		self.result  = False
@@ -49,14 +49,13 @@ class UpqJob(object):
 	def __setstate__(self, dict):
 		# this is used to unpickle a job
 		self.__dict__.update(dict)
-		self.logger = log.getLogger("upq")
 
 	def msg(self, msg):
-		self.logger.debug(msg)
+		logging.debug(msg)
 		if len(self.msgstr)+len(msg)<=500:
 			self.msgstr+=str(msg)
 		else:
-			self.logger.error("msg to long: --------%s-------" %(msg))
+			logging.error("msg to long: --------%s-------" %(msg))
 
 	def __str__(self):
 		return "Job: "+self.jobname +" id:"+ str(self.jobid)+" jobdata:"+json.dumps(self.jobdata)
@@ -82,7 +81,7 @@ class UpqJob(object):
 
 		r = requests.get(url, timeout=10, headers=headers)
 		if r.status_code == 304:
-			self.logger.debug("Not modified")
+			logging.debug("Not modified")
 			return False
 		with open(filename, "wb") as f:
 			f.write(r.content)

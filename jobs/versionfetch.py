@@ -12,6 +12,7 @@ from upqjob import UpqJob
 from upqdb import UpqDB, UpqDBIntegrityError
 import datetime
 import json
+import logging
 
 class Versionfetch(UpqJob):
 	prefix = "https://springrts.com/dl/buildbot"
@@ -26,7 +27,7 @@ class Versionfetch(UpqJob):
 		try:
 			self.cats[category]=res.first()[0] # cache result
 		except:
-			self.logger.error("Invalid category: %s" % category)
+			logging.error("Invalid category: %s" % category)
 		return self.cats[category]
 
 	def update(self, data, mid):
@@ -93,7 +94,7 @@ class Versionfetch(UpqJob):
 		filename = "/tmp/sprinvers.json"
 
 		if not self.DownloadFile(url, filename):
-			self.logger.info("list.php wasn't changed")
+			logging.info("list.php wasn't changed")
 			return True
 
 		with open(filename, "r") as f:

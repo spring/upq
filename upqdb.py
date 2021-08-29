@@ -9,7 +9,7 @@
 #
 # UpqDB: DB tool class
 
-import log
+import logging
 
 from sqlalchemy import create_engine, Index, Table, Column, Integer, String,DateTime,PickleType, MetaData, ForeignKey, Sequence, UniqueConstraint
 from sqlalchemy.orm import Session
@@ -31,7 +31,6 @@ class UpqDB():
 
 	def __init__(self):
 		self.__dict__ = self.__shared_state
-		self.logger = log.getLogger("upq")
 
 	def version(self):
 		try:
@@ -39,11 +38,11 @@ class UpqDB():
 		except Exception:
 			results=self.query("SELECT sqlite_version()")
 		for res in results:
-			self.logger.info("SQL version: %s", res[0])
+			logging.info("SQL version: %s", res[0])
 
 	def connect(self, databaseurl, debug):
 		self.engine = create_engine(databaseurl, encoding="utf-8", echo=debug, pool_recycle=True)
-		self.logger.info("Opened DB connection.")
+		logging.info("Opened DB connection.")
 		self.meta=MetaData()
 		self.tables['mirror']=Table('mirror', self.meta, #table with file mirrors
 			Column('mid', INTEGER(display_width=10),  primary_key=True, nullable=False, autoincrement=True),
@@ -125,14 +124,14 @@ class UpqDB():
 		self.meta.bind = self.engine
 
 	def query(self, query):
-		#self.logger.debug(query)
+		#logging.debug(query)
 		res=None
 		try:
 			s = Session(self.engine)
 			res=s.execute(query)
 			s.commit()
 		except Exception as e:
-			self.logger.error("Error %s executing query %s" % (str(e), str(query)))
+			logging.error("Error %s executing query %s" % (str(e), str(query)))
 		return res
 
 	def insert(self, table, values):
@@ -157,7 +156,7 @@ class UpqDB():
 			except:
 				result=s.scalar("SELECT last_insert_rowid()")
 			s.close()
-			self.logger.debug("%s (%s) id:%s", query, values, result)
+			logging.debug("%s (%s) id:%s", query, values, result)
 		return result
 
 	def now(self):

@@ -27,6 +27,7 @@ import json
 import gc
 import traceback
 import filecmp
+import logging
 
 sys.path.append(os.path.dirname(__file__))
 from unitsync import unitsync
@@ -39,13 +40,13 @@ class Extract_metadata(UpqJob):
 	"""
 	def setupdir(self, filepath):
 		if not os.path.isfile(filepath):
-			self.logger.error("error setting up temp dir, file doesn't exist %s" %(filepath))
+			logging.error("error setting up temp dir, file doesn't exist %s" %(filepath))
 			raise Exception(self.msgstr)
 		temppath=tempfile.mkdtemp(dir=UpqConfig().paths['tmp'])
 		archivetmp=os.path.join(temppath, "games")
 		os.mkdir(archivetmp)
 		self.tmpfile=os.path.join(archivetmp, os.path.basename(filepath))
-		self.logger.debug("symlinking %s %s" % (filepath, self.tmpfile))
+		logging.debug("symlinking %s %s" % (filepath, self.tmpfile))
 		os.symlink(filepath, self.tmpfile)
 		return temppath
 
@@ -95,7 +96,7 @@ class Extract_metadata(UpqJob):
 			string=string.decode('cp850')
 			return self.escape(string)
 		except:
-			self.logger.error("Error decoding string %s" % (string))
+			logging.error("Error decoding string %s" % (string))
 			return ""
 		return self.escape(string)
 
@@ -105,7 +106,7 @@ class Extract_metadata(UpqJob):
 		del metadata['sdp']
 		del metadata['Version']
 		del metadata['Name']
-		self.logger.debug(metadata)
+		logging.debug(metadata)
 		metadata=json.dumps(metadata)
 		if 'fid' in self.jobdata: # detect already existing files
 			fid=self.jobdata['fid']
@@ -157,10 +158,10 @@ class Extract_metadata(UpqJob):
 				id=row['fid']
 			try:
 				UpqDB().insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
-				self.logger.info("Added %s '%s' version '%s' to the mirror-system" % (data['Type'], data['Name'], data['Version']))
+				logging.info("Added %s '%s' version '%s' to the mirror-system" % (data['Type'], data['Name'], data['Version']))
 			except UpqDBIntegrityError:
 				pass
-		self.logger.info("Updated %s '%s' version '%s' sdp '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version'], data['sdp']))
+		logging.info("Updated %s '%s' version '%s' sdp '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version'], data['sdp']))
 		return fid
 
 	def initUnitSync(self, tmpdir, filename):
@@ -171,7 +172,7 @@ class Extract_metadata(UpqJob):
 		usync = unitsync.Unitsync(libunitsync)
 		usync.Init(True,1)
 		version = usync.GetSpringVersion().decode()
-		self.logger.debug("using unitsync version %s" %(version))
+		logging.debug("using unitsync version %s" %(version))
 		usync.RemoveAllArchives()
 		usync.AddArchive(filename.encode("ascii"))
 		usync.AddAllArchives(filename.encode("ascii"))
@@ -180,7 +181,7 @@ class Extract_metadata(UpqJob):
 	def openArchive(self, usync, filename):
 		archiveh=usync.OpenArchive(filename.encode("ascii"))
 		if archiveh<=0:
-			self.logger.error("OpenArchive(%s) failed: %s" % (filename, usync.GetNextError().decode()))
+			logging.error("OpenArchive(%s) failed: %s" % (filename, usync.GetNextError().decode()))
 			return False
 		return archiveh
 	def saveImage(self, image, size):
@@ -189,7 +190,7 @@ class Extract_metadata(UpqJob):
 		m.update(image.tobytes())
 		if (size[0]>1024): # shrink if to big
 			sizey=int((1024.0/size[0])*size[1])
-			self.logger.debug("image to big %dx%d, resizing... to %dx%d" % (size[0], size[1], 1024, sizey))
+			logging.debug("image to big %dx%d, resizing... to %dx%d" % (size[0], size[1], 1024, sizey))
 			image=image.resize((1024, sizey))
 		else:
 			image=image.resize((size[0], size[1]))
@@ -197,11 +198,11 @@ class Extract_metadata(UpqJob):
 		filename=m.hexdigest()+".jpg"
 		absname=os.path.join(UpqConfig().paths['metadata'], filename)
 		if os.path.isfile(absname) and os.path.getsize(absname) == image.size:
-			self.logger.debug("Not overwriting %s" %(absname))
+			logging.debug("Not overwriting %s" %(absname))
 			return
 		image.save(absname)
 		os.chmod(absname,int("0644",8))
-		self.logger.debug("Wrote " + absname)
+		logging.debug("Wrote " + absname)
 		return filename
 
 	def createSplashImages(self, usync, archiveh, filelist):
@@ -209,7 +210,7 @@ class Extract_metadata(UpqJob):
 		count=0
 		for f in filelist:
 			if f.lower().startswith('bitmaps/loadpictures'):
-				self.logger.debug("Reading %s" % (f))
+				logging.debug("Reading %s" % (f))
 				buf=self.getFile(usync, archiveh, f)
 				ioobj=BytesIO()
 				ioobj.write(buf)
@@ -220,7 +221,7 @@ class Extract_metadata(UpqJob):
 					res.append(self.saveImage(im, im.size))
 					count=count+1
 				except Exception as e:
-					self.logger.error("Invalid image %s: %s" % (f, e))
+					logging.error("Invalid image %s: %s" % (f, e))
 					pass
 		return res
 
@@ -238,15 +239,15 @@ class Extract_metadata(UpqJob):
 		else: # file is a game
 			idx=self.getGameIdx(usync, filename)
 			if idx<0:
-				self.logger.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
+				logging.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
 				return False
-			self.logger.debug("Extracting data from "+filename)
+			logging.debug("Extracting data from "+filename)
 			archivepath=usync.GetArchivePath(filename).decode()+filename
 			gamearchivecount=usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
 			data['path'] = self.jobcfg['games-path']
 		if (sdp == "") or (data['Name'] == ""): #mark as broken because sdp / name is missing
-			self.logger.error("Couldn't get name / filename")
+			logging.error("Couldn't get name / filename")
 			return False
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
 		_, extension = os.path.splitext(filename)
@@ -256,13 +257,13 @@ class Extract_metadata(UpqJob):
 		assert(len(moveto) > 10)
 
 		if not self.movefile(filepath, moveto):
-			self.logger.error("Couldn't move file %s -> %s" %(filepath, moveto))
+			logging.error("Couldn't move file %s -> %s" %(filepath, moveto))
 			return False
 		try:
 			data['sdp']=sdp
 			self.jobdata['fid']=self.insertData(data, moveto, hashes)
 		except UpqDBIntegrityError:
-			self.logger.error("Duplicate file detected: %s %s %s" % (filename, data['Name'], data['Version']))
+			logging.error("Duplicate file detected: %s %s %s" % (filename, data['Name'], data['Version']))
 			return False
 
 		return True
@@ -275,7 +276,7 @@ class Extract_metadata(UpqJob):
 		metadatapath=UpqConfig().paths['metadata']
 
 		if not os.path.exists(filepath):
-			self.logger.error("File doesn't exist: %s" %(filepath))
+			logging.error("File doesn't exist: %s" %(filepath))
 			return False
 
 		hashes = self.get_hash(filepath)
@@ -287,12 +288,12 @@ class Extract_metadata(UpqJob):
 		try:
 			res  = self.ExtractMetadata(usync, archiveh, filename, filepath, metadatapath, hashes)
 		except Exception as e:
-			self.logger.error(str(e))
+			logging.error(str(e))
 			return False
 
 		err=usync.GetNextError()
 		while not err==None:
-			self.logger.error(err)
+			logging.error(err)
 			err=usync.GetNextError()
 
 		usync.CloseArchive(archiveh)
@@ -318,7 +319,7 @@ class Extract_metadata(UpqJob):
 	def dumpLuaTree(self, usync, depth = 0):
 		""" dumps a lua tree into a python dict """
 		if depth > 5:
-			self.logger.error("max depth reached!")
+			logging.error("max depth reached!")
 			return {}
 		tables = []
 		inttables = []
@@ -366,14 +367,14 @@ class Extract_metadata(UpqJob):
 		try:
 			luafile = self.getFile(usync, archiveh, filename)
 		except Exception as e:
-			self.logger.error("file doesn't exist in archive: %s %s" %(filename, e))
+			logging.error("file doesn't exist in archive: %s %s" %(filename, e))
 			return {}
 		usync.lpOpenSource(luafile, "r")
 		usync.lpExecute()
 		res = self.dumpLuaTree(usync)
 		err = usync.lpErrorLog()
 		if err:
-			self.logger.error(err)
+			logging.error(err)
 		return res
 
 	def getDepends(self, usync, archiveh, filename):
@@ -384,7 +385,7 @@ class Extract_metadata(UpqJob):
 			for i in res['depend'].values():
 				if i not in filterdeps:
 					vals.append(i)
-			self.logger.info(vals)
+			logging.info(vals)
 			return vals
 		return []
 
@@ -415,7 +416,7 @@ class Extract_metadata(UpqJob):
 		height = height.contents.value
 		assert(width > 0)
 		assert(height > 0)
-		self.logger.debug("mapname: %s %dx%d"% (mapname, width, height))
+		logging.debug("mapname: %s %dx%d"% (mapname, width, height))
 		data = ctypes.create_string_buffer(int(width*height*byteperpx*2))
 		data.restype = ctypes.c_void_p
 		ret=usync.GetInfoMap(mapname.encode("ascii"), maptype.encode("ascii"), data, byteperpx)
@@ -426,7 +427,7 @@ class Extract_metadata(UpqJob):
 			del data
 			return res
 		del data
-		self.logger.error("Error creating image %s" % (usync.usync.GetNextError()))
+		logging.error("Error creating image %s" % (usync.usync.GetNextError()))
 		raise Exception("Error creating image")
 
 	def dumpmap(self, usync, springname, outpath, filename, idx):
@@ -446,7 +447,7 @@ class Extract_metadata(UpqJob):
 		while usync.ProcessUnits()>0:
 			err=usync.GetNextError()
 			if err:
-				self.logger.error("Error processing units: %s" % (err))
+				logging.error("Error processing units: %s" % (err))
 		res = []
 		count=usync.GetUnitCount()
 		for i in range(0, count):
@@ -466,7 +467,7 @@ class Extract_metadata(UpqJob):
 				break
 			fileh=usync.OpenArchiveFile(archiveh, name.value)
 			if fileh<0:
-				self.logger.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  ""+usync.GetNextError()))
+				logging.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  ""+usync.GetNextError()))
 				return []
 			files.append(name.value.decode())
 			del name
@@ -476,11 +477,11 @@ class Extract_metadata(UpqJob):
 		""" returns the content of an archive"""
 		fileh=usync.OpenArchiveFile(archivehandle, filename.encode("ascii"))
 		if fileh < 0:
-			self.logger.error("Couldn't open %s" %(filename))
+			logging.error("Couldn't open %s" %(filename))
 			raise Exception("Couldn't open %s" %(filename))
 		size=usync.SizeArchiveFile(archivehandle, fileh)
 		if size < 0:
-			self.logger.error("Error getting size of %s" % (filename))
+			logging.error("Error getting size of %s" % (filename))
 			raise Exception("Error getting size of %s" % (filename))
 		buf = ctypes.create_string_buffer(size)
 		bytes=usync.ReadArchiveFile(archivehandle, fileh, buf, size)
@@ -502,7 +503,7 @@ class Extract_metadata(UpqJob):
 			m.update(hashlib.md5(content).digest())
 			del content
 			i=i+1
-		self.logger.debug("SDP %s" % m.hexdigest())
+		logging.debug("SDP %s" % m.hexdigest())
 		return m.hexdigest()
 	""" returns the category id specified by name"""
 	def getCid(self, name):
@@ -572,13 +573,13 @@ class Extract_metadata(UpqJob):
 
 	def movefile(self, srcfile, dstfile):
 		if srcfile == dstfile:
-			self.logger.info("File already in place: %s" %(srcfile))
+			logging.info("File already in place: %s" %(srcfile))
 			return True
 		if os.path.exists(dstfile):
 			if filecmp.cmp(srcfile, dstfile):
 				os.remove(srcfile)
 				return True
-			self.logger.error("Destination file already exists: dst: %s src: %s" %(dstfile, srcfile))
+			logging.error("Destination file already exists: dst: %s src: %s" %(dstfile, srcfile))
 			return False
 		try:
 			shutil.move(srcfile, dstfile)
@@ -587,13 +588,13 @@ class Extract_metadata(UpqJob):
 			try:
 				os.remove(srcfile)
 			except:
-				self.logger.warn("Removing src file failed: %s" % (srcfile))
-		self.logger.debug("moved file to (abs)%s :(rel)%s" %(srcfile, dstfile))
+				logging.warn("Removing src file failed: %s" % (srcfile))
+		logging.debug("moved file to (abs)%s :(rel)%s" %(srcfile, dstfile))
 		try:
 			os.chmod(dstfile, int("0444",8))
 		except OSError:
 			pass
-		self.logger.info("moved file to %s" % (dstfile))
+		logging.info("moved file to %s" % (dstfile))
 		return True
 	def GetNormalizedFilename(self, name, version, extension):
 		""" normalize filename + renames file + updates filename in database """
@@ -629,7 +630,7 @@ class Extract_metadata(UpqJob):
 			fd = open(filename, "rb", 4096)
 		except IOError as ex:
 			msg = "Unable to open '%s' for reading: '%s'." % (filename, ex)
-			self.logger.error(msg)
+			logging.error(msg)
 			raise Exception(msg)
 
 		while True:

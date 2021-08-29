@@ -12,7 +12,7 @@
 # can be either initiaded by an updated file
 # or maybe by the xml-rpc interface (or cron?)
 
-
+import log
 from upqdb import UpqDB
 import upqconfig
 
