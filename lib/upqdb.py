@@ -173,5 +173,5 @@ class UpqDB():
 
 
 	def escape(self, string):
-		whitelist = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789")
+		whitelist = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789-.")
 		return ''.join(c for c in string if c in whitelist)
