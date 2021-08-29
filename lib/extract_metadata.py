@@ -30,6 +30,29 @@ import logging
 
 from lib.unitsync import unitsync
 
+def escape(string):
+	assert(isinstance(string, str))
+	string=string.replace("'","''")
+#	string=string.replace('"','\"')
+	string=string.replace("%", "%%")
+	return string
+
+def decodeString(string):
+	if string is None:
+		return ""
+	try:
+		string=string.decode('utf-8')
+		return escape(string)
+	except:
+		pass
+	try:
+		string=string.decode('cp850')
+		return escape(string)
+	except:
+		logging.error("Error decoding string %s" % (string))
+		return ""
+	return escape(string)
+
 class Extract_metadata(UpqJob):
 
 	"""
@@ -75,28 +98,6 @@ class Extract_metadata(UpqJob):
 			if filename == gamename:
 				return i
 		return -1
-	def escape(self, string):
-		assert(isinstance(string, str))
-		string=string.replace("'","''")
-#		string=string.replace('"','\"')
-		string=string.replace("%", "%%")
-		return string
-
-	def decodeString(self, string):
-		if string is None:
-			return ""
-		try:
-			string=string.decode('utf-8')
-			return self.escape(string)
-		except:
-			pass
-		try:
-			string=string.decode('cp850')
-			return self.escape(string)
-		except:
-			logging.error("Error decoding string %s" % (string))
-			return ""
-		return self.escape(string)
 
 	def insertData(self, data, filename, hashes):
 		metadata=data.copy()
@@ -118,8 +119,8 @@ class Extract_metadata(UpqJob):
 
 		if fid<=0:
 			fid=UpqDB().insert("file", {
-				"name": self.escape(data['Name']),
-				"version": self.escape(data['Version']),
+				"name": escape(data['Name']),
+				"version": escape(data['Version']),
 				"sdp": data['sdp'],
 				"cid": self.getCid(data['Type']),
 				"metadata": metadata,
@@ -135,7 +136,7 @@ class Extract_metadata(UpqJob):
 				})
 		else:
 			UpqDB().query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s', md5='%s', sha1='%s', sha256='%s', status=1 WHERE fid=%s" %(
-				self.escape(data['Name']),
+				escape(data['Name']),
 				data['Version'],
 				data['sdp'],
 				self.getCid(data['Type']),
@@ -450,8 +451,8 @@ class Extract_metadata(UpqJob):
 		res = []
 		count=usync.GetUnitCount()
 		for i in range(0, count):
-			res.append({ "UnitName": self.decodeString(usync.GetUnitName(i)),
-				"FullUnitName": self.decodeString(usync.GetFullUnitName(i))})
+			res.append({ "UnitName": decodeString(usync.GetUnitName(i)),
+				"FullUnitName": decodeString(usync.GetFullUnitName(i))})
 		return res
 	def getFileList(self, usync, archiveh):
 		""" returns a list of all files in an archive """
@@ -527,7 +528,7 @@ class Extract_metadata(UpqJob):
 
 		res['Type']= "game"
 		res['Name']= springname
-		res['Description']= self.decodeString(usync.GetPrimaryModDescription(idx))
+		res['Description']= decodeString(usync.GetPrimaryModDescription(idx))
 		res['Version']= version
 		res['Depends']=self.getDepends(usync, archiveh, "modinfo.lua")
 		res['Units']=self.getUnits(usync, archivename)
@@ -540,7 +541,7 @@ class Extract_metadata(UpqJob):
 		res['Name'] = mapname
 		author = usync.GetMapAuthor(idx)
 		res['Author'] = author.decode() if author else ""
-		res['Description'] = self.decodeString(usync.GetMapDescription(idx))
+		res['Description'] = decodeString(usync.GetMapDescription(idx))
 		res['Gravity'] = usync.GetMapGravity(idx)
 		res['MaxWind'] = usync.GetMapWindMax(idx)
 		res['MinWind'] = usync.GetMapWindMin(idx)
