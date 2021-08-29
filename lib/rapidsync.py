@@ -18,9 +18,9 @@ import datetime
 import time
 import logging
 
-from lib import download, upqdb, upqjob
+from lib import download, upqdb
 
-class Rapidsync(upqjob.UpqJob):
+class Rapidsync():
 	cats = {}
 
 	def UpdateSDP(self, sdp):
@@ -69,7 +69,8 @@ class Rapidsync(upqjob.UpqJob):
 				row=res.first()
 				logging.error("a file with this name already exists, fid=%s, sdp=%s" % (row['fid'], row['sdp']))
 
-	def run(self):
+	def run(self, cfg):
+		self.cfg = cfg
 		repos=self.fetchListing("https://repos.springrts.com/repos.gz", False)
 		for repo in repos:
 			sdps=self.fetchListing(repo[1] + "/versions.gz")

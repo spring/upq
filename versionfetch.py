@@ -25,5 +25,5 @@ db = upqdb.UpqDB()
 db.connect(cfg.db['url'], cfg.db['debug'])
 
 from lib import versionfetch
-j = versionfetch.Versionfetch("versionfetch", {})
+j = versionfetch.Versionfetch()
 j.run()

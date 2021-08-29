@@ -15,7 +15,7 @@ import os
 if __name__ == "__main__":
 	sys.path.append(os.path.realpath(os.path.dirname(os.path.dirname(__file__))))
 
-from lib import log, upqdb, upqjob
+from lib import log, upqdb
 
 import ctypes
 from PIL import Image
@@ -27,7 +27,6 @@ import tempfile
 import gzip
 import hashlib
 import json
-import gc
 import traceback
 import filecmp
 import logging
@@ -230,7 +229,7 @@ def GetNormalizedFilename(name, version, extension):
 			res+="_"
 	return res
 
-class Extract_metadata(upqjob.UpqJob):
+class Extract_metadata():
 
 	def getMapIdx(self, usync, filename):
 		assert(isinstance(filename, str))
@@ -258,15 +257,12 @@ class Extract_metadata(upqjob.UpqJob):
 		del metadata['Name']
 		logging.debug(metadata)
 		metadata=json.dumps(metadata)
-		if 'fid' in self.jobdata: # detect already existing files
-			fid=self.jobdata['fid']
+		results=upqdb.UpqDB().query("SELECT fid FROM file WHERE sdp='%s' or md5='%s'"% (data['sdp'], hashes['md5']))
+		res=results.first()
+		if res:
+			fid=res['fid']
 		else:
-			results=upqdb.UpqDB().query("SELECT fid FROM file WHERE sdp='%s' or md5='%s'"% (data['sdp'], hashes['md5']))
-			res=results.first()
-			if res:
-				fid=res['fid']
-			else:
-				fid=0
+			fid=0
 
 		if fid<=0:
 			fid=upqdb.UpqDB().insert("file", {
@@ -356,7 +352,9 @@ class Extract_metadata(upqjob.UpqJob):
 					pass
 		return res
 
-	def ExtractMetadata(self, usync, archiveh, filename, filepath, metadatapath, hashes):
+	def ExtractMetadata(self, cfg, usync, archiveh, filename, filepath, metadatapath, hashes):
+		self.jobcfg=cfg
+
 		filelist = getFileList(usync, archiveh)
 		sdp = getSDPName(usync, archiveh)
 
@@ -366,7 +364,8 @@ class Extract_metadata(upqjob.UpqJob):
 			springname = usync.GetMapName(idx).decode()
 			data=self.getMapData(usync, filename, idx, archiveh, springname)
 			data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
-			data['path'] = self.jobcfg['maps-path']
+			logging.error(self.cfg)
+			data['path'] = os.path.join(self.cfg.paths['files'], "maps")
 		else: # file is a game
 			idx=self.getGameIdx(usync, filename)
 			if idx<0:
@@ -376,14 +375,13 @@ class Extract_metadata(upqjob.UpqJob):
 			archivepath=usync.GetArchivePath(filename).decode()+filename
 			gamearchivecount=usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
-			data['path'] = self.jobcfg['games-path']
+			data['path'] = os.path.join(self.cfg.paths['files'], "games")
 		if (sdp == "") or (data['Name'] == ""): #mark as broken because sdp / name is missing
 			logging.error("Couldn't get name / filename")
 			return False
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
 		_, extension = os.path.splitext(filename)
 		moveto = os.path.join(self.getPathByStatus(1), data['path'], GetNormalizedFilename(data['Name'], data['Version'], extension))
-		self.jobdata['file']=moveto
 
 		assert(len(moveto) > 10)
 
@@ -392,18 +390,17 @@ class Extract_metadata(upqjob.UpqJob):
 			return False
 		try:
 			data['sdp']=sdp
-			self.jobdata['fid']=self.insertData(data, moveto, hashes)
+			self.insertData(data, moveto, hashes)
 		except upqdb.UpqDBIntegrityError:
 			logging.error("Duplicate file detected: %s %s %s" % (filename, data['Name'], data['Version']))
 			return False
 
 		return True
 
-	def run(self, cfg):
+	def run(self, cfg, filepath):
 		self.cfg = cfg
-		gc.collect()
 		#filename of the archive to be scanned
-		filepath=os.path.abspath(self.jobdata['file'])
+		filepath=os.path.abspath(filepath)
 		filename=os.path.basename(filepath) # filename only (no path info)
 		metadatapath=cfg.paths['metadata']
 
@@ -418,7 +415,7 @@ class Extract_metadata(upqjob.UpqJob):
 		archiveh = openArchive(usync, os.path.join("games",filename))
 
 		try:
-			res  = self.ExtractMetadata(usync, archiveh, filename, filepath, metadatapath, hashes)
+			res  = self.ExtractMetadata(cfg, usync, archiveh, filename, filepath, metadatapath, hashes)
 		except Exception as e:
 			logging.error(str(e))
 			return False
@@ -432,12 +429,9 @@ class Extract_metadata(upqjob.UpqJob):
 		usync.RemoveAllArchives()
 		usync.UnInit()
 		del usync
-		#print(self.jobcfg)
-		if not "keeptemp" in self.jobcfg or self.jobcfg["keeptemp"] != "yes":
-			assert(tmpdir.startswith("/home/springfiles/upq/tmp/"))
-			shutil.rmtree(tmpdir)
+		assert(tmpdir.startswith("/home/springfiles/upq/tmp/"))
+		shutil.rmtree(tmpdir)
 		return res
-
 
 	def getMapPositions(self, usync, idx, Map):
 		startpositions = usync.GetMapPosCount(idx)

@@ -13,8 +13,7 @@
 # or maybe by the xml-rpc interface (or cron?)
 
 
-from lib import log, upqdb, upqjob, upqconfig
-from lib.upqdb import UpqDB
+from lib import log, upqdb, upqconfig
 
 import sys
 
@@ -27,6 +26,6 @@ db = upqdb.UpqDB()
 db.connect(cfg.db['url'], cfg.db['debug'])
 
 from lib import rapidsync
-j = rapidsync.Rapidsync("versionfetch", {})
-j.run()
+j = rapidsync.Rapidsync()
+j.run(cfg)
 

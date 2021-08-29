@@ -67,12 +67,13 @@ def SaveUploadedFile(form):
 	os.chdir(oldcwd)
 	return output
 
-def SetupLogger(job):
+def SetupLogger():
 	from io import StringIO
 	import logging
-	job.log_stream = StringIO()
-	logging.basicConfig(stream=job.log_stream)
-	logging.getLogger().addHandler(logging.StreamHandler(stream=job.log_stream))
+	log_stream = StringIO()
+	logging.basicConfig(stream=log_stream)
+	logging.getLogger().addHandler(logging.StreamHandler(stream=log_stream))
+	return log_stream
 
 def ParseAndAddFile(filename):
 	from lib import log, upqconfig, upqdb, extract_metadata
@@ -81,14 +82,11 @@ def ParseAndAddFile(filename):
 	db = upqdb.UpqDB()
 	db.connect(cfg.db['url'], cfg.db['debug'])
 
-	jobdata = {
-		"file": filename,
-	}
 	#FIXME: parse and add to db/mirror using pyseccompa
-	j = extract_metadata.Extract_metadata("extract_metadata", jobdata)
-	SetupLogger(j)
-	j.run(cfg)
-	return j.log_stream.getvalue()
+	j = extract_metadata.Extract_metadata()
+	output = SetupLogger()
+	j.run(cfg, filename)
+	return output.getvalue()
 
 
 form = cgi.FieldStorage()
