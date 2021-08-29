@@ -24,20 +24,12 @@ import os
 import upqjob
 import upqdb
 
-class Sf_sync(upqjob.UpqJob):
-
-	def versionfetch(self):
-		from jobs import versionfetch 
-		j = versionfetch.Versionfetch("versionfetch", {})
-		return j.run()
-	def run(self):
-		self.versionfetch()
 
 upqconfig.UpqConfig()
 upqconfig.UpqConfig().readConfig()
 db = upqdb.UpqDB()
 db.connect(upqconfig.UpqConfig().db['url'], upqconfig.UpqConfig().db['debug'])
 
-s = Sf_sync("sf_sync", dict())
-s.run()
-
+from jobs import versionfetch
+j = versionfetch.Versionfetch("versionfetch", {})
+j.run()
