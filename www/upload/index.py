@@ -79,7 +79,7 @@ def ParseAndAddFile(filename):
 	cfg = upqconfig.UpqConfig()
 	cfg.readConfig()
 	db = upqdb.UpqDB()
-	db.connect(upqconfig.UpqConfig().db['url'], upqconfig.UpqConfig().db['debug'])
+	db.connect(cfg.db['url'], cfg.db['debug'])
 
 	jobdata = {
 		"file": filename,
@@ -87,7 +87,7 @@ def ParseAndAddFile(filename):
 	#FIXME: parse and add to db/mirror using pyseccompa
 	j = extract_metadata.Extract_metadata("extract_metadata", jobdata)
 	SetupLogger(j)
-	j.run()
+	j.run(cfg)
 	return j.log_stream.getvalue()
 
 
