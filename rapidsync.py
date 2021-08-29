@@ -23,21 +23,12 @@ import os
 import upqjob
 import upqdb
 
-class rapidsync(upqjob.UpqJob):
-
-	def rapidsync(self):
-		from jobs import rapidsync
-		j = rapidsync.Rapidsync("versionfetch", {})
-		j.run()
-		return j.run()
-	def run(self):
-		self.rapidsync()
-
 upqconfig.UpqConfig()
 upqconfig.UpqConfig().readConfig()
 db = upqdb.UpqDB()
 db.connect(upqconfig.UpqConfig().db['url'], upqconfig.UpqConfig().db['debug'])
 
-s = rapidsync("rapidsync", dict())
-s.run()
+from jobs import rapidsync
+j = rapidsync.Rapidsync("versionfetch", {})
+j.run()
 
