@@ -9,7 +9,7 @@
 # fetches version information from http://springrts.com/dl/buildbot
 
 from lib.upqjob import UpqJob
-from lib.upqdb import UpqDB, UpqDBIntegrityError
+from lib import upqdb
 from lib import download
 import datetime
 import json
@@ -18,17 +18,6 @@ import logging
 def escape(string):
 	return string.replace("%7b", "{").replace("%7d", "}")
 
-cats = {}
-def getCID(category):
-	global cats
-	if category in cats:
-		return cats[category]
-	res = UpqDB().query("SELECT cid from categories WHERE name='%s'" % (category))
-	try:
-		cats[category]=res.first()[0] # cache result
-	except:
-		logging.error("Invalid category: %s" % category)
-	return cats[category]
 
 class Versionfetch(UpqJob):
 	prefix = "https://springrts.com/dl/buildbot"
@@ -54,17 +43,17 @@ class Versionfetch(UpqJob):
 		if not branch in ('master'):
 			version = version + ' ' + branch
 		url = self.prefix +'/' + data['path']
-		cid = self.getCID(category)
+		cid = upqdb.getCID(category)
 		#print "%s %s %s %s" % (filename, version, category, url)
-		res = UpqDB().query("SELECT fid, md5 from file WHERE version='%s' and cid=%s" % (version, cid))
+		res = upqdb.UpqDB().query("SELECT fid, md5 from file WHERE version='%s' and cid=%s" % (version, cid))
 		fileinfo = res.first()
 		if fileinfo:
 			fid = fileinfo[0]
 			assert(fid > 0)
 			if data["md5"] != fileinfo[1]:
-				UpqDB().query("UPDATE file set md5='%s' WHERE fid=%s"%  (data['md5'], fid))
+				upqdb.UpqDB().query("UPDATE file set md5='%s' WHERE fid=%s"%  (data['md5'], fid))
 		else:
-			fid = UpqDB().insert("file", {
+			fid = upqdb.UpqDB().insert("file", {
 				"filename" : filename,
 				"name": "spring",
 				"version": version,
@@ -77,19 +66,19 @@ class Versionfetch(UpqJob):
 				})
 
 
-		res = UpqDB().query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (mid, fid))
+		res = uqpdb.UpqDB().query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (mid, fid))
 		mfid = res.first()
 		if mfid:
 			mfid = mfid[0]
 			assert(mid > 0)
-			UpqDB().query("UPDATE mirror_file SET lastcheck=NOW(), path='%s' WHERE mfid = %s"% (data['path'], mfid))
+			upqdb.UpqDB().query("UPDATE mirror_file SET lastcheck=NOW(), path='%s' WHERE mfid = %s"% (data['path'], mfid))
 		else:
-			mfid = UpqDB().insert("mirror_file", {
+			mfid = upqdb.UpqDB().insert("mirror_file", {
 				"mid" : mid,
 				"path": data['path'],
 				"status": 1,
 				"fid": fid,
-				"lastcheck": UpqDB().now()
+				"lastcheck": upqdb.UpqDB().now()
 				})
 
 	def run(self):
@@ -103,12 +92,12 @@ class Versionfetch(UpqJob):
 
 		with open(filename, "r") as f:
 			data = json.loads(str(f.read()))
-		res = UpqDB().query("SELECT mid from mirror WHERE url_prefix='%s'" % self.prefix)
+		res = upqdb.UpqDB().query("SELECT mid from mirror WHERE url_prefix='%s'" % self.prefix)
 		mid = res.first()[0]
 		assert(mid > 0)
 		for row in data:
 			self.update(row, mid)
 		#delete files that wheren't updated this run (means removed from mirror)
-		UpqDB().query("DELETE FROM `mirror_file` WHERE `lastcheck` < NOW() - INTERVAL 1 HOUR AND mid = %s" %(mid))
+		upqdb.UpqDB().query("DELETE FROM `mirror_file` WHERE `lastcheck` < NOW() - INTERVAL 1 HOUR AND mid = %s" %(mid))
 		return True
 

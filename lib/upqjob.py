@@ -22,7 +22,10 @@ class UpqJob(object):
 		# through a restart/reschedule, add it to notify_job.jobdata['job']
 		# in notify(), if and only if it is (JSON)-serializable!
 		self.jobname = jobname
-		self.jobcfg  = upqconfig.UpqConfig().jobs[jobname] #settings from config-filea
+		if jobname in upqconfig.UpqConfig().jobs:
+			self.jobcfg  = upqconfig.UpqConfig().jobs[jobname] #settings from config-filea
+		else:
+			self.jobcfg = {}
 
 		self.jobdata = jobdata #runtime parameters, these are stored into database and restored on re-run
 

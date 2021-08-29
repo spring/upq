@@ -21,6 +21,7 @@ import logging
 
 def DownloadFile(url, filename, cache=True):
 	""" returns true, when file was updated """
+	logging.info("Downloading %s to %s" %(url, filename))
 	dirname = os.path.dirname(filename)
 	if not os.path.exists(dirname):
 		os.makedirs(dirname)

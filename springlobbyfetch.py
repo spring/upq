@@ -8,33 +8,20 @@
 
 # fetches version information from 
 
-from upqjob import UpqJob
-from upqdb import UpqDB, UpqDBIntegrityError
+from lib import log, upqdb, download
+from lib.upqjob import UpqJob
 import datetime
-import urllib
 import socket
 import json
 import logging
 
-class my_download(urllib.URLopener):
-	def http_error_default(self, url, fp, errcode, errmsg, headers):
-		raise Exception("Error retrieving %s %d %s" %(url, errcode, errmsg))
+prefix = "https://springlobby.springrts.com/dl"
+stablever = prefix + "/stable/current.txt"
+stabledl =  prefix + "/stable/springlobby-%s-win32.zip"
+develver =  prefix + "/develop/version-develop.txt"
+develdl =   prefix + "/develop/springloby-%s-win32.zip"
 
 class Springlobbyfetch(UpqJob):
-	stablever = "http://version.springlobby.info/current.txt"
-	stabledl = "http://springlobby.info/windows/springlobby-%s-win32.zip"
-	develver = "http://springlobby.info/temp/builds/abma/current.txt"
-	develdl = "http://springlobby.info/temp/builds/abma/sl_master.zip"
-
-	def getCID(self, category):
-		if category in self.cats:
-			return self.cats[category]
-		res = UpqDB().query("SELECT cid from categories WHERE name='%s'" % (category))
-		try:
-			self.cats[category]=res.first()[0] # cache result
-		except:
-			logging.error("Invalid category: %s" % category)
-		return self.cats[category]
 
 	def update(self, data, mid):
 		"""
@@ -56,10 +43,10 @@ class Springlobbyfetch(UpqJob):
 		if not data['branch'] in ('master'):
 			version = data['version'] + ' ' + data['branch']
 		url = self.prefix +'/' + data['path']
-		cid = self.getCID(category)
+		cid = upqdb.getCID(category)
 		#print "%s %s %s %s" % (filename, version, category, url)
 		try:
-			fid = UpqDB().insert("file", {
+			fid = upqdb.UpqDB().insert("file", {
 				"filename" : filename,
 				"name": "spring",
 				"version": version,
@@ -69,40 +56,42 @@ class Springlobbyfetch(UpqJob):
 				#"timestamp": data['filectime'],
 				"size": data['filesize'],
 				"status": 1 })
-		except UpqDBIntegrityError, e:
+		except upqdb.UpqDBIntegrityError as e:
 			try:
-				res = UpqDB().query("SELECT fid from file WHERE version='%s' and cid=%s" % (version, cid))
+				res = upqdb.UpqDB().query("SELECT fid from file WHERE version='%s' and cid=%s" % (version, cid))
 				fid = res.first()[0]
-				UpqDB().query("UPDATE file set md5='%s' WHERE fid=%s"%  (data['md5'], fid))
-			except Exception, e:
+				upqdb.UpqDB().query("UPDATE file set md5='%s' WHERE fid=%s"%  (data['md5'], fid))
+			except Exception as e:
 				logging.error("Error %s %s %s", version, cid, e)
 				return
 		relpath = self.escape(url[len(self.prefix)+1:])
 		try:
-			id = UpqDB().insert("mirror_file", {
+			id = upqdb.UpqDB().insert("mirror_file", {
 				"mid" : mid,
 				"path": relpath,
 				"status": 1,
 				"fid": fid,
-				"lastcheck": UpqDB().now()
+				"lastcheck": upqdb.UpqDB().now()
 				})
-		except UpqDBIntegrityError:
-			res = UpqDB().query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (mid, fid))
+		except upqdb.UpqDBIntegrityError:
+			res = upqdb.UpqDB().query("SELECT mfid FROM mirror_file WHERE mid=%s AND fid=%s" % (mid, fid))
 			id = res.first()[0]
-			UpqDB().query("UPDATE mirror_file SET lastcheck=NOW() WHERE mfid = %s"% (id))
+			upqdb.UpqDB().query("UPDATE mirror_file SET lastcheck=NOW() WHERE mfid = %s"% (id))
 
 	def run(self):
 		dled = {}
-		url = self.prefix + '/list.php'
 		#print self.getlobbyversion()
-		f = my_download().open(url)
+		f = download.DownloadFile(stablever, os.path.basename(stablever) )
 		data = json.loads(str(f.read()))
-		res = UpqDB().query("SELECT mid from mirror WHERE url_prefix='%s'" % self.prefix)
+		res = upqdb.UpqDB().query("SELECT mid from mirror WHERE url_prefix='%s'" % self.prefix)
 		mid = res.first()[0]
 		for row in data:
 			self.update(row, mid)
 		#delete files that wheren't updated this run (means removed from mirror)
-		UpqDB().query("DELETE FROM `mirror_file` WHERE `lastcheck` < NOW() - INTERVAL 1 HOUR AND mid = %s" %(mid))
-		urllib.urlcleanup()
+		upqdb.UpqDB().query("DELETE FROM `mirror_file` WHERE `lastcheck` < NOW() - INTERVAL 1 HOUR AND mid = %s" %(mid))
 		return True
 
+#FIXME: implement this!
+
+#l = Springlobbyfetch("springlobbyfetch", dict())
+#l.run()

@@ -19,6 +19,18 @@ from sqlalchemy.sql import func
 from sqlalchemy.dialects.mysql import TEXT, INTEGER, BIGINT, DATETIME, CHAR, VARCHAR, TIMESTAMP
 
 
+cats = {}
+def getCID(category):
+	global cats
+	if category in cats:
+		return cats[category]
+	res = UpqDB().query("SELECT cid from categories WHERE name='%s'" % (category))
+	try:
+		cats[category]=res.first()[0] # cache result
+	except:
+		logging.error("Invalid category: %s" % category)
+	return cats[category]
+
 class UpqDBIntegrityError(Exception):
 	def __init__(self, value):
 		self.value = value
