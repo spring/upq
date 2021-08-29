@@ -8,9 +8,7 @@
 
 # fetches version information from http://springrts.com/dl/buildbot
 
-from lib.upqjob import UpqJob
-from lib import upqdb
-from lib import download
+from lib import upqdb, download, upqjob
 import datetime
 import json
 import logging
@@ -19,7 +17,7 @@ def escape(string):
 	return string.replace("%7b", "{").replace("%7d", "}")
 
 
-class Versionfetch(UpqJob):
+class Versionfetch(upqjob.UpqJob):
 	prefix = "https://springrts.com/dl/buildbot"
 
 
