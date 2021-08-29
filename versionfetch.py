@@ -12,15 +12,11 @@
 # can be either initiaded by an updated file
 # or maybe by the xml-rpc interface (or cron?)
 
-import log
-from upqdb import UpqDB
-import upqconfig
+from lib import log, upqconfig, upqdb
 
 import sys
 import json
 import os
-import upqjob
-import upqdb
 
 
 upqconfig.UpqConfig()

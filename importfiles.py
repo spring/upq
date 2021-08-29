@@ -1,4 +1,5 @@
-import upqconfig, upqdb
+
+from lib import upqconfig, upqdb
 import glob
 import sys, os
 

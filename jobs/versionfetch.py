@@ -8,12 +8,12 @@
 
 # fetches version information from http://springrts.com/dl/buildbot
 
-from upqjob import UpqJob
-from upqdb import UpqDB, UpqDBIntegrityError
+from lib.upqjob import UpqJob
+from lib.upqdb import UpqDB, UpqDBIntegrityError
+from lib import download
 import datetime
 import json
 import logging
-import download
 
 class Versionfetch(UpqJob):
 	prefix = "https://springrts.com/dl/buildbot"

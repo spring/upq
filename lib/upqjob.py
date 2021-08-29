@@ -14,7 +14,7 @@
 #
 
 import json
-import upqconfig
+from lib import upqconfig
 
 class UpqJob(object):
 	def __init__(self, jobname, jobdata):

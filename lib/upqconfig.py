@@ -11,8 +11,6 @@ import sys
 
 import configparser as ConfigParser
 import os, os.path
-from upqjob import UpqJob
-
 
 class UpqConfig():
 	__shared_state = {}

@@ -18,9 +18,9 @@ import datetime
 import time
 import logging
 
-from upqjob import UpqJob
-from upqdb import UpqDB, UpqDBIntegrityError
-import download
+from lib import download
+from lib.upqjob import UpqJob
+from lib.upqdb import UpqDB, UpqDBIntegrityError
 
 class Rapidsync(UpqJob):
 	cats = {}

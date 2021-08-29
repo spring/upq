@@ -13,16 +13,13 @@
 # or maybe by the xml-rpc interface (or cron?)
 
 
-import log
-from upqdb import UpqDB
-import upqconfig
+from lib import log, upqdb, upqjob, upqconfig
+from lib.upqdb import UpqDB
 
 import sys
 
 import json
 import os
-import upqjob
-import upqdb
 
 upqconfig.UpqConfig()
 upqconfig.UpqConfig().readConfig()
