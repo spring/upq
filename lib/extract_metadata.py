@@ -10,7 +10,6 @@
 
 from lib.upqjob import UpqJob
 from lib.upqdb import UpqDB,UpqDBIntegrityError
-from lib.upqconfig import UpqConfig
 
 import sys
 import os
@@ -41,7 +40,7 @@ class Extract_metadata(UpqJob):
 		if not os.path.isfile(filepath):
 			logging.error("error setting up temp dir, file doesn't exist %s" %(filepath))
 			raise Exception()
-		temppath=tempfile.mkdtemp(dir=UpqConfig().paths['tmp'])
+		temppath=tempfile.mkdtemp(dir=self.cfg.paths['tmp'])
 		archivetmp=os.path.join(temppath, "games")
 		os.mkdir(archivetmp)
 		self.tmpfile=os.path.join(archivetmp, os.path.basename(filepath))
@@ -164,7 +163,7 @@ class Extract_metadata(UpqJob):
 		return fid
 
 	def initUnitSync(self, tmpdir, filename):
-		libunitsync=UpqConfig().paths['unitsync']
+		libunitsync=self.cfg.paths['unitsync']
 		os.environ["SPRING_DATADIR"]=tmpdir
 		os.environ["HOME"]=tmpdir
 		os.environ["SPRING_LOG_SECTIONS"]="unitsync,ArchiveScanner,VFS"
@@ -195,7 +194,7 @@ class Extract_metadata(UpqJob):
 			image=image.resize((size[0], size[1]))
 		#use md5 as filename, so it can be reused
 		filename=m.hexdigest()+".jpg"
-		absname=os.path.join(UpqConfig().paths['metadata'], filename)
+		absname=os.path.join(self.cfg.paths['metadata'], filename)
 		if os.path.isfile(absname) and os.path.getsize(absname) == image.size:
 			logging.debug("Not overwriting %s" %(absname))
 			return
@@ -267,12 +266,13 @@ class Extract_metadata(UpqJob):
 
 		return True
 
-	def run(self):
+	def run(self, cfg):
+		self.cfg = cfg
 		gc.collect()
 		#filename of the archive to be scanned
 		filepath=os.path.abspath(self.jobdata['file'])
 		filename=os.path.basename(filepath) # filename only (no path info)
-		metadatapath=UpqConfig().paths['metadata']
+		metadatapath=cfg.paths['metadata']
 
 		if not os.path.exists(filepath):
 			logging.error("File doesn't exist: %s" %(filepath))
@@ -565,9 +565,9 @@ class Extract_metadata(UpqJob):
 
 	def getPathByStatus(self, status):
 		if status==1:
-			return UpqConfig().paths['files']
+			return self.cfg.paths['files']
 		elif status==3:
-			return UpqConfig().paths['broken']
+			return self.cfg.paths['broken']
 		raise Exception("Unknown status %s" %(status))
 
 	def movefile(self, srcfile, dstfile):
