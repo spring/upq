@@ -8,10 +8,14 @@
 
 # extracts metadata from a spring map / game and adds it into the db
 
-from lib import log, upqdb, upqjob
-
 import sys
 import os
+
+if __name__ == "__main__":
+	sys.path.append(os.path.realpath(os.path.dirname(os.path.dirname(__file__))))
+
+from lib import log, upqdb, upqjob
+
 import ctypes
 from PIL import Image
 from io import BytesIO
@@ -30,6 +34,12 @@ import logging
 from lib.unitsync import unitsync
 
 def escape(string):
+	"""
+	>>> escape("blabla%stest")
+	'blabla%%stest'
+	>>> escape("äöü")
+	''
+	"""
 	assert(isinstance(string, str))
 	string=string.replace("'","''")
 #	string=string.replace('"','\"')
@@ -99,6 +109,127 @@ def setupdir(filepath, tmpdir):
 	logging.debug("symlinking %s %s" % (filepath, tmpfile))
 	os.symlink(filepath, tmpfile)
 	return temppath
+
+def getFileList(usync, archiveh):
+	""" returns a list of all files in an archive """
+	files = []
+	pos=0
+	#get a list of all files
+	while True:
+		name=ctypes.create_string_buffer(1024)
+		size=ctypes.c_int(1024)
+		res=usync.FindFilesArchive(archiveh, pos, name, ctypes.byref(size))
+		if res==0: #last file
+			break
+		fileh=usync.OpenArchiveFile(archiveh, name.value)
+		if fileh<0:
+			logging.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  ""+usync.GetNextError().decode()))
+			return []
+		files.append(name.value.decode())
+		del name
+		pos=pos+1
+	return files
+
+def getSDPName(usync, archiveh):
+	files = getFileList(usync, archiveh)
+	m = hashlib.md5()
+	files = sorted(files, key=str.casefold)
+	if len(files)<=0:
+		raise Exception("Zero files found!")
+	i=0
+	for f in files:
+		# ignore directory entries
+		if f[-1] == '/': continue
+		content = getFile(usync, archiveh, f)
+		m.update(hashlib.md5(f.encode("ascii").lower()).digest())
+		m.update(hashlib.md5(content).digest())
+		del content
+		i=i+1
+	logging.debug("SDP %s" % m.hexdigest())
+	return m.hexdigest()
+
+def getFile(usync, archivehandle, filename):
+	""" returns the content of an archive"""
+	fileh = usync.OpenArchiveFile(archivehandle, filename.encode("ascii"))
+	if fileh < 0:
+		logging.error("Couldn't open %s" %(filename))
+		raise Exception("Couldn't open %s" %(filename))
+	size = usync.SizeArchiveFile(archivehandle, fileh)
+	if size < 0:
+		logging.error("Error getting size of %s" % (filename))
+		raise Exception("Error getting size of %s" % (filename))
+	buf = ctypes.create_string_buffer(size)
+	bytes=usync.ReadArchiveFile(archivehandle, fileh, buf, size)
+	usync.CloseArchiveFile(archivehandle, fileh)
+	return ctypes.string_at(buf,size)
+
+def initUnitSync(libunitsync, tmpdir, filename):
+	os.environ["SPRING_DATADIR"] = tmpdir
+	os.environ["HOME"] = tmpdir
+	os.environ["SPRING_LOG_SECTIONS"]="unitsync,ArchiveScanner,VFS"
+	usync = unitsync.Unitsync(libunitsync)
+	usync.Init(True,1)
+	version = usync.GetSpringVersion().decode()
+	logging.debug("using unitsync version %s" %(version))
+	usync.RemoveAllArchives()
+	usync.AddArchive(filename.encode("ascii"))
+	usync.AddAllArchives(filename.encode("ascii"))
+	return usync
+
+def openArchive(usync, filename):
+	archiveh=usync.OpenArchive(filename.encode("ascii"))
+	if archiveh<=0:
+		logging.error("OpenArchive(%s) failed: %s" % (filename, usync.GetNextError().decode()))
+		return False
+	return archiveh
+
+def movefile(srcfile, dstfile):
+	if srcfile == dstfile:
+		logging.info("File already in place: %s" %(srcfile))
+		return True
+	if os.path.exists(dstfile):
+		if filecmp.cmp(srcfile, dstfile):
+			os.remove(srcfile)
+			return True
+		logging.error("Destination file already exists: dst: %s src: %s" %(dstfile, srcfile))
+		return False
+	try:
+		shutil.move(srcfile, dstfile)
+	except: #move failed, try to copy + delete
+		shutil.copy(srcfile, dstfile)
+		try:
+			os.remove(srcfile)
+		except:
+			logging.warn("Removing src file failed: %s" % (srcfile))
+	logging.debug("moved file to (abs)%s :(rel)%s" %(srcfile, dstfile))
+	try:
+		os.chmod(dstfile, int("0444",8))
+	except OSError:
+		pass
+	logging.info("moved file to %s" % (dstfile))
+	return True
+
+def GetNormalizedFilename(name, version, extension):
+	"""
+	>>> GetNormalizedFilename("Spring Bla älü", "0.123", ".sdz")
+	'spring_bla__l_-0.123.sdz'
+	"""
+	""" normalize filename + renames file + updates filename in database """
+	assert(isinstance(name, str))
+	assert(isinstance(version, str))
+	assert(extension.startswith("."))
+	name=name.lower()
+	if len(version)>0:
+		name = str(name[:200] +"-" + version.lower())[:255]
+	name += extension
+
+	res=""
+	for c in name:
+		if c in "abcdefghijklmnopqrstuvwxyz-_.01234567890":
+			res+=c
+		else:
+			res+="_"
+	return res
 
 class Extract_metadata(upqjob.UpqJob):
 
@@ -184,26 +315,7 @@ class Extract_metadata(upqjob.UpqJob):
 		logging.info("Updated %s '%s' version '%s' sdp '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version'], data['sdp']))
 		return fid
 
-	def initUnitSync(self, tmpdir, filename):
-		libunitsync=self.cfg.paths['unitsync']
-		os.environ["SPRING_DATADIR"]=tmpdir
-		os.environ["HOME"]=tmpdir
-		os.environ["SPRING_LOG_SECTIONS"]="unitsync,ArchiveScanner,VFS"
-		usync = unitsync.Unitsync(libunitsync)
-		usync.Init(True,1)
-		version = usync.GetSpringVersion().decode()
-		logging.debug("using unitsync version %s" %(version))
-		usync.RemoveAllArchives()
-		usync.AddArchive(filename.encode("ascii"))
-		usync.AddAllArchives(filename.encode("ascii"))
-		return usync
 
-	def openArchive(self, usync, filename):
-		archiveh=usync.OpenArchive(filename.encode("ascii"))
-		if archiveh<=0:
-			logging.error("OpenArchive(%s) failed: %s" % (filename, usync.GetNextError().decode()))
-			return False
-		return archiveh
 	def saveImage(self, image, size):
 		""" store a image, called with an Image object, returns the filename """
 		m = hashlib.md5()
@@ -231,7 +343,7 @@ class Extract_metadata(upqjob.UpqJob):
 		for f in filelist:
 			if f.lower().startswith('bitmaps/loadpictures'):
 				logging.debug("Reading %s" % (f))
-				buf=self.getFile(usync, archiveh, f)
+				buf = getFile(usync, archiveh, f)
 				ioobj=BytesIO()
 				ioobj.write(buf)
 				ioobj.seek(0)
@@ -246,8 +358,8 @@ class Extract_metadata(upqjob.UpqJob):
 		return res
 
 	def ExtractMetadata(self, usync, archiveh, filename, filepath, metadatapath, hashes):
-		filelist=self.getFileList(usync, archiveh)
-		sdp = self.getSDPName(usync, archiveh)
+		filelist = getFileList(usync, archiveh)
+		sdp = getSDPName(usync, archiveh)
 
 		idx=self.getMapIdx(usync, filename)
 		if idx>=0: #file is map
@@ -271,12 +383,12 @@ class Extract_metadata(upqjob.UpqJob):
 			return False
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
 		_, extension = os.path.splitext(filename)
-		moveto = os.path.join(self.getPathByStatus(1), data['path'], self.GetNormalizedFilename(data['Name'], data['Version'], extension))
+		moveto = os.path.join(self.getPathByStatus(1), data['path'], GetNormalizedFilename(data['Name'], data['Version'], extension))
 		self.jobdata['file']=moveto
 
 		assert(len(moveto) > 10)
 
-		if not self.movefile(filepath, moveto):
+		if not movefile(filepath, moveto):
 			logging.error("Couldn't move file %s -> %s" %(filepath, moveto))
 			return False
 		try:
@@ -303,8 +415,8 @@ class Extract_metadata(upqjob.UpqJob):
 		hashes = get_hash(filepath)
 		tmpdir = setupdir(filepath, self.cfg.paths['tmp']) #temporary directory for unitsync
 
-		usync=self.initUnitSync(tmpdir, filename)
-		archiveh=self.openArchive(usync, os.path.join("games",filename))
+		usync = initUnitSync(self.cfg.paths['unitsync'], tmpdir, filename)
+		archiveh = openArchive(usync, os.path.join("games",filename))
 
 		try:
 			res  = self.ExtractMetadata(usync, archiveh, filename, filepath, metadatapath, hashes)
@@ -386,7 +498,7 @@ class Extract_metadata(upqjob.UpqJob):
 	def luaToPy(self, usync, archiveh, filename):
 		""" laods filename from archiveh, parses it and returns lua-tables as dict """
 		try:
-			luafile = self.getFile(usync, archiveh, filename)
+			luafile = getFile(usync, archiveh, filename)
 		except Exception as e:
 			logging.error("file doesn't exist in archive: %s %s" %(filename, e))
 			return {}
@@ -475,57 +587,8 @@ class Extract_metadata(upqjob.UpqJob):
 			res.append({ "UnitName": decodeString(usync.GetUnitName(i)),
 				"FullUnitName": decodeString(usync.GetFullUnitName(i))})
 		return res
-	def getFileList(self, usync, archiveh):
-		""" returns a list of all files in an archive """
-		files = []
-		pos=0
-		#get a list of all files
-		while True:
-			name=ctypes.create_string_buffer(1024)
-			size=ctypes.c_int(1024)
-			res=usync.FindFilesArchive(archiveh, pos, name, ctypes.byref(size))
-			if res==0: #last file
-				break
-			fileh=usync.OpenArchiveFile(archiveh, name.value)
-			if fileh<0:
-				logging.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  ""+usync.GetNextError().decode()))
-				return []
-			files.append(name.value.decode())
-			del name
-			pos=pos+1
-		return files
-	def getFile(self, usync, archivehandle, filename):
-		""" returns the content of an archive"""
-		fileh=usync.OpenArchiveFile(archivehandle, filename.encode("ascii"))
-		if fileh < 0:
-			logging.error("Couldn't open %s" %(filename))
-			raise Exception("Couldn't open %s" %(filename))
-		size=usync.SizeArchiveFile(archivehandle, fileh)
-		if size < 0:
-			logging.error("Error getting size of %s" % (filename))
-			raise Exception("Error getting size of %s" % (filename))
-		buf = ctypes.create_string_buffer(size)
-		bytes=usync.ReadArchiveFile(archivehandle, fileh, buf, size)
-		usync.CloseArchiveFile(archivehandle, fileh)
-		return ctypes.string_at(buf,size)
 
-	def getSDPName(self, usync, archiveh):
-		files=self.getFileList(usync, archiveh)
-		m=hashlib.md5()
-		files = sorted(files, key=str.casefold)
-		if len(files)<=0:
-			raise Exception("Zero files found!")
-		i=0
-		for f in files:
-			# ignore directory entries
-			if f[-1] == '/': continue
-			content = self.getFile(usync, archiveh, f)
-			m.update(hashlib.md5(f.encode("ascii").lower()).digest())
-			m.update(hashlib.md5(content).digest())
-			del content
-			i=i+1
-		logging.debug("SDP %s" % m.hexdigest())
-		return m.hexdigest()
+
 
 	def getGameData(self, usync, idx, gamesarchivecount, archivename, archiveh):
 		res={}
@@ -577,52 +640,13 @@ class Extract_metadata(upqjob.UpqJob):
 		return res
 
 	def getPathByStatus(self, status):
-		if status==1:
+		if status == 1:
 			return self.cfg.paths['files']
-		elif status==3:
+		elif status == 3:
 			return self.cfg.paths['broken']
 		raise Exception("Unknown status %s" %(status))
 
-	def movefile(self, srcfile, dstfile):
-		if srcfile == dstfile:
-			logging.info("File already in place: %s" %(srcfile))
-			return True
-		if os.path.exists(dstfile):
-			if filecmp.cmp(srcfile, dstfile):
-				os.remove(srcfile)
-				return True
-			logging.error("Destination file already exists: dst: %s src: %s" %(dstfile, srcfile))
-			return False
-		try:
-			shutil.move(srcfile, dstfile)
-		except: #move failed, try to copy + delete
-			shutil.copy(srcfile, dstfile)
-			try:
-				os.remove(srcfile)
-			except:
-				logging.warn("Removing src file failed: %s" % (srcfile))
-		logging.debug("moved file to (abs)%s :(rel)%s" %(srcfile, dstfile))
-		try:
-			os.chmod(dstfile, int("0444",8))
-		except OSError:
-			pass
-		logging.info("moved file to %s" % (dstfile))
-		return True
-	def GetNormalizedFilename(self, name, version, extension):
-		""" normalize filename + renames file + updates filename in database """
-		assert(isinstance(name, str))
-		assert(isinstance(version, str))
-		name=name.lower()
-		if len(version)>0:
-			name = str(name[:200] +"-" + version.lower())[:255]
-		name += extension
-
-		res=""
-		for c in name:
-			if c in "abcdefghijklmnopqrstuvwxyz-_.01234567890":
-				res+=c
-			else:
-				res+="_"
-		return res
-
+if __name__ == "__main__":
+	import doctest
+	doctest.testmod()
 
