@@ -173,4 +173,4 @@ class UpqDB():
 
 
 	def escape(self, string):
-		return string.replace("'","").replace("%","")
+		return string.replace("'","").replace("%","").replace("\", "")
