@@ -173,4 +173,5 @@ class UpqDB():
 
 
 	def escape(self, string):
-		return string.replace("'","").replace("%","").replace("\", "")
+		whitelist = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789")
+		return ''.join(c for c in string if c in whitelist)
