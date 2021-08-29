@@ -79,10 +79,9 @@ class Versionfetch(UpqJob):
 			assert(mid > 0)
 			UpqDB().query("UPDATE mirror_file SET lastcheck=NOW(), path='%s' WHERE mfid = %s"% (data['path'], mfid))
 		else:
-			relpath = self.escape(url[len(self.prefix)+1:])
 			mfid = UpqDB().insert("mirror_file", {
 				"mid" : mid,
-				"path": relpath,
+				"path": data['path'],
 				"status": 1,
 				"fid": fid,
 				"lastcheck": UpqDB().now()
