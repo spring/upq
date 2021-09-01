@@ -31,7 +31,7 @@ def getCID(category):
 def escape(string, whitelist=set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789-._")):
 	return ''.join(c for c in string if c in whitelist)
 
-def now(self):
+def now():
 	return func.now()
 
 class UpqDBIntegrityError(Exception):
