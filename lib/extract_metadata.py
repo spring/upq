@@ -108,6 +108,13 @@ def setupdir(filepath, tmpdir):
 	os.symlink(filepath, tmpfile)
 	return temppath
 
+
+def getErrors(usync):
+	err = usync.GetNextError()
+	while not err == None:
+		err += usync.GetNextError().decode()
+	return err if err else ""
+
 def getFileList(usync, archiveh):
 	""" returns a list of all files in an archive """
 	files = []
@@ -121,7 +128,7 @@ def getFileList(usync, archiveh):
 			break
 		fileh=usync.OpenArchiveFile(archiveh, name.value)
 		if fileh<0:
-			logging.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  ""+usync.GetNextError().decode()))
+			logging.error("Invalid handle for '%s' '%s': %s" % (name.value, fileh,  "" + getErrors(usync)))
 			return []
 		files.append(name.value.decode())
 		del name
@@ -177,7 +184,7 @@ def initUnitSync(libunitsync, tmpdir, filename):
 def openArchive(usync, filename):
 	archiveh=usync.OpenArchive(filename.encode("ascii"))
 	if archiveh<=0:
-		logging.error("OpenArchive(%s) failed: %s" % (filename, usync.GetNextError().decode()))
+		logging.error("OpenArchive(%s) failed: %s" % (filename, getErrors(usync)))
 		return False
 	return archiveh
 
@@ -365,7 +372,7 @@ class Extract_metadata():
 		else: # file is a game
 			idx=self.getGameIdx(usync, filename)
 			if idx<0:
-				logging.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
+				logging.error("Invalid file detected: %s %s %s"% (filename, getErrors(usync), idx))
 				return False
 			gamearchivecount = usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 			data["metadata"] = self.getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
@@ -419,10 +426,6 @@ class Extract_metadata():
 
 		res  = self.ExtractMetadata(cfg, usync, archiveh, filename, filepath, metadatapath, hashes)
 
-		#err=usync.GetNextError()
-		#while not err==None:
-		#	logging.error(err.decode())
-		#	err=usync.GetNextError()
 
 		usync.CloseArchive(archiveh)
 		usync.RemoveAllArchives()
@@ -554,7 +557,7 @@ class Extract_metadata():
 			del data
 			return res
 		del data
-		logging.error("Error creating image %s" % (usync.usync.GetNextError().decode()))
+		logging.error("Error creating image %s" % (getErrors(usync)))
 		raise Exception("Error creating image")
 
 	def dumpmap(self, usync, springname, outpath, filename, idx):
@@ -572,7 +575,7 @@ class Extract_metadata():
 
 	def getUnits(self, usync, archive):
 		while usync.ProcessUnits()>0:
-			err=usync.GetNextError().decode()
+			err = getErrors(usync)
 			if err:
 				logging.error("Error processing units: %s" % (err))
 		res = []
