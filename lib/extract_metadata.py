@@ -249,15 +249,10 @@ class Extract_metadata():
 				return i
 		return -1
 
-	def insertData(self, data, hashes):
-		metadata=data.copy()
-		del metadata['Depends'] #remove redundant entries
-		del metadata['sdp']
-		del metadata['Version']
-		del metadata['Name']
-		logging.debug(metadata)
-		metadata=json.dumps(metadata)
-		results = self.db.query("SELECT fid FROM file WHERE sdp='%s' or md5='%s'"% (data['sdp'], hashes['md5']))
+	def insertData(self, data):
+		logging.debug(data)
+		metadata=json.dumps(data["metadata"])
+		results = self.db.query("SELECT fid FROM file WHERE sdp='%s' or md5='%s'"% (data['sdp'], data['md5']))
 		res=results.first()
 		if res:
 			fid=res['fid']
@@ -268,10 +263,10 @@ class Extract_metadata():
 		assert("/" not in data["filename"])
 		if fid<=0:
 			fid=self.db.insert("file", {
-				"name": escape(data['Name']),
-				"version": escape(data['Version']),
+				"name": data["name"],
+				"version": data["version"],
 				"sdp": data['sdp'],
-				"cid": upqdb.getCID(data['Type']),
+				"cid": data["cid"],
 				"metadata": metadata,
 				"uid": 0,
 				"path": data["path"],
@@ -279,25 +274,25 @@ class Extract_metadata():
 				"timestamp": upqdb.now(), #fixme: use file timestamp
 				"size": os.path.getsize(filename),
 				"status": 1,
-				"md5": hashes["md5"],
-				"sha1": hashes["sha1"],
-				"sha256": hashes["sha256"],
+				"md5": data["md5"],
+				"sha1": data["sha1"],
+				"sha256": data["sha256"],
 				})
 		else:
 			self.db.query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s', md5='%s', sha1='%s', sha256='%s', status=1 WHERE fid=%s" %(
-				escape(data['Name']),
-				data['Version'],
+				data['name'],
+				data['version'],
 				data['sdp'],
-				upqdb.getCID(data['Type']),
+				data["cid"],
 				metadata,
-				hashes["md5"],
-				hashes["sha1"],
-				hashes["sha256"],
+				data["md5"],
+				data["sha1"],
+				data["sha256"],
 				fid
 				))
 		# remove already existing depends
 		self.db.query("DELETE FROM file_depends WHERE fid = %s" % (fid) )
-		for depend in data['Depends']:
+		for depend in data["metadata"]['Depends']:
 			res=self.db.query("SELECT fid FROM file WHERE CONCAT(name,' ',version)='%s'" % (depend))
 			row=res.first()
 			if not row:
@@ -306,10 +301,10 @@ class Extract_metadata():
 				id=row['fid']
 			try:
 				self.db.insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
-				logging.info("Added %s '%s' version '%s' to the mirror-system" % (data['Type'], data['Name'], data['Version']))
+				logging.info("Added '%s' version '%s' to the mirror-system" % (data['name'], data['version']))
 			except upqdb.UpqDBIntegrityError:
 				pass
-		logging.info("Updated %s '%s' version '%s' sdp '%s' in the mirror-system" % (data['Type'], data['Name'], data['Version'], data['sdp']))
+		logging.info("Updated '%s' version '%s' sdp '%s' in the mirror-system" % (data['name'], data['version'], data['sdp']))
 		return fid
 
 
@@ -352,7 +347,7 @@ class Extract_metadata():
 					pass
 		return res
 
-	def ExtractMetadata(self, cfg, usync, archiveh, filename, filepath, metadatapath, hashes):
+	def ExtractMetadata(self, cfg, usync, archiveh, filename, filepath, metadatapath, data):
 		self.jobcfg=cfg
 		self.db = upqdb.UpqDB()
 
@@ -364,24 +359,26 @@ class Extract_metadata():
 		archivepath = usync.GetArchivePath(filename).decode()+filename
 		if idx>=0: #file is map
 			springname = usync.GetMapName(idx).decode()
-			data = self.getMapData(usync, filename, idx, archiveh, springname)
-			data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
+			data["metadata"] = self.getMapData(usync, filename, idx, archiveh, springname)
+			data['mapimages'] = self.dumpmap(usync, springname, metadatapath, filename,idx)
 			data['path'] = "maps"
+			data["cid"] = upqdb.getCID("map")
 		else: # file is a game
 			idx=self.getGameIdx(usync, filename)
 			if idx<0:
 				logging.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
 				return False
 			gamearchivecount = usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
-			data = self.getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
+			data["metadata"] = self.getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
 			data['path'] = "games"
+			data["cid"] = upqdb.getCID("game")
 
-		if (sdp == "") or (data['Name'] == ""): #mark as broken because sdp / name is missing
+		if (sdp == "") or (data["metadata"]['Name'] == ""): #mark as broken because sdp / name is missing
 			logging.error("Couldn't get name / filename")
 			return False
 
 		_, extension = os.path.splitext(filename)
-		data["filename"] = GetNormalizedFilename(data['Name'], data['Version'], extension)
+		data["filename"] = GetNormalizedFilename(data["metadata"]['Name'], data["metadata"]['Version'], extension)
 		data['splash'] = self.createSplashImages(usync, archiveh, filelist)
 
 		moveto = os.path.join(self.cfg.paths['files'], data["path"], data["filename"])
@@ -390,13 +387,18 @@ class Extract_metadata():
 			return False
 		assert(os.path.isfile(moveto))
 
+
+		data["name"] = escape(data["metadata"]['Name'])
+		data["version"] = escape(data["metadata"]['Version'])
+
 		try:
 			data['sdp']=sdp
-			self.insertData(data, hashes)
+			self.insertData(data)
 		except upqdb.UpqDBIntegrityError:
-			logging.error("Duplicate file detected: %s %s %s" % (data["filename"], data['Name'], data['Version']))
+			logging.error("Duplicate file detected: %s %s %s" % (data["filename"], data['name'], data['version']))
 			return False
 
+		logging.info("Updated %s" %(data["filename"]))
 		return True
 
 	def run(self, cfg, filepath):
@@ -416,16 +418,12 @@ class Extract_metadata():
 		usync = initUnitSync(self.cfg.paths['unitsync'], tmpdir, filename)
 		archiveh = openArchive(usync, os.path.join("games",filename))
 
-		try:
-			res  = self.ExtractMetadata(cfg, usync, archiveh, filename, filepath, metadatapath, hashes)
-		except Exception as e:
-			logging.error(str(e))
-			return False
+		res  = self.ExtractMetadata(cfg, usync, archiveh, filename, filepath, metadatapath, hashes)
 
-		err=usync.GetNextError()
-		while not err==None:
-			logging.error(err.decode())
-			err=usync.GetNextError()
+		#err=usync.GetNextError()
+		#while not err==None:
+		#	logging.error(err.decode())
+		#	err=usync.GetNextError()
 
 		usync.CloseArchive(archiveh)
 		usync.RemoveAllArchives()
@@ -433,6 +431,7 @@ class Extract_metadata():
 		del usync
 		assert(tmpdir.startswith("/home/springfiles/upq/tmp/"))
 		shutil.rmtree(tmpdir)
+		logging.info("*** Done! ***")
 		return res
 
 	def getMapPositions(self, usync, idx, Map):
@@ -596,7 +595,6 @@ class Extract_metadata():
 			if springname.endswith(" ") : #remove space at end (added through unitsync hack)
 				springname=springname[:len(springname)-1]
 
-		res['Type']= "game"
 		res['Name']= springname
 		res['Description']= decodeString(usync.GetPrimaryModDescription(idx))
 		res['Version']= version
@@ -606,7 +604,6 @@ class Extract_metadata():
 
 	def getMapData(self, usync, filename, idx, archiveh, springname):
 		res={}
-		res['Type'] = "map"
 		mapname=usync.GetMapName(idx).decode()
 		res['Name'] = mapname
 		author = usync.GetMapAuthor(idx)
