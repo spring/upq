@@ -250,7 +250,7 @@ class Extract_metadata():
 		return -1
 
 	def insertData(self, data):
-		logging.debug(data)
+		#logging.debug(data)
 		metadata=json.dumps(data["metadata"])
 		results = self.db.query("SELECT fid FROM file WHERE sdp='%s' or md5='%s'"% (data['sdp'], data['md5']))
 		res=results.first()
@@ -527,6 +527,7 @@ class Extract_metadata():
 	# extracts minimap from given file
 	def createMapImage(self, usync, mapname, size):
 		assert(isinstance(mapname, str))
+		logging.debug("Writing image: %s %dx%d"% (mapname, size[0], size[1]))
 		data=ctypes.string_at(usync.GetMinimap(mapname.encode("ascii"), 0), 1024*1024*2)
 		im = Image.frombuffer("RGB", (1024, 1024), data, "raw", "BGR;16")
 		del data
@@ -542,7 +543,7 @@ class Extract_metadata():
 		height = height.contents.value
 		assert(width > 0)
 		assert(height > 0)
-		logging.debug("mapname: %s %dx%d"% (mapname, width, height))
+		logging.debug("Writing image <%s>: %dx%d"% (maptype, width, height))
 		data = ctypes.create_string_buffer(int(width*height*byteperpx*2))
 		data.restype = ctypes.c_void_p
 		ret=usync.GetInfoMap(mapname.encode("ascii"), maptype.encode("ascii"), data, byteperpx)
