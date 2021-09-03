@@ -405,6 +405,27 @@ def getMapData(usync, filename, idx, archiveh, springname):
 	res['Version']=version
 	return res
 
+def saveImage(image, size, imagedir):
+	""" store a image, called with an Image object, returns the filename """
+	m = hashlib.md5()
+	m.update(image.tobytes())
+	if (size[0]>1024): # shrink if to big
+		sizey=int((1024.0/size[0])*size[1])
+		logging.debug("image to big %dx%d, resizing... to %dx%d" % (size[0], size[1], 1024, sizey))
+		image=image.resize((1024, sizey))
+	else:
+		image=image.resize((size[0], size[1]))
+	#use md5 as filename, so it can be reused
+	filename=m.hexdigest()+".jpg"
+	absname=os.path.join(imagedir, filename)
+	if os.path.isfile(absname) and os.path.getsize(absname) == image.size:
+		logging.debug("Not overwriting %s" %(absname))
+		return
+	image.save(absname)
+	os.chmod(absname,int("0644",8))
+	logging.debug("Wrote " + absname)
+	return filename
+
 class Extract_metadata():
 
 	def insertData(self, data):
@@ -465,26 +486,6 @@ class Extract_metadata():
 		return fid
 
 
-	def saveImage(self, image, size):
-		""" store a image, called with an Image object, returns the filename """
-		m = hashlib.md5()
-		m.update(image.tobytes())
-		if (size[0]>1024): # shrink if to big
-			sizey=int((1024.0/size[0])*size[1])
-			logging.debug("image to big %dx%d, resizing... to %dx%d" % (size[0], size[1], 1024, sizey))
-			image=image.resize((1024, sizey))
-		else:
-			image=image.resize((size[0], size[1]))
-		#use md5 as filename, so it can be reused
-		filename=m.hexdigest()+".jpg"
-		absname=os.path.join(self.cfg.paths['metadata'], filename)
-		if os.path.isfile(absname) and os.path.getsize(absname) == image.size:
-			logging.debug("Not overwriting %s" %(absname))
-			return
-		image.save(absname)
-		os.chmod(absname,int("0644",8))
-		logging.debug("Wrote " + absname)
-		return filename
 
 	def createSplashImages(self, usync, archiveh, filelist):
 		res = []
@@ -498,7 +499,7 @@ class Extract_metadata():
 				del buf
 				try:
 					im=Image.open(ioobj)
-					res.append(self.saveImage(im, im.size))
+					res.append(saveImage(im, im.size, self.cfg.paths['metadata']))
 				except Exception as e:
 					logging.error("Invalid image %s: %s" % (f, e))
 					pass
@@ -595,7 +596,7 @@ class Extract_metadata():
 		data=ctypes.string_at(usync.GetMinimap(mapname.encode("ascii"), 0), 1024*1024*2)
 		im = Image.frombuffer("RGB", (1024, 1024), data, "raw", "BGR;16")
 		del data
-		return self.saveImage(im, size)
+		return saveImage(im, size, self.cfg.paths['metadata'])
 
 	def createMapInfoImage(self, usync, mapname, maptype, byteperpx, decoder,decoderparm, size):
 		assert(isinstance(mapname, str))
@@ -614,7 +615,7 @@ class Extract_metadata():
 		if ret != 0:
 			im = Image.frombuffer(decoder, (width, height), data, "raw", decoderparm)
 			im=im.convert("L")
-			res=self.saveImage(im, size)
+			res = saveImage(im, size, self.cfg.paths['metadata'])
 			del data
 			return res
 		del data
