@@ -264,7 +264,8 @@ class Extract_metadata():
 		else:
 			fid=0
 
-		assert(os.path.isfile(os.path.join(self.cfg.paths['files'] , data["relpath"])))
+		assert(data["path"] in ("games", "maps"))
+		assert("/" not in data["filename"])
 		if fid<=0:
 			fid=self.db.insert("file", {
 				"name": escape(data['Name']),
@@ -273,8 +274,8 @@ class Extract_metadata():
 				"cid": upqdb.getCID(data['Type']),
 				"metadata": metadata,
 				"uid": 0,
-				"path": data["relpath"],
-				"filename": os.path.basename(data["relpath"]),
+				"path": data["path"],
+				"filename": data["filename"],
 				"timestamp": upqdb.now(), #fixme: use file timestamp
 				"size": os.path.getsize(filename),
 				"status": 1,
@@ -335,7 +336,6 @@ class Extract_metadata():
 
 	def createSplashImages(self, usync, archiveh, filelist):
 		res = []
-		count=0
 		for f in filelist:
 			if f.lower().startswith('bitmaps/loadpictures'):
 				logging.debug("Reading %s" % (f))
@@ -347,7 +347,6 @@ class Extract_metadata():
 				try:
 					im=Image.open(ioobj)
 					res.append(self.saveImage(im, im.size))
-					count=count+1
 				except Exception as e:
 					logging.error("Invalid image %s: %s" % (f, e))
 					pass
@@ -361,39 +360,41 @@ class Extract_metadata():
 		sdp = getSDPName(usync, archiveh)
 
 		idx=self.getMapIdx(usync, filename)
+		logging.debug("Extracting data from " + filename)
+		archivepath = usync.GetArchivePath(filename).decode()+filename
 		if idx>=0: #file is map
-			archivepath = usync.GetArchivePath(filename.encode()).decode()+filename
 			springname = usync.GetMapName(idx).decode()
-			data=self.getMapData(usync, filename, idx, archiveh, springname)
+			data = self.getMapData(usync, filename, idx, archiveh, springname)
 			data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
-			data['category'] = "maps"
+			data['path'] = "maps"
 		else: # file is a game
 			idx=self.getGameIdx(usync, filename)
 			if idx<0:
 				logging.error("Invalid file detected: %s %s %s"% (filename,usync.GetNextError(), idx))
 				return False
-			logging.debug("Extracting data from "+filename)
-			archivepath=usync.GetArchivePath(filename).decode()+filename
-			gamearchivecount=usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
-			data=self.getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
-			data['category'] = "games"
+			gamearchivecount = usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
+			data = self.getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
+			data['path'] = "games"
 
 		if (sdp == "") or (data['Name'] == ""): #mark as broken because sdp / name is missing
 			logging.error("Couldn't get name / filename")
 			return False
-		data["relpath"] = os.path.join(data['category'], GetNormalizedFilename(data['Name'], data['Version'], extension))
-		moveto = os.path.join(self.cfg.paths['files'], data["relpath"])
-		data['splash']=self.createSplashImages(usync, archiveh, filelist)
-		_, extension = os.path.splitext(filename)
 
+		_, extension = os.path.splitext(filename)
+		data["filename"] = GetNormalizedFilename(data['Name'], data['Version'], extension)
+		data['splash'] = self.createSplashImages(usync, archiveh, filelist)
+
+		moveto = os.path.join(self.cfg.paths['files'], data["path"], data["filename"])
 		if not movefile(filepath, moveto):
 			logging.error("Couldn't move file %s -> %s" %(filepath, moveto))
 			return False
+		assert(os.path.isfile(moveto))
+
 		try:
 			data['sdp']=sdp
 			self.insertData(data, hashes)
 		except upqdb.UpqDBIntegrityError:
-			logging.error("Duplicate file detected: %s %s %s" % (filename, data['Name'], data['Version']))
+			logging.error("Duplicate file detected: %s %s %s" % (data["filename"], data['Name'], data['Version']))
 			return False
 
 		return True
