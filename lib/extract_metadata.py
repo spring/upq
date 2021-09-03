@@ -249,7 +249,7 @@ class Extract_metadata():
 				return i
 		return -1
 
-	def insertData(self, data, filename, hashes):
+	def insertData(self, data, hashes):
 		metadata=data.copy()
 		del metadata['Depends'] #remove redundant entries
 		del metadata['sdp']
@@ -264,6 +264,7 @@ class Extract_metadata():
 		else:
 			fid=0
 
+		assert(os.path.isfile(os.path.join(self.cfg.paths['files'] , data["relpath"])))
 		if fid<=0:
 			fid=self.db.insert("file", {
 				"name": escape(data['Name']),
@@ -272,8 +273,8 @@ class Extract_metadata():
 				"cid": upqdb.getCID(data['Type']),
 				"metadata": metadata,
 				"uid": 0,
-				"path": data["path"],
-				"filename": os.path.basename(filename),
+				"path": data["relpath"],
+				"filename": os.path.basename(data["relpath"]),
 				"timestamp": upqdb.now(), #fixme: use file timestamp
 				"size": os.path.getsize(filename),
 				"status": 1,
@@ -365,7 +366,7 @@ class Extract_metadata():
 			springname = usync.GetMapName(idx).decode()
 			data=self.getMapData(usync, filename, idx, archiveh, springname)
 			data['mapimages']=self.dumpmap(usync, springname, metadatapath, filename,idx)
-			data['path'] = os.path.join(self.cfg.paths['files'], "maps")
+			data['category'] = "maps"
 		else: # file is a game
 			idx=self.getGameIdx(usync, filename)
 			if idx<0:
@@ -375,22 +376,22 @@ class Extract_metadata():
 			archivepath=usync.GetArchivePath(filename).decode()+filename
 			gamearchivecount=usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 			data=self.getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
-			data['path'] = os.path.join(self.cfg.paths['files'], "games")
+			data['category'] = "games"
+
 		if (sdp == "") or (data['Name'] == ""): #mark as broken because sdp / name is missing
 			logging.error("Couldn't get name / filename")
 			return False
+		data["relpath"] = os.path.join(data['category'], GetNormalizedFilename(data['Name'], data['Version'], extension))
+		moveto = os.path.join(self.cfg.paths['files'], data["relpath"])
 		data['splash']=self.createSplashImages(usync, archiveh, filelist)
 		_, extension = os.path.splitext(filename)
-		moveto = os.path.join(self.getPathByStatus(1), data['path'], GetNormalizedFilename(data['Name'], data['Version'], extension))
-
-		assert(len(moveto) > 10)
 
 		if not movefile(filepath, moveto):
 			logging.error("Couldn't move file %s -> %s" %(filepath, moveto))
 			return False
 		try:
 			data['sdp']=sdp
-			self.insertData(data, moveto, hashes)
+			self.insertData(data, hashes)
 		except upqdb.UpqDBIntegrityError:
 			logging.error("Duplicate file detected: %s %s %s" % (filename, data['Name'], data['Version']))
 			return False
@@ -631,13 +632,6 @@ class Extract_metadata():
 		version="" #TODO: add support
 		res['Version']=version
 		return res
-
-	def getPathByStatus(self, status):
-		if status == 1:
-			return self.cfg.paths['files']
-		elif status == 3:
-			return self.cfg.paths['broken']
-		raise Exception("Unknown status %s" %(status))
 
 if __name__ == "__main__":
 	import doctest
