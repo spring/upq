@@ -236,25 +236,176 @@ def GetNormalizedFilename(name, version, extension):
 			res+="_"
 	return res
 
-class Extract_metadata():
+def getMapIdx(usync, filename):
+	assert(isinstance(filename, str))
+	mapcount = usync.GetMapCount()
+	for i in range(0, mapcount):
+		usync.GetMapArchiveCount(usync.GetMapName(i)) # initialization for GetMapArchiveName()
+		mapfilename = os.path.basename(usync.GetMapArchiveName(0).decode())
+		if filename==mapfilename:
+			return i
+	return -1
 
-	def getMapIdx(self, usync, filename):
-		assert(isinstance(filename, str))
-		mapcount = usync.GetMapCount()
-		for i in range(0, mapcount):
-			usync.GetMapArchiveCount(usync.GetMapName(i)) # initialization for GetMapArchiveName()
-			mapfilename = os.path.basename(usync.GetMapArchiveName(0).decode())
-			if filename==mapfilename:
-				return i
-		return -1
-	def getGameIdx(self, usync, filename):
-		assert(isinstance(filename, str))
-		gamecount = usync.GetPrimaryModCount()
-		for i in range(0, gamecount):
-			gamename=usync.GetPrimaryModArchive(i).decode()
-			if filename == gamename:
-				return i
-		return -1
+def getGameIdx(usync, filename):
+	assert(isinstance(filename, str))
+	gamecount = usync.GetPrimaryModCount()
+	for i in range(0, gamecount):
+		gamename=usync.GetPrimaryModArchive(i).decode()
+		if filename == gamename:
+			return i
+	return -1
+
+def dumpLuaTree(usync, depth = 0):
+	""" dumps a lua tree into a python dict """
+	if depth > 5:
+		logging.error("max depth reached!")
+		return {}
+	tables = []
+	inttables = []
+	res = {}
+	# str tables
+	count = usync.lpGetStrKeyListCount()
+	for i in range(0, count):
+		key = usync.lpGetStrKeyListEntry(i)
+		typ = usync.lpGetStrKeyType(key)
+		if typ == 1: #int
+			res[key] = usync.lpGetStrKeyIntVal(key, "")
+		elif typ == 2:#string
+			res[key] = usync.lpGetStrKeyStrVal(key, "")
+		elif typ == 3:#bool
+			res[key] = usync.lpGetStrKeyBoolVal(key, "")
+		elif typ == 4:#table
+			tables.append(key)
+	# int tables
+	count = usync.lpGetIntKeyListCount()
+	for i in range(0, count):
+		key = usync.lpGetIntKeyListEntry(i)
+		typ = usync.lpGetIntKeyType(key)
+		if typ == 1: #int
+			res[key] = usync.lpGetIntKeyIntVal(key, "")
+		elif typ == 2:#string
+			res[key] = usync.lpGetIntKeyStrVal(key, "")
+		elif typ == 3:#bool
+			res[key] = usync.lpGetIntKeyBoolVal(key, "")
+		elif typ == 4:#table
+			inttables.append(key)
+	count = usync.lpGetStrKeyListCount()
+	for table in tables:
+		usync.lpSubTableStr(table)
+		res[table] = dumpLuaTree(usync, depth + 1)
+		usync.lpPopTable()
+	count = usync.lpGetIntKeyListCount()
+	for table in inttables:
+		usync.lpSubTableInt(table)
+		res[table] = dumpLuaTree(usync, depth + 1)
+		usync.lpPopTable()
+	return res
+
+def luaToPy(usync, archiveh, filename):
+	""" laods filename from archiveh, parses it and returns lua-tables as dict """
+	try:
+		luafile = getFile(usync, archiveh, filename)
+	except Exception as e:
+		logging.error("file doesn't exist in archive: %s %s" %(filename, e))
+		return {}
+	usync.lpOpenSource(luafile, "r")
+	usync.lpExecute()
+	res = dumpLuaTree(usync)
+	err = usync.lpErrorLog()
+	if err:
+		logging.error(err)
+	return res
+
+def getMapResources(usync, idx, Map):
+	res=[]
+	resourceCount=usync.GetMapResourceCount(idx)
+	for i in range (0, resourceCount):
+		res.append({"Name": usync.GetMapResourceName(idx, i).decode(),
+			"Max": usync.GetMapResourceMax(idx, i),
+			"ExtractorRadius": usync.GetMapResourceExtractorRadius(idx, i)})
+	return res
+
+def getMapPositions(usync, idx, Map):
+	startpositions = usync.GetMapPosCount(idx)
+	res = []
+	for i in range(0, startpositions):
+		x=usync.GetMapPosX(idx, i)
+		z=usync.GetMapPosZ(idx, i)
+		res.append({'x': x, 'z': z})
+	return res
+
+def getDepends(usync, archiveh, filename):
+	filterdeps = [ 'bitmaps.sdz', 'springcontent.sdz', 'maphelper.sdz', 'cursors.sdz', 'Map Helper v1', 'Spring content v1' ]
+	res = luaToPy(usync, archiveh, filename)
+	if 'depend' in res:
+		vals = []
+		for i in res['depend'].values():
+			if i not in filterdeps:
+				vals.append(i)
+		logging.info(vals)
+		return vals
+	return []
+
+def getUnits(usync, archive):
+	while usync.ProcessUnits()>0:
+		err = getErrors(usync)
+		if err:
+			logging.error("Error processing units: %s" % (err))
+	res = []
+	count=usync.GetUnitCount()
+	for i in range(0, count):
+		res.append({ "UnitName": decodeString(usync.GetUnitName(i)),
+			"FullUnitName": decodeString(usync.GetFullUnitName(i))})
+	return res
+
+def getGameData(usync, idx, gamesarchivecount, archivename, archiveh):
+	res={}
+	springname=usync.GetPrimaryModName(idx).decode()
+	version=usync.GetPrimaryModVersion(idx).decode()
+	if version==springname:
+		version=""
+	elif springname.endswith(version) : # Hack to get version independant string
+		springname=springname[:len(springname)-len(version)]
+		if springname.endswith(" ") : #remove space at end (added through unitsync hack)
+			springname=springname[:len(springname)-1]
+
+	res['Name']= springname
+	res['Description']= decodeString(usync.GetPrimaryModDescription(idx))
+	res['Version'] = version
+	res['Depends'] =  getDepends(usync, archiveh, "modinfo.lua")
+	res['Units'] = getUnits(usync, archivename)
+	return res
+
+def getMapData(usync, filename, idx, archiveh, springname):
+	res={}
+	mapname=usync.GetMapName(idx).decode()
+	res['Name'] = mapname
+	author = usync.GetMapAuthor(idx)
+	res['Author'] = author.decode() if author else ""
+	res['Description'] = decodeString(usync.GetMapDescription(idx))
+	res['Gravity'] = usync.GetMapGravity(idx)
+	res['MaxWind'] = usync.GetMapWindMax(idx)
+	res['MinWind'] = usync.GetMapWindMin(idx)
+	res['TidalStrength'] = usync.GetMapTidalStrength(idx)
+
+	res['Height'] = usync.GetMapHeight(idx) / 512
+	res['Width'] = usync.GetMapWidth(idx) / 512
+
+	res['Gravity'] = usync.GetMapGravity(idx)
+	res['MapFileName'] = usync.GetMapFileName(idx).decode()
+	res['MapMinHeight'] = usync.GetMapMinHeight(mapname)
+	res['MapMaxHeight'] = usync.GetMapMaxHeight(mapname)
+
+	res['Resources'] = getMapResources(usync, idx,filename)
+	res['Units'] = getUnits(usync, filename)
+
+	res['StartPos'] = getMapPositions(usync,idx,filename.encode("ascii"))
+	res['Depends'] = getDepends(usync, archiveh, "mapinfo.lua")
+	version="" #TODO: add support
+	res['Version']=version
+	return res
+
+class Extract_metadata():
 
 	def insertData(self, data):
 		#logging.debug(data)
@@ -360,22 +511,22 @@ class Extract_metadata():
 		filelist = getFileList(usync, archiveh)
 		sdp = getSDPName(usync, archiveh)
 
-		idx=self.getMapIdx(usync, filename)
+		idx = getMapIdx(usync, filename)
 		logging.debug("Extracting data from " + filename)
 		archivepath = usync.GetArchivePath(filename).decode()+filename
 		if idx>=0: #file is map
 			springname = usync.GetMapName(idx).decode()
-			data["metadata"] = self.getMapData(usync, filename, idx, archiveh, springname)
+			data["metadata"] = getMapData(usync, filename, idx, archiveh, springname)
 			data['mapimages'] = self.dumpmap(usync, springname, metadatapath, filename,idx)
 			data['path'] = "maps"
 			data["cid"] = upqdb.getCID("map")
 		else: # file is a game
-			idx=self.getGameIdx(usync, filename)
+			idx = getGameIdx(usync, filename)
 			if idx<0:
 				logging.error("Invalid file detected: %s %s %s"% (filename, getErrors(usync), idx))
 				return False
 			gamearchivecount = usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
-			data["metadata"] = self.getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
+			data["metadata"] = getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
 			data['path'] = "games"
 			data["cid"] = upqdb.getCID("game")
 
@@ -436,96 +587,6 @@ class Extract_metadata():
 		logging.info("*** Done! ***")
 		return res
 
-	def getMapPositions(self, usync, idx, Map):
-		startpositions = usync.GetMapPosCount(idx)
-		res = []
-		for i in range(0, startpositions):
-			x=usync.GetMapPosX(idx, i)
-			z=usync.GetMapPosZ(idx, i)
-			res.append({'x': x, 'z': z})
-		return res
-
-	def dumpLuaTree(self, usync, depth = 0):
-		""" dumps a lua tree into a python dict """
-		if depth > 5:
-			logging.error("max depth reached!")
-			return {}
-		tables = []
-		inttables = []
-		res = {}
-		# str tables
-		count = usync.lpGetStrKeyListCount()
-		for i in range(0, count):
-			key = usync.lpGetStrKeyListEntry(i)
-			typ = usync.lpGetStrKeyType(key)
-			if typ == 1: #int
-				res[key] = usync.lpGetStrKeyIntVal(key, "")
-			elif typ == 2:#string
-				res[key] = usync.lpGetStrKeyStrVal(key, "")
-			elif typ == 3:#bool
-				res[key] = usync.lpGetStrKeyBoolVal(key, "")
-			elif typ == 4:#table
-				tables.append(key)
-		# int tables
-		count = usync.lpGetIntKeyListCount()
-		for i in range(0, count):
-			key = usync.lpGetIntKeyListEntry(i)
-			typ = usync.lpGetIntKeyType(key)
-			if typ == 1: #int
-				res[key] = usync.lpGetIntKeyIntVal(key, "")
-			elif typ == 2:#string
-				res[key] = usync.lpGetIntKeyStrVal(key, "")
-			elif typ == 3:#bool
-				res[key] = usync.lpGetIntKeyBoolVal(key, "")
-			elif typ == 4:#table
-				inttables.append(key)
-		count = usync.lpGetStrKeyListCount()
-		for table in tables:
-			usync.lpSubTableStr(table)
-			res[table] = self.dumpLuaTree(usync, depth + 1)
-			usync.lpPopTable()
-		count = usync.lpGetIntKeyListCount()
-		for table in inttables:
-			usync.lpSubTableInt(table)
-			res[table] = self.dumpLuaTree(usync, depth + 1)
-			usync.lpPopTable()
-		return res
-
-	def luaToPy(self, usync, archiveh, filename):
-		""" laods filename from archiveh, parses it and returns lua-tables as dict """
-		try:
-			luafile = getFile(usync, archiveh, filename)
-		except Exception as e:
-			logging.error("file doesn't exist in archive: %s %s" %(filename, e))
-			return {}
-		usync.lpOpenSource(luafile, "r")
-		usync.lpExecute()
-		res = self.dumpLuaTree(usync)
-		err = usync.lpErrorLog()
-		if err:
-			logging.error(err)
-		return res
-
-	def getDepends(self, usync, archiveh, filename):
-		filterdeps = [ 'bitmaps.sdz', 'springcontent.sdz', 'maphelper.sdz', 'cursors.sdz', 'Map Helper v1', 'Spring content v1' ]
-		res = self.luaToPy(usync, archiveh, filename)
-		if 'depend' in res:
-			vals = []
-			for i in res['depend'].values():
-				if i not in filterdeps:
-					vals.append(i)
-			logging.info(vals)
-			return vals
-		return []
-
-	def getMapResources(self, usync,idx,Map):
-		res=[]
-		resourceCount=usync.GetMapResourceCount(idx)
-		for i in range (0, resourceCount):
-			res.append({"Name": usync.GetMapResourceName(idx, i).decode(),
-				"Max": usync.GetMapResourceMax(idx, i),
-				"ExtractorRadius": usync.GetMapResourceExtractorRadius(idx, i)})
-		return res
 
 	# extracts minimap from given file
 	def createMapImage(self, usync, mapname, size):
@@ -573,66 +634,7 @@ class Extract_metadata():
 		res.append(self.createMapInfoImage(usync,springname, "metal",1, "L","L;I", scaledsize))
 		return res
 
-	def getUnits(self, usync, archive):
-		while usync.ProcessUnits()>0:
-			err = getErrors(usync)
-			if err:
-				logging.error("Error processing units: %s" % (err))
-		res = []
-		count=usync.GetUnitCount()
-		for i in range(0, count):
-			res.append({ "UnitName": decodeString(usync.GetUnitName(i)),
-				"FullUnitName": decodeString(usync.GetFullUnitName(i))})
-		return res
 
-
-
-	def getGameData(self, usync, idx, gamesarchivecount, archivename, archiveh):
-		res={}
-		springname=usync.GetPrimaryModName(idx).decode()
-		version=usync.GetPrimaryModVersion(idx).decode()
-		if version==springname:
-			version=""
-		elif springname.endswith(version) : # Hack to get version independant string
-			springname=springname[:len(springname)-len(version)]
-			if springname.endswith(" ") : #remove space at end (added through unitsync hack)
-				springname=springname[:len(springname)-1]
-
-		res['Name']= springname
-		res['Description']= decodeString(usync.GetPrimaryModDescription(idx))
-		res['Version']= version
-		res['Depends']=self.getDepends(usync, archiveh, "modinfo.lua")
-		res['Units']=self.getUnits(usync, archivename)
-		return res
-
-	def getMapData(self, usync, filename, idx, archiveh, springname):
-		res={}
-		mapname=usync.GetMapName(idx).decode()
-		res['Name'] = mapname
-		author = usync.GetMapAuthor(idx)
-		res['Author'] = author.decode() if author else ""
-		res['Description'] = decodeString(usync.GetMapDescription(idx))
-		res['Gravity'] = usync.GetMapGravity(idx)
-		res['MaxWind'] = usync.GetMapWindMax(idx)
-		res['MinWind'] = usync.GetMapWindMin(idx)
-		res['TidalStrength'] = usync.GetMapTidalStrength(idx)
-
-		res['Height'] = usync.GetMapHeight(idx) / 512
-		res['Width'] = usync.GetMapWidth(idx) / 512
-
-		res['Gravity'] = usync.GetMapGravity(idx)
-		res['MapFileName'] = usync.GetMapFileName(idx).decode()
-		res['MapMinHeight'] = usync.GetMapMinHeight(mapname)
-		res['MapMaxHeight'] = usync.GetMapMaxHeight(mapname)
-
-		res['Resources'] = self.getMapResources(usync, idx,filename)
-		res['Units'] = self.getUnits(usync, filename)
-
-		res['StartPos']=self.getMapPositions(usync,idx,filename.encode("ascii"))
-		res['Depends']=self.getDepends(usync, archiveh, "mapinfo.lua")
-		version="" #TODO: add support
-		res['Version']=version
-		return res
 
 if __name__ == "__main__":
 	import doctest
