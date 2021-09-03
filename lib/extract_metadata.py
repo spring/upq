@@ -13,7 +13,7 @@ import sys
 import os
 
 if __name__ == "__main__":
-	sys.path.append(os.path.realpath(os.path.dirname(os.path.dirname(__file__))))
+	sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 from lib import log, upqdb
 
@@ -110,6 +110,10 @@ def setupdir(filepath, tmpdir):
 
 
 def getErrors(usync):
+	"""
+	>>> getErrors(initUnitSync())
+	''
+	"""
 	err = usync.GetNextError()
 	while not err == None:
 		err += usync.GetNextError().decode()
@@ -168,17 +172,28 @@ def getFile(usync, archivehandle, filename):
 	usync.CloseArchiveFile(archivehandle, fileh)
 	return ctypes.string_at(buf,size)
 
-def initUnitSync(libunitsync, tmpdir, filename):
-	os.environ["SPRING_DATADIR"] = tmpdir
-	os.environ["HOME"] = tmpdir
+def initUnitSync(libunitsync = None, tmpdir = None, filename = None):
+	if tmpdir:
+		os.environ["SPRING_DATADIR"] = tmpdir
+		os.environ["HOME"] = tmpdir
 	os.environ["SPRING_LOG_SECTIONS"]="unitsync,ArchiveScanner,VFS"
+	if not libunitsync:
+		for possibleusync in [
+			"/usr/lib/spring/libunitsync.so",
+			os.path.expanduser("~/.spring/engine/103.0/libunitsync.so"),
+			os.path.expanduser("~/.spring/engine/amd64/103.0/libunitsync.so"),
+		]:
+			if os.path.isfile(possibleusync):
+				libunitsync = possibleusync
+	assert(libunitsync)
 	usync = unitsync.Unitsync(libunitsync)
 	usync.Init(True,1)
 	version = usync.GetSpringVersion().decode()
 	logging.debug("using unitsync version %s" %(version))
 	usync.RemoveAllArchives()
-	usync.AddArchive(filename.encode("ascii"))
-	usync.AddAllArchives(filename.encode("ascii"))
+	if filename:
+		usync.AddArchive(filename.encode("ascii"))
+		usync.AddAllArchives(filename.encode("ascii"))
 	return usync
 
 def openArchive(usync, filename):
