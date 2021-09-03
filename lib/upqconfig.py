@@ -46,7 +46,8 @@ class UpqConfig():
 			if default!=None:
 				obj[value]=default
 
-	def readConfig(self, configfile = "upq.cfg"):
+	def __init__(self):
+		configfile = "upq.cfg"
 		logging.info("reading %s" %(configfile))
 		if not os.access(configfile, os.R_OK):
 			raise Exception("Cannot read config file \"%s\"." % configfile)

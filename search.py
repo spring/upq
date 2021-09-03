@@ -3,7 +3,6 @@ import json
 import random
 
 cfg = upqconfig.UpqConfig()
-cfg.readConfig()
 db = upqdb.UpqDB()
 db.connect(cfg.db['url'], cfg.db['debug'])
 

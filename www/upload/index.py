@@ -78,7 +78,6 @@ def SetupLogger():
 def ParseAndAddFile(filename):
 	from lib import log, upqconfig, upqdb, extract_metadata
 	cfg = upqconfig.UpqConfig()
-	cfg.readConfig()
 	db = upqdb.UpqDB()
 	db.connect(cfg.db['url'], cfg.db['debug'])
 

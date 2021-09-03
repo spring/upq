@@ -4,7 +4,6 @@ import glob
 import sys, os
 
 cfg = upqconfig.UpqConfig()
-cfg.readConfig()
 db = upqdb.UpqDB()
 db.connect(cfg.db['url'], cfg.db['debug'])
 
