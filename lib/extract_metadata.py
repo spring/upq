@@ -304,7 +304,6 @@ class Extract_metadata():
 				logging.info("Added '%s' version '%s' to the mirror-system" % (data['name'], data['version']))
 			except upqdb.UpqDBIntegrityError:
 				pass
-		logging.info("Updated '%s' version '%s' sdp '%s' in the mirror-system" % (data['name'], data['version'], data['sdp']))
 		return fid
 
 
@@ -398,7 +397,7 @@ class Extract_metadata():
 			logging.error("Duplicate file detected: %s %s %s" % (data["filename"], data['name'], data['version']))
 			return False
 
-		logging.info("Updated %s" %(data["filename"]))
+		logging.info("Updated '%s' version '%s' sdp '%s' in the mirror-system" % (data['name'], data['version'], data['sdp']))
 		return True
 
 	def run(self, cfg, filepath):
