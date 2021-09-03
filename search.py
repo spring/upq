@@ -53,7 +53,7 @@ conditions = {
 	"name": "f.name LIKE {binary} '{name}'",
 	"version": "f.version LIKE {binary}'{version}'",
 	"sdp": "f.sdp LIKE {binary} '{sdp}'",
-	"springname": "( (CONCAT(f.name,' ',f.version) LIKE {binary} '{springname}') OR (f.name LIKE {binary} '{springname}' OR f.version LIKE {binary} '{springname}') )",
+	"springname": "((f.name LIKE {binary} '{springname}' OR f.version LIKE {binary} '{springname}') OR (CONCAT(f.name,' ',f.version) LIKE {binary} '{springname}'))",
 	"md5": "f.md5 = '{md5}'",
 }
 
