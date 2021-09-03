@@ -3,8 +3,7 @@ import json
 import random
 
 cfg = upqconfig.UpqConfig()
-db = upqdb.UpqDB()
-db.connect(cfg.db['url'], cfg.db['debug'])
+db = upqdb.UpqDB(cfg.db['url'], cfg.db['debug'])
 
 wherecond = ""
 

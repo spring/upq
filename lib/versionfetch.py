@@ -41,7 +41,7 @@ class Versionfetch():
 		if not branch in ('master'):
 			version = version + ' ' + branch
 		url = self.prefix +'/' + data['path']
-		cid = upqdb.getCID(category)
+		cid = upqdb.getCID(self.db, category)
 		#print "%s %s %s %s" % (filename, version, category, url)
 		res = self.db.query("SELECT fid, md5 from file WHERE version='%s' and cid=%s" % (version, cid))
 		fileinfo = res.first()
@@ -79,14 +79,14 @@ class Versionfetch():
 				"lastcheck": upqdb.now()
 				})
 
-	def run(self):
+	def __init__(self, cfg, db):
 		url = self.prefix + '/list.php'
 		filename = "/tmp/sprinvers.json"
-		self.db = upqdb.UpqDB()
+		self.db = db
 
 		if not download.DownloadFile(url, filename):
 			logging.info("list.php wasn't changed")
-			return True
+			return
 
 		with open(filename, "r") as f:
 			data = json.loads(str(f.read()))
@@ -97,5 +97,4 @@ class Versionfetch():
 			self.update(row, mid)
 		#delete files that wheren't updated this run (means removed from mirror)
 		self.db.query("DELETE FROM `mirror_file` WHERE `lastcheck` < NOW() - INTERVAL 1 HOUR AND mid = %s" %(mid))
-		return True
 

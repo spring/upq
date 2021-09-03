@@ -46,7 +46,7 @@ class Rapidsync():
 			return
 		if not sdp[3]: #without a name, we can't do anything!
 			return
-		cid = upqdb.getCID("game")
+		cid = upqdb.getCID(db, "game")
 		try:
 			fid = db.insert("file", {
 				"filename" : sdp[3] + " (not available as sdz)",
@@ -69,10 +69,9 @@ class Rapidsync():
 				row=res.first()
 				logging.error("a file with this name already exists, fid=%s, sdp=%s" % (row['fid'], row['sdp']))
 
-	def run(self, cfg):
+	def __init__(self, cfg, db):
 		self.cfg = cfg
 		repos = self.fetchListing("https://repos.springrts.com/repos.gz", False)
-		db = upqdb.UpqDB()
 		for repo in repos:
 			sdps=self.fetchListing(repo[1] + "/versions.gz")
 			for sdp in sdps:

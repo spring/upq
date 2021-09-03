@@ -20,11 +20,11 @@ from sqlalchemy.dialects.mysql import TEXT, INTEGER, BIGINT, DATETIME, CHAR, VAR
 
 
 cats = {}
-def getCID(category):
+def getCID(db, category):
 	global cats
 	if category in cats:
 		return cats[category]
-	res = UpqDB().query("SELECT cid from categories WHERE name='%s'" % (category))
+	res = db.query("SELECT cid from categories WHERE name='%s'" % (category))
 	cats[category]=res.first()[0] # cache result
 	return cats[category]
 
@@ -44,9 +44,6 @@ class UpqDB():
 	__shared_state = {}
 	tables = {}
 
-	def __init__(self):
-		self.__dict__ = self.__shared_state
-
 	def version(self):
 		try:
 			results=self.query("SELECT VERSION()")
@@ -55,7 +52,7 @@ class UpqDB():
 		for res in results:
 			logging.info("SQL version: %s", res[0])
 
-	def connect(self, databaseurl, debug):
+	def __init__(self, databaseurl, debug):
 		self.engine = create_engine(databaseurl, encoding="utf-8", echo=debug, pool_recycle=True)
 		logging.info("Opened DB connection.")
 		self.meta=MetaData()

@@ -20,9 +20,7 @@ import os
 
 
 cfg = upqconfig.UpqConfig()
-db = upqdb.UpqDB()
-db.connect(cfg.db['url'], cfg.db['debug'])
+db = upqdb.UpqDB(cfg.db['url'], cfg.db['debug'])
 
 from lib import versionfetch
-j = versionfetch.Versionfetch()
-j.run()
+versionfetch.Versionfetch(cfg, db)

@@ -78,15 +78,11 @@ def SetupLogger():
 def ParseAndAddFile(filename):
 	from lib import log, upqconfig, upqdb, extract_metadata
 	cfg = upqconfig.UpqConfig()
-	db = upqdb.UpqDB()
-	db.connect(cfg.db['url'], cfg.db['debug'])
+	db = upqdb.UpqDB(cfg.db['url'], cfg.db['debug'])
 
-	#FIXME: parse and add to db/mirror using pyseccompa
-	j = extract_metadata.Extract_metadata()
 	output = SetupLogger()
-	j.run(cfg, filename)
+	extract_metadata.Extract_metadata(cfg, db, filename)
 	return output.getvalue()
-
 
 form = cgi.FieldStorage()
 

@@ -42,7 +42,7 @@ class Springlobbyfetch():
 		if not data['branch'] in ('master'):
 			version = data['version'] + ' ' + data['branch']
 		url = self.prefix +'/' + data['path']
-		cid = upqdb.getCID(category)
+		cid = upqdb.getCID(self.db, category)
 		#print "%s %s %s %s" % (filename, version, category, url)
 		try:
 			fid = upqdb.UpqDB().insert("file", {
@@ -77,8 +77,9 @@ class Springlobbyfetch():
 			id = res.first()[0]
 			upqdb.UpqDB().query("UPDATE mirror_file SET lastcheck=NOW() WHERE mfid = %s"% (id))
 
-	def run(self):
+	def __init__(self, db):
 		dled = {}
+		self.db = db
 		#print self.getlobbyversion()
 		f = download.DownloadFile(stablever, os.path.basename(stablever) )
 		data = json.loads(str(f.read()))
@@ -92,5 +93,5 @@ class Springlobbyfetch():
 
 #FIXME: implement this!
 
-#l = Springlobbyfetch("springlobbyfetch", dict())
+#l = Springlobbyfetch(db)
 #l.run()

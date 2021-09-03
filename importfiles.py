@@ -4,9 +4,7 @@ import glob
 import sys, os
 
 cfg = upqconfig.UpqConfig()
-db = upqdb.UpqDB()
-db.connect(cfg.db['url'], cfg.db['debug'])
-
+db = upqdb.UpqDB(fg.db['url'], cfg.db['debug'])
 
 print(cfg.paths)
 

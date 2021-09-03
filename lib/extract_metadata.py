@@ -503,9 +503,7 @@ class Extract_metadata():
 					pass
 		return res
 
-	def ExtractMetadata(self, cfg, usync, archiveh, filename, filepath, metadatapath, data):
-		self.jobcfg=cfg
-		self.db = upqdb.UpqDB()
+	def extractmetadata(self, usync, archiveh, filename, filepath, metadatapath, data):
 
 		filelist = getFileList(usync, archiveh)
 		sdp = getSDPName(usync, archiveh)
@@ -518,7 +516,7 @@ class Extract_metadata():
 			data["metadata"] = getMapData(usync, filename, idx, archiveh, springname)
 			data['mapimages'] = self.dumpmap(usync, springname, metadatapath, filename,idx)
 			data['path'] = "maps"
-			data["cid"] = upqdb.getCID("map")
+			data["cid"] = upqdb.getCID(self.db, "map")
 		else: # file is a game
 			idx = getGameIdx(usync, filename)
 			if idx<0:
@@ -527,7 +525,7 @@ class Extract_metadata():
 			gamearchivecount = usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 			data["metadata"] = getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
 			data['path'] = "games"
-			data["cid"] = upqdb.getCID("game")
+			data["cid"] = upqdb.getCID(self.db, "game")
 
 		if (sdp == "") or (data["metadata"]['Name'] == ""): #mark as broken because sdp / name is missing
 			logging.error("Couldn't get name / filename")
@@ -557,8 +555,9 @@ class Extract_metadata():
 		logging.info("Updated '%s' version '%s' sdp '%s' in the mirror-system" % (data['name'], data['version'], data['sdp']))
 		return True
 
-	def run(self, cfg, filepath):
+	def __init__(self, cfg, db, filepath):
 		self.cfg = cfg
+		self.db = db
 		#filename of the archive to be scanned
 		filepath=os.path.abspath(filepath)
 		filename=os.path.basename(filepath) # filename only (no path info)
@@ -566,7 +565,7 @@ class Extract_metadata():
 
 		if not os.path.exists(filepath):
 			logging.error("File doesn't exist: %s" %(filepath))
-			return False
+			return
 
 		hashes = get_hash(filepath)
 		tmpdir = setupdir(filepath, self.cfg.paths['tmp']) #temporary directory for unitsync
@@ -574,7 +573,7 @@ class Extract_metadata():
 		usync = initUnitSync(self.cfg.paths['unitsync'], tmpdir, filename)
 		archiveh = openArchive(usync, os.path.join("games",filename))
 
-		res  = self.ExtractMetadata(cfg, usync, archiveh, filename, filepath, metadatapath, hashes)
+		res  = self.extractmetadata(usync, archiveh, filename, filepath, metadatapath, hashes)
 
 
 		usync.CloseArchive(archiveh)
@@ -584,7 +583,7 @@ class Extract_metadata():
 		assert(tmpdir.startswith("/home/springfiles/upq/tmp/"))
 		shutil.rmtree(tmpdir)
 		logging.info("*** Done! ***")
-		return res
+		return
 
 
 	# extracts minimap from given file

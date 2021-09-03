@@ -21,10 +21,8 @@ import json
 import os
 
 cfg = upqconfig.UpqConfig()
-db = upqdb.UpqDB()
-db.connect(cfg.db['url'], cfg.db['debug'])
+db = upqdb.UpqDB(cfg.db['url'], cfg.db['debug'])
 
 from lib import rapidsync
-j = rapidsync.Rapidsync()
-j.run(cfg)
+j = rapidsync.Rapidsync(cfg, db)
 
