@@ -485,8 +485,6 @@ class Extract_metadata():
 				pass
 		return fid
 
-
-
 	def createSplashImages(self, usync, archiveh, filelist):
 		res = []
 		for f in filelist:
@@ -634,8 +632,6 @@ class Extract_metadata():
 		res.append(self.createMapInfoImage(usync,springname, "height",2, "RGB","BGR;15", scaledsize))
 		res.append(self.createMapInfoImage(usync,springname, "metal",1, "L","L;I", scaledsize))
 		return res
-
-
 
 if __name__ == "__main__":
 	import doctest
