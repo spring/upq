@@ -98,14 +98,12 @@ def setupdir(filepath, tmpdir):
 
 
 def getErrors(usync):
-	"""
-	>>> getErrors(initUnitSync())
-	''
-	"""
-	err = usync.GetNextError()
-	while not err == None:
-		err += usync.GetNextError().decode()
-	return err if err else ""
+	msg = usync.GetNextError()
+	err = ""
+	while not msg == None:
+		err += msg.decode()
+		msg = usync.GetNextError()
+	return err
 
 def getFileList(usync, archiveh):
 	""" returns a list of all files in an archive """
@@ -160,22 +158,28 @@ def getFile(usync, archivehandle, filename):
 	usync.CloseArchiveFile(archivehandle, fileh)
 	return ctypes.string_at(buf,size)
 
+def getunitsyncpath():
+	for possibleusync in [
+		"/usr/lib/spring/libunitsync.so",
+		os.path.expanduser("~/.spring/engine/103.0/libunitsync.so"),
+		os.path.expanduser("~/.spring/engine/amd64/103.0/libunitsync.so"),
+	]:
+		if os.path.isfile(possibleusync):
+			return possibleusync
+
 def initUnitSync(libunitsync = None, tmpdir = None):
+	if not libunitsync:
+		libunitsync = getunitsyncpath()
+	assert(libunitsync)
 	if tmpdir:
 		os.environ["SPRING_DATADIR"] = tmpdir
 		os.environ["HOME"] = tmpdir
 	os.environ["SPRING_LOG_SECTIONS"]="unitsync,ArchiveScanner,VFS"
-	if not libunitsync:
-		for possibleusync in [
-			"/usr/lib/spring/libunitsync.so",
-			os.path.expanduser("~/.spring/engine/103.0/libunitsync.so"),
-			os.path.expanduser("~/.spring/engine/amd64/103.0/libunitsync.so"),
-		]:
-			if os.path.isfile(possibleusync):
-				libunitsync = possibleusync
-	assert(libunitsync)
 	usync = unitsync.Unitsync(libunitsync)
-	usync.Init(True,1)
+	usync.Init(True, 1)
+	msgs = getErrors(usync)
+	if msgs:
+		logging.error(msgs)
 	version = usync.GetSpringVersion().decode()
 	logging.debug("using unitsync version %s" %(version))
 	usync.RemoveAllArchives()
@@ -544,6 +548,16 @@ def dumpmap(usync, springname, outpath, filename, idx):
 	return res
 
 def extractmetadata(usync, filepath, paths):
+	"""
+	>>> datadir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)),  "../tests"))
+	>>> mapfile = os.path.join(datadir, "maps/blank_v1.sd7")
+	>>> tmpdir = setupdir(mapfile, "/tmp")
+	>>> assert(os.path.isfile(mapfile))
+	>>> usync = initUnitSync(tmpdir=tmpdir)
+	>>> data = extractmetadata(usync, mapfile, {"metadata": "/tmp/"})
+	>>> print(data['metadata']['MapFileName'] == 'maps/Blank v1.smf')
+	True
+	"""
 
 	data = get_hash(filepath)
 
@@ -551,7 +565,7 @@ def extractmetadata(usync, filepath, paths):
 
 	usync.AddArchive(filename.encode("ascii"))
 	usync.AddAllArchives(filename.encode("ascii"))
-	archiveh = openArchive(usync, os.path.join("games",filename))
+	archiveh = openArchive(usync, os.path.join("games", filename))
 
 
 	filelist = getFileList(usync, archiveh)
@@ -583,11 +597,6 @@ def extractmetadata(usync, filepath, paths):
 	_, extension = os.path.splitext(filename)
 	data["filename"] = GetNormalizedFilename(data["metadata"]['Name'], data["metadata"]['Version'], extension)
 	data['splash'] = createSplashImages(usync, archiveh, filelist, paths['metadata'])
-
-	moveto = os.path.join(paths['files'], data["path"], data["filename"])
-	movefile(filepath, moveto)
-	assert(os.path.isfile(moveto))
-
 	data["name"] = escape(data["metadata"]['Name'])
 	data["version"] = escape(data["metadata"]['Version'])
 	data['sdp']=sdp
@@ -609,6 +618,11 @@ def Extract_metadata(cfg, db, filepath, accountid):
 	assert(accountid > 0)
 	data = extractmetadata(usync, filepath, cfg.paths)
 	data['uid'] = accountid
+
+	moveto = os.path.join(cfg.paths['files'], data["path"], data["filename"])
+	movefile(filepath, moveto)
+	assert(os.path.isfile(moveto))
+
 	try:
 		insertData(db, data)
 	except upqdb.UpqDBIntegrityError:
