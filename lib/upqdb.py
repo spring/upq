@@ -100,6 +100,17 @@ class UpqDB():
 			UniqueConstraint('name', 'version', 'cid'),
 			UniqueConstraint('filename', 'cid')
 			)
+
+		#self.tables['rapidrepo']=Table('rapidrepo', self.meta,
+		#	Column('rid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
+		#	Column('baseurl', VARCHAR(length=32), unique=True, nullable=False) # i.e. https://repos.springrts.com/ba/
+
+		#self.tables['rapid']=Table('rapid', self.meta,
+		#	Column('rid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
+		#	Column('fid', Integer, ForeignKey("file.fid"), nullable=True, unique=True),
+		#	Column('repo', Integer, ForeignKey("rapid-repo.rid"), nullable=True, unique=True),
+		#	Column('sdp', VARCHAR(length=32), unique=True),
+
 		self.tables['image_file']=Table('image_file', self.meta,
 			Column('iid', INTEGER(display_width=10), primary_key=True, autoincrement=True), #id of the image
 			Column('fid', Integer, ForeignKey("file.fid")),
