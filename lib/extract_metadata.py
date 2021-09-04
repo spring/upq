@@ -551,7 +551,7 @@ def createMapInfoImage(usync, mapname, maptype, byteperpx, decoder,decoderparm, 
 	logging.error("Error creating image %s" % (getErrors(usync)))
 	raise Exception("Error creating image")
 
-def dumpmap(usync, springname, outpath, filename, idx, metadir):
+def dumpmap(usync, springname, outpath, filename, idx):
 	mapwidth=float(usync.GetMapWidth(idx))
 	mapheight=float(usync.GetMapHeight(idx))
 	if mapwidth>mapheight:
@@ -559,95 +559,90 @@ def dumpmap(usync, springname, outpath, filename, idx, metadir):
 	else:
 		scaledsize=(int(((mapwidth/mapheight) * 1024)), 1024)
 	res = []
-	res.append(createMapImage(usync,springname, scaledsize, metadir))
-	res.append(createMapInfoImage(usync,springname, "height",2, "RGB","BGR;15", scaledsize, metadir))
-	res.append(createMapInfoImage(usync,springname, "metal",1, "L","L;I", scaledsize, metadir))
+	res.append(createMapImage(usync,springname, scaledsize, outpath))
+	res.append(createMapInfoImage(usync,springname, "height",2, "RGB","BGR;15", scaledsize, outpath))
+	res.append(createMapInfoImage(usync,springname, "metal",1, "L","L;I", scaledsize, outpath))
 	return res
 
-class Extract_metadata():
-	def extractmetadata(self, usync, archiveh, filename, filepath, metadatapath, data):
+def extractmetadata(usync, archiveh, filename, filepath, cfg, data, db):
 
-		filelist = getFileList(usync, archiveh)
-		sdp = getSDPName(usync, archiveh)
+	filelist = getFileList(usync, archiveh)
+	sdp = getSDPName(usync, archiveh)
 
-		idx = getMapIdx(usync, filename)
-		logging.debug("Extracting data from " + filename)
-		archivepath = usync.GetArchivePath(filename).decode()+filename
-		if idx>=0: #file is map
-			springname = usync.GetMapName(idx).decode()
-			data["metadata"] = getMapData(usync, filename, idx, archiveh, springname)
-			data['mapimages'] = dumpmap(usync, springname, metadatapath, filename,idx, metadatapath)
-			data['path'] = "maps"
-			data["cid"] = upqdb.getCID(self.db, "map")
-		else: # file is a game
-			idx = getGameIdx(usync, filename)
-			if idx<0:
-				logging.error("Invalid file detected: %s %s %s"% (filename, getErrors(usync), idx))
-				return False
-			gamearchivecount = usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
-			data["metadata"] = getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
-			data['path'] = "games"
-			data["cid"] = upqdb.getCID(self.db, "game")
-
-		if (sdp == "") or (data["metadata"]['Name'] == ""): #mark as broken because sdp / name is missing
-			logging.error("Couldn't get name / filename")
+	idx = getMapIdx(usync, filename)
+	logging.debug("Extracting data from " + filename)
+	archivepath = usync.GetArchivePath(filename).decode()+filename
+	if idx>=0: #file is map
+		springname = usync.GetMapName(idx).decode()
+		data["metadata"] = getMapData(usync, filename, idx, archiveh, springname)
+		data['mapimages'] = dumpmap(usync, springname, cfg.paths['metadata'], filename,idx)
+		data['path'] = "maps"
+		data["cid"] = upqdb.getCID(db, "map")
+	else: # file is a game
+		idx = getGameIdx(usync, filename)
+		if idx<0:
+			logging.error("Invalid file detected: %s %s %s"% (filename, getErrors(usync), idx))
 			return False
+		gamearchivecount = usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
+		data["metadata"] = getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
+		data['path'] = "games"
+		data["cid"] = upqdb.getCID(db, "game")
 
-		_, extension = os.path.splitext(filename)
-		data["filename"] = GetNormalizedFilename(data["metadata"]['Name'], data["metadata"]['Version'], extension)
-		data['splash'] = createSplashImages(usync, archiveh, filelist, metadatapath)
+	if (sdp == "") or (data["metadata"]['Name'] == ""): #mark as broken because sdp / name is missing
+		logging.error("Couldn't get name / filename")
+		return False
 
-		moveto = os.path.join(self.cfg.paths['files'], data["path"], data["filename"])
-		if not movefile(filepath, moveto):
-			logging.error("Couldn't move file %s -> %s" %(filepath, moveto))
-			return False
-		assert(os.path.isfile(moveto))
+	_, extension = os.path.splitext(filename)
+	data["filename"] = GetNormalizedFilename(data["metadata"]['Name'], data["metadata"]['Version'], extension)
+	data['splash'] = createSplashImages(usync, archiveh, filelist, cfg.paths['metadata'])
 
-
-		data["name"] = escape(data["metadata"]['Name'])
-		data["version"] = escape(data["metadata"]['Version'])
-
-		try:
-			data['sdp']=sdp
-			insertData(self.db, data)
-		except upqdb.UpqDBIntegrityError:
-			logging.error("Duplicate file detected: %s %s %s" % (data["filename"], data['name'], data['version']))
-			return False
-
-		logging.info("Updated '%s' version '%s' sdp '%s' in the mirror-system" % (data['name'], data['version'], data['sdp']))
-		return True
-
-	def __init__(self, cfg, db, filepath, accountid):
-		self.cfg = cfg
-		self.db = db
-		#filename of the archive to be scanned
-		filepath=os.path.abspath(filepath)
-		filename=os.path.basename(filepath) # filename only (no path info)
-		metadatapath=cfg.paths['metadata']
-
-		if not os.path.exists(filepath):
-			logging.error("File doesn't exist: %s" %(filepath))
-			return
-
-		hashes = get_hash(filepath)
-		tmpdir = setupdir(filepath, self.cfg.paths['tmp']) #temporary directory for unitsync
-
-		usync = initUnitSync(self.cfg.paths['unitsync'], tmpdir, filename)
-		archiveh = openArchive(usync, os.path.join("games",filename))
-
-		assert(accountid > 0)
-		hashes['uid'] = accountid
-		res  = self.extractmetadata(usync, archiveh, filename, filepath, metadatapath, hashes)
+	moveto = os.path.join(cfg.paths['files'], data["path"], data["filename"])
+	if not movefile(filepath, moveto):
+		logging.error("Couldn't move file %s -> %s" %(filepath, moveto))
+		return False
+	assert(os.path.isfile(moveto))
 
 
-		usync.CloseArchive(archiveh)
-		usync.RemoveAllArchives()
-		usync.UnInit()
-		del usync
-		assert(tmpdir.startswith("/home/springfiles/upq/tmp/"))
-		shutil.rmtree(tmpdir)
-		logging.info("*** Done! ***")
+	data["name"] = escape(data["metadata"]['Name'])
+	data["version"] = escape(data["metadata"]['Version'])
+
+	try:
+		data['sdp']=sdp
+		insertData(db, data)
+	except upqdb.UpqDBIntegrityError:
+		logging.error("Duplicate file detected: %s %s %s" % (data["filename"], data['name'], data['version']))
+		return False
+
+	logging.info("Updated '%s' version '%s' sdp '%s' in the mirror-system" % (data['name'], data['version'], data['sdp']))
+	return True
+
+def Extract_metadata(cfg, db, filepath, accountid):
+	#filename of the archive to be scanned
+	filepath=os.path.abspath(filepath)
+	filename=os.path.basename(filepath) # filename only (no path info)
+
+	if not os.path.exists(filepath):
+		logging.error("File doesn't exist: %s" %(filepath))
 		return
+
+	hashes = get_hash(filepath)
+	tmpdir = setupdir(filepath, cfg.paths['tmp']) #temporary directory for unitsync
+
+	usync = initUnitSync(cfg.paths['unitsync'], tmpdir, filename)
+	archiveh = openArchive(usync, os.path.join("games",filename))
+
+	assert(accountid > 0)
+	hashes['uid'] = accountid
+	res = extractmetadata(usync, archiveh, filename, filepath, cfg, hashes, db)
+
+	usync.CloseArchive(archiveh)
+	usync.RemoveAllArchives()
+	usync.UnInit()
+	del usync
+	assert(tmpdir.startswith("/home/springfiles/upq/tmp/"))
+	shutil.rmtree(tmpdir)
+	logging.info("*** Done! ***")
+	return
 
 if __name__ == "__main__":
 	import doctest
