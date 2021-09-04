@@ -47,7 +47,7 @@ class UpqConfig():
 				obj[value]=default
 
 	def __init__(self):
-		configfile = "upq.cfg"
+		configfile = os.path.join(os.path.dirname(os.path.dirname(__file__)), "upq.cfg")
 		logging.info("reading %s" %(configfile))
 		if not os.access(configfile, os.R_OK):
 			raise Exception("Cannot read config file \"%s\"." % configfile)
