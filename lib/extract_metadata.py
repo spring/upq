@@ -500,27 +500,71 @@ def insertData(db, data):
 			pass
 	return fid
 
-class Extract_metadata():
+def createSplashImages(usync, archiveh, filelist, metadir):
+	res = []
+	for f in filelist:
+		if f.lower().startswith('bitmaps/loadpictures'):
+			logging.debug("Reading %s" % (f))
+			buf = getFile(usync, archiveh, f)
+			ioobj=BytesIO()
+			ioobj.write(buf)
+			ioobj.seek(0)
+			del buf
+			try:
+				im=Image.open(ioobj)
+				res.append(saveImage(im, im.size, metadir))
+			except Exception as e:
+				logging.error("Invalid image %s: %s" % (f, e))
+				pass
+	return res
 
+# extracts minimap from given file
+def createMapImage(usync, mapname, size, metadir):
+	assert(isinstance(mapname, str))
+	logging.debug("Writing image: %s %dx%d"% (mapname, size[0], size[1]))
+	data=ctypes.string_at(usync.GetMinimap(mapname.encode("ascii"), 0), 1024*1024*2)
+	im = Image.frombuffer("RGB", (1024, 1024), data, "raw", "BGR;16")
+	del data
+	return saveImage(im, size, metadir)
 
-	def createSplashImages(self, usync, archiveh, filelist):
-		res = []
-		for f in filelist:
-			if f.lower().startswith('bitmaps/loadpictures'):
-				logging.debug("Reading %s" % (f))
-				buf = getFile(usync, archiveh, f)
-				ioobj=BytesIO()
-				ioobj.write(buf)
-				ioobj.seek(0)
-				del buf
-				try:
-					im=Image.open(ioobj)
-					res.append(saveImage(im, im.size, self.cfg.paths['metadata']))
-				except Exception as e:
-					logging.error("Invalid image %s: %s" % (f, e))
-					pass
+def createMapInfoImage(usync, mapname, maptype, byteperpx, decoder,decoderparm, size, metadir):
+	assert(isinstance(mapname, str))
+	assert(isinstance(maptype, str))
+	width = ctypes.pointer(ctypes.c_int())
+	height = ctypes.pointer(ctypes.c_int())
+	usync.GetInfoMapSize(mapname.encode("ascii"), maptype.encode("ascii"), width, height)
+	width = width.contents.value
+	height = height.contents.value
+	assert(width > 0)
+	assert(height > 0)
+	logging.debug("Writing image <%s>: %dx%d"% (maptype, width, height))
+	data = ctypes.create_string_buffer(int(width*height*byteperpx*2))
+	data.restype = ctypes.c_void_p
+	ret=usync.GetInfoMap(mapname.encode("ascii"), maptype.encode("ascii"), data, byteperpx)
+	if ret != 0:
+		im = Image.frombuffer(decoder, (width, height), data, "raw", decoderparm)
+		im=im.convert("L")
+		res = saveImage(im, size, metadir)
+		del data
 		return res
+	del data
+	logging.error("Error creating image %s" % (getErrors(usync)))
+	raise Exception("Error creating image")
 
+def dumpmap(usync, springname, outpath, filename, idx, metadir):
+	mapwidth=float(usync.GetMapWidth(idx))
+	mapheight=float(usync.GetMapHeight(idx))
+	if mapwidth>mapheight:
+		scaledsize=(1024, int(((mapheight/mapwidth) * 1024)))
+	else:
+		scaledsize=(int(((mapwidth/mapheight) * 1024)), 1024)
+	res = []
+	res.append(createMapImage(usync,springname, scaledsize, metadir))
+	res.append(createMapInfoImage(usync,springname, "height",2, "RGB","BGR;15", scaledsize, metadir))
+	res.append(createMapInfoImage(usync,springname, "metal",1, "L","L;I", scaledsize, metadir))
+	return res
+
+class Extract_metadata():
 	def extractmetadata(self, usync, archiveh, filename, filepath, metadatapath, data):
 
 		filelist = getFileList(usync, archiveh)
@@ -532,7 +576,7 @@ class Extract_metadata():
 		if idx>=0: #file is map
 			springname = usync.GetMapName(idx).decode()
 			data["metadata"] = getMapData(usync, filename, idx, archiveh, springname)
-			data['mapimages'] = self.dumpmap(usync, springname, metadatapath, filename,idx)
+			data['mapimages'] = dumpmap(usync, springname, metadatapath, filename,idx, metadatapath)
 			data['path'] = "maps"
 			data["cid"] = upqdb.getCID(self.db, "map")
 		else: # file is a game
@@ -551,7 +595,7 @@ class Extract_metadata():
 
 		_, extension = os.path.splitext(filename)
 		data["filename"] = GetNormalizedFilename(data["metadata"]['Name'], data["metadata"]['Version'], extension)
-		data['splash'] = self.createSplashImages(usync, archiveh, filelist)
+		data['splash'] = createSplashImages(usync, archiveh, filelist, metadatapath)
 
 		moveto = os.path.join(self.cfg.paths['files'], data["path"], data["filename"])
 		if not movefile(filepath, moveto):
@@ -604,53 +648,6 @@ class Extract_metadata():
 		shutil.rmtree(tmpdir)
 		logging.info("*** Done! ***")
 		return
-
-
-	# extracts minimap from given file
-	def createMapImage(self, usync, mapname, size):
-		assert(isinstance(mapname, str))
-		logging.debug("Writing image: %s %dx%d"% (mapname, size[0], size[1]))
-		data=ctypes.string_at(usync.GetMinimap(mapname.encode("ascii"), 0), 1024*1024*2)
-		im = Image.frombuffer("RGB", (1024, 1024), data, "raw", "BGR;16")
-		del data
-		return saveImage(im, size, self.cfg.paths['metadata'])
-
-	def createMapInfoImage(self, usync, mapname, maptype, byteperpx, decoder,decoderparm, size):
-		assert(isinstance(mapname, str))
-		assert(isinstance(maptype, str))
-		width = ctypes.pointer(ctypes.c_int())
-		height = ctypes.pointer(ctypes.c_int())
-		usync.GetInfoMapSize(mapname.encode("ascii"), maptype.encode("ascii"), width, height)
-		width = width.contents.value
-		height = height.contents.value
-		assert(width > 0)
-		assert(height > 0)
-		logging.debug("Writing image <%s>: %dx%d"% (maptype, width, height))
-		data = ctypes.create_string_buffer(int(width*height*byteperpx*2))
-		data.restype = ctypes.c_void_p
-		ret=usync.GetInfoMap(mapname.encode("ascii"), maptype.encode("ascii"), data, byteperpx)
-		if ret != 0:
-			im = Image.frombuffer(decoder, (width, height), data, "raw", decoderparm)
-			im=im.convert("L")
-			res = saveImage(im, size, self.cfg.paths['metadata'])
-			del data
-			return res
-		del data
-		logging.error("Error creating image %s" % (getErrors(usync)))
-		raise Exception("Error creating image")
-
-	def dumpmap(self, usync, springname, outpath, filename, idx):
-		mapwidth=float(usync.GetMapWidth(idx))
-		mapheight=float(usync.GetMapHeight(idx))
-		if mapwidth>mapheight:
-			scaledsize=(1024, int(((mapheight/mapwidth) * 1024)))
-		else:
-			scaledsize=(int(((mapwidth/mapheight) * 1024)), 1024)
-		res = []
-		res.append(self.createMapImage(usync,springname, scaledsize))
-		res.append(self.createMapInfoImage(usync,springname, "height",2, "RGB","BGR;15", scaledsize))
-		res.append(self.createMapInfoImage(usync,springname, "metal",1, "L","L;I", scaledsize))
-		return res
 
 if __name__ == "__main__":
 	import doctest
