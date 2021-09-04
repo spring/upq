@@ -455,6 +455,7 @@ def insertData(db, data):
 	assert(data["path"] in ("games", "maps"))
 	assert("/" not in data["filename"])
 	assert(data["uid"] > 0)
+	data["cid"] = upqdb.getCID(db, data["category_name"])
 	if fid<=0:
 		fid=db.insert("file", {
 			"name": data["name"],
@@ -564,7 +565,7 @@ def dumpmap(usync, springname, outpath, filename, idx):
 	res.append(createMapInfoImage(usync,springname, "metal",1, "L","L;I", scaledsize, outpath))
 	return res
 
-def extractmetadata(usync, archiveh, filename, filepath, cfg, data, db):
+def extractmetadata(usync, archiveh, filename, filepath, cfg, data):
 
 	filelist = getFileList(usync, archiveh)
 	sdp = getSDPName(usync, archiveh)
@@ -577,7 +578,7 @@ def extractmetadata(usync, archiveh, filename, filepath, cfg, data, db):
 		data["metadata"] = getMapData(usync, filename, idx, archiveh, springname)
 		data['mapimages'] = dumpmap(usync, springname, cfg.paths['metadata'], filename,idx)
 		data['path'] = "maps"
-		data["cid"] = upqdb.getCID(db, "map")
+		data['category_name'] = "map"
 	else: # file is a game
 		idx = getGameIdx(usync, filename)
 		if idx<0:
@@ -586,7 +587,7 @@ def extractmetadata(usync, archiveh, filename, filepath, cfg, data, db):
 		gamearchivecount = usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
 		data["metadata"] = getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
 		data['path'] = "games"
-		data["cid"] = upqdb.getCID(db, "game")
+		data['category_name'] = "game"
 
 	if (sdp == "") or (data["metadata"]['Name'] == ""): #mark as broken because sdp / name is missing
 		logging.error("Couldn't get name / filename")
@@ -602,19 +603,10 @@ def extractmetadata(usync, archiveh, filename, filepath, cfg, data, db):
 		return False
 	assert(os.path.isfile(moveto))
 
-
 	data["name"] = escape(data["metadata"]['Name'])
 	data["version"] = escape(data["metadata"]['Version'])
-
-	try:
-		data['sdp']=sdp
-		insertData(db, data)
-	except upqdb.UpqDBIntegrityError:
-		logging.error("Duplicate file detected: %s %s %s" % (data["filename"], data['name'], data['version']))
-		return False
-
-	logging.info("Updated '%s' version '%s' sdp '%s' in the mirror-system" % (data['name'], data['version'], data['sdp']))
-	return True
+	data['sdp']=sdp
+	return data
 
 def Extract_metadata(cfg, db, filepath, accountid):
 	#filename of the archive to be scanned
@@ -633,7 +625,15 @@ def Extract_metadata(cfg, db, filepath, accountid):
 
 	assert(accountid > 0)
 	hashes['uid'] = accountid
-	res = extractmetadata(usync, archiveh, filename, filepath, cfg, hashes, db)
+	data = extractmetadata(usync, archiveh, filename, filepath, cfg, hashes)
+	try:
+		insertData(db, data)
+	except upqdb.UpqDBIntegrityError:
+		logging.error("Duplicate file detected: %s %s %s" % (data["filename"], data['name'], data['version']))
+		return False
+
+	logging.info("Updated '%s' version '%s' sdp '%s' in the mirror-system" % (data['name'], data['version'], data['sdp']))
+	return True
 
 	usync.CloseArchive(archiveh)
 	usync.RemoveAllArchives()
