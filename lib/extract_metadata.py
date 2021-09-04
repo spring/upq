@@ -565,7 +565,7 @@ def dumpmap(usync, springname, outpath, filename, idx):
 	res.append(createMapInfoImage(usync,springname, "metal",1, "L","L;I", scaledsize, outpath))
 	return res
 
-def extractmetadata(usync, archiveh, filename, filepath, cfg, data):
+def extractmetadata(usync, archiveh, filename, filepath, paths, data):
 
 	filelist = getFileList(usync, archiveh)
 	sdp = getSDPName(usync, archiveh)
@@ -576,7 +576,7 @@ def extractmetadata(usync, archiveh, filename, filepath, cfg, data):
 	if idx>=0: #file is map
 		springname = usync.GetMapName(idx).decode()
 		data["metadata"] = getMapData(usync, filename, idx, archiveh, springname)
-		data['mapimages'] = dumpmap(usync, springname, cfg.paths['metadata'], filename,idx)
+		data['mapimages'] = dumpmap(usync, springname, paths['metadata'], filename,idx)
 		data['path'] = "maps"
 		data['category_name'] = "map"
 	else: # file is a game
@@ -595,9 +595,9 @@ def extractmetadata(usync, archiveh, filename, filepath, cfg, data):
 
 	_, extension = os.path.splitext(filename)
 	data["filename"] = GetNormalizedFilename(data["metadata"]['Name'], data["metadata"]['Version'], extension)
-	data['splash'] = createSplashImages(usync, archiveh, filelist, cfg.paths['metadata'])
+	data['splash'] = createSplashImages(usync, archiveh, filelist, paths['metadata'])
 
-	moveto = os.path.join(cfg.paths['files'], data["path"], data["filename"])
+	moveto = os.path.join(paths['files'], data["path"], data["filename"])
 	if not movefile(filepath, moveto):
 		logging.error("Couldn't move file %s -> %s" %(filepath, moveto))
 		return False
@@ -625,7 +625,7 @@ def Extract_metadata(cfg, db, filepath, accountid):
 
 	assert(accountid > 0)
 	hashes['uid'] = accountid
-	data = extractmetadata(usync, archiveh, filename, filepath, cfg, hashes)
+	data = extractmetadata(usync, archiveh, filename, filepath, cfg.paths, hashes)
 	try:
 		insertData(db, data)
 	except upqdb.UpqDBIntegrityError:
