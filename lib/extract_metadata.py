@@ -441,64 +441,66 @@ def saveImage(image, size, imagedir):
 	logging.debug("Wrote " + absname)
 	return filename
 
+
+def insertData(db, data):
+	#logging.debug(data)
+	metadata=json.dumps(data["metadata"])
+	results = db.query("SELECT fid FROM file WHERE sdp='%s' or md5='%s'"% (data['sdp'], data['md5']))
+	res=results.first()
+	if res:
+		fid=res['fid']
+	else:
+		fid=0
+
+	assert(data["path"] in ("games", "maps"))
+	assert("/" not in data["filename"])
+	if fid<=0:
+		fid=db.insert("file", {
+			"name": data["name"],
+			"version": data["version"],
+			"sdp": data['sdp'],
+			"cid": data["cid"],
+			"metadata": metadata,
+			"uid": data['uid'],
+			"path": data["path"],
+			"filename": data["filename"],
+			"timestamp": upqdb.now(), #fixme: use file timestamp
+			"size": os.path.getsize(filename),
+			"status": 1,
+			"md5": data["md5"],
+			"sha1": data["sha1"],
+			"sha256": data["sha256"],
+			})
+	else:
+		db.query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s', md5='%s', sha1='%s', sha256='%s', status=1 WHERE fid=%s" %(
+			data['name'],
+			data['version'],
+			data['sdp'],
+			data["cid"],
+			metadata,
+			data["md5"],
+			data["sha1"],
+			data["sha256"],
+			fid
+			))
+	# remove already existing depends
+	db.query("DELETE FROM file_depends WHERE fid = %s" % (fid) )
+	for depend in data["metadata"]['Depends']:
+		res=db.query("SELECT fid FROM file WHERE CONCAT(name,' ',version)='%s'" % (depend))
+		row=res.first()
+		if not row:
+			id=0
+		else:
+			id=row['fid']
+		try:
+			db.insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
+			logging.info("Added '%s' version '%s' to the mirror-system" % (data['name'], data['version']))
+		except upqdb.UpqDBIntegrityError:
+			pass
+	return fid
+
 class Extract_metadata():
 
-	def insertData(self, data):
-		#logging.debug(data)
-		metadata=json.dumps(data["metadata"])
-		results = self.db.query("SELECT fid FROM file WHERE sdp='%s' or md5='%s'"% (data['sdp'], data['md5']))
-		res=results.first()
-		if res:
-			fid=res['fid']
-		else:
-			fid=0
-
-		assert(data["path"] in ("games", "maps"))
-		assert("/" not in data["filename"])
-		if fid<=0:
-			fid=self.db.insert("file", {
-				"name": data["name"],
-				"version": data["version"],
-				"sdp": data['sdp'],
-				"cid": data["cid"],
-				"metadata": metadata,
-				"uid": 0,
-				"path": data["path"],
-				"filename": data["filename"],
-				"timestamp": upqdb.now(), #fixme: use file timestamp
-				"size": os.path.getsize(filename),
-				"status": 1,
-				"md5": data["md5"],
-				"sha1": data["sha1"],
-				"sha256": data["sha256"],
-				})
-		else:
-			self.db.query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s', md5='%s', sha1='%s', sha256='%s', status=1 WHERE fid=%s" %(
-				data['name'],
-				data['version'],
-				data['sdp'],
-				data["cid"],
-				metadata,
-				data["md5"],
-				data["sha1"],
-				data["sha256"],
-				fid
-				))
-		# remove already existing depends
-		self.db.query("DELETE FROM file_depends WHERE fid = %s" % (fid) )
-		for depend in data["metadata"]['Depends']:
-			res=self.db.query("SELECT fid FROM file WHERE CONCAT(name,' ',version)='%s'" % (depend))
-			row=res.first()
-			if not row:
-				id=0
-			else:
-				id=row['fid']
-			try:
-				self.db.insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
-				logging.info("Added '%s' version '%s' to the mirror-system" % (data['name'], data['version']))
-			except upqdb.UpqDBIntegrityError:
-				pass
-		return fid
 
 	def createSplashImages(self, usync, archiveh, filelist):
 		res = []
@@ -562,7 +564,7 @@ class Extract_metadata():
 
 		try:
 			data['sdp']=sdp
-			self.insertData(data)
+			insertData(self.db, data)
 		except upqdb.UpqDBIntegrityError:
 			logging.error("Duplicate file detected: %s %s %s" % (data["filename"], data['name'], data['version']))
 			return False
@@ -570,7 +572,7 @@ class Extract_metadata():
 		logging.info("Updated '%s' version '%s' sdp '%s' in the mirror-system" % (data['name'], data['version'], data['sdp']))
 		return True
 
-	def __init__(self, cfg, db, filepath):
+	def __init__(self, cfg, db, filepath, accountid):
 		self.cfg = cfg
 		self.db = db
 		#filename of the archive to be scanned
@@ -588,6 +590,8 @@ class Extract_metadata():
 		usync = initUnitSync(self.cfg.paths['unitsync'], tmpdir, filename)
 		archiveh = openArchive(usync, os.path.join("games",filename))
 
+		assert(accountid > 0)
+		hashes['uid'] = accountid
 		res  = self.extractmetadata(usync, archiveh, filename, filepath, metadatapath, hashes)
 
 

@@ -34,7 +34,9 @@ def CheckAuth(username, password):
 	import xmlrpc.client
 	proxy = xmlrpc.client.ServerProxy("https://springrts.com/api/uber/xmlrpc")
 	res = proxy.get_account_info(username, password)
-	return res["status"] == 0
+	if res["status"] == 0:
+		return res["accountid"]
+	return False
 
 def CheckFields(form, required):
 	for k in required:
@@ -47,7 +49,8 @@ def SaveUploadedFile(form):
 		return "Missing formdata"
 	username = form.getvalue("username")
 	password = form.getvalue("password")
-	if not CheckAuth(username, password):
+	accountid = CheckAuth(username, password)
+	if not accountid:
 		return "Invalid Username or Password"
 	fileitem = form["filename"]
 	if not fileitem.file:
@@ -63,7 +66,7 @@ def SaveUploadedFile(form):
 	import sys
 	sys.path.append(upqdir)
 	#print(upqdir)
-	output =  ParseAndAddFile(filename)
+	output =  ParseAndAddFile(filename, accountid)
 	os.chdir(oldcwd)
 	return output
 
@@ -75,13 +78,13 @@ def SetupLogger():
 	logging.getLogger().addHandler(logging.StreamHandler(stream=log_stream))
 	return log_stream
 
-def ParseAndAddFile(filename):
+def ParseAndAddFile(filename, accountid):
 	from lib import log, upqconfig, upqdb, extract_metadata
 	cfg = upqconfig.UpqConfig()
 	db = upqdb.UpqDB(cfg.db['url'], cfg.db['debug'])
 
 	output = SetupLogger()
-	extract_metadata.Extract_metadata(cfg, db, filename)
+	extract_metadata.Extract_metadata(cfg, db, filename, accountid)
 	return output.getvalue()
 
 form = cgi.FieldStorage()
