@@ -21,13 +21,9 @@ import ctypes
 from PIL import Image
 from io import BytesIO
 import shutil
-import getopt
-import base64
 import tempfile
-import gzip
 import hashlib
 import json
-import traceback
 import filecmp
 import logging
 
