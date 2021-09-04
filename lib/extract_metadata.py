@@ -562,10 +562,9 @@ def dumpmap(usync, springname, outpath, filename, idx):
 	res.append(createMapInfoImage(usync,springname, "metal",1, "L","L;I", scaledsize, outpath))
 	return res
 
-def extractmetadata(usync, filepath, paths, accountid):
+def extractmetadata(usync, filepath, paths):
 
 	data = get_hash(filepath)
-	data['uid'] = accountid
 
 	filename=os.path.basename(filepath) # filename only (no path info)
 
@@ -627,7 +626,8 @@ def Extract_metadata(cfg, db, filepath, accountid):
 	usync = initUnitSync(cfg.paths['unitsync'], tmpdir)
 
 	assert(accountid > 0)
-	data = extractmetadata(usync, filepath, cfg.paths, accountid)
+	data = extractmetadata(usync, filepath, cfg.paths)
+	data['uid'] = accountid
 	try:
 		insertData(db, data)
 	except upqdb.UpqDBIntegrityError:
