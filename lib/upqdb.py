@@ -111,13 +111,6 @@ class UpqDB():
 		#	Column('repo', Integer, ForeignKey("rapid-repo.rid"), nullable=True, unique=True),
 		#	Column('sdp', VARCHAR(length=32), unique=True),
 
-		self.tables['image_file']=Table('image_file', self.meta,
-			Column('iid', INTEGER(display_width=10), primary_key=True, autoincrement=True), #id of the image
-			Column('fid', Integer, ForeignKey("file.fid")),
-			Column('filename', VARCHAR(length=255), nullable=False, unique=True))
-		self.tables['image']=Table('image', self.meta,
-			Column('iid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
-			Column('md5', CHAR(length=32))) #md5 = path
 		self.tables['tag']=Table('tag', self.meta,
 			Column('tid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
 			Column('fid', Integer, ForeignKey("file.fid"), nullable=False),
@@ -130,15 +123,6 @@ class UpqDB():
 			Column('depends_fid', Integer, ForeignKey("file.fid"), nullable=True), #id of other file, if null(couldn't be resolved), use depends_string
 			Column('depends_string', VARCHAR(length=64), nullable=False),
 			UniqueConstraint('fid', 'depends_string'))
-		self.tables['sf_sync']=Table('sf_sync', self.meta,
-			Column('sid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
-			Column('command', INTEGER(display_width=10), nullable=False, autoincrement=False), #0=update 1=delete
-			Column('fid', Integer, ForeignKey("file.fid")))
-		self.tables['sf_sync2']=Table('sf_sync2', self.meta,
-			Column('sid', INTEGER(display_width=10), primary_key=False, nullable=False, unique=True),
-			Column('fid', Integer, ForeignKey("file.fid")),
-			UniqueConstraint('sid', 'fid'))
-
 
 		try:
 			self.meta.create_all(self.engine)
