@@ -12,7 +12,7 @@
 # can be either initiaded by an updated file
 # or maybe by the xml-rpc interface (or cron?)
 
-from lib import log, upqconfig, upqdb
+from lib import log, upqconfig, upqdb, versionfetch
 
 import sys
 import json
@@ -21,6 +21,4 @@ import os
 
 cfg = upqconfig.UpqConfig()
 db = upqdb.UpqDB(cfg.db['url'], cfg.db['debug'])
-
-from lib import versionfetch
 versionfetch.Versionfetch(cfg, db)
