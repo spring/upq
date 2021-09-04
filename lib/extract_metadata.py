@@ -74,21 +74,13 @@ def get_hash(filename):
 	sha1 = hashlib.sha1()
 	sha256 = hashlib.sha256()
 
-	try:
-		fd = open(filename, "rb", 4096)
-	except IOError as ex:
-		msg = "Unable to open '%s' for reading: '%s'." % (filename, ex)
-		logging.error(msg)
-		raise Exception(msg)
-
-	while True:
-		data = fd.read(4096)
-		if not data: break
-		md5.update(data)
-		sha1.update(data)
-		sha256.update(data)
-
-	fd.close()
+	with open(filename, "rb", 4096) as f:
+		while True:
+			data = fd.read(4096)
+			if not data: break
+			md5.update(data)
+			sha1.update(data)
+			sha256.update(data)
 
 	return {'md5': md5.hexdigest(), 'sha1': sha1.hexdigest(), 'sha256': sha256.hexdigest()}
 
