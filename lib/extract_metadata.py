@@ -551,8 +551,8 @@ def extractmetadata(usync, filepath, paths):
 	"""
 	>>> datadir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)),  "../tests"))
 	>>> mapfile = os.path.join(datadir, "maps/blank_v1.sd7")
-	>>> tmpdir = setupdir(mapfile, "/tmp")
 	>>> assert(os.path.isfile(mapfile))
+	>>> tmpdir = setupdir(mapfile, "/tmp")
 	>>> usync = initUnitSync(tmpdir=tmpdir)
 	>>> data = extractmetadata(usync, mapfile, {"metadata": "/tmp/"})
 	>>> print(data['metadata']['MapFileName'] == 'maps/Blank v1.smf')
