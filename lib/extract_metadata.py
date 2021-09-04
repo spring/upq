@@ -172,7 +172,7 @@ def getFile(usync, archivehandle, filename):
 	usync.CloseArchiveFile(archivehandle, fileh)
 	return ctypes.string_at(buf,size)
 
-def initUnitSync(libunitsync = None, tmpdir = None, filename = None):
+def initUnitSync(libunitsync = None, tmpdir = None):
 	if tmpdir:
 		os.environ["SPRING_DATADIR"] = tmpdir
 		os.environ["HOME"] = tmpdir
@@ -191,9 +191,6 @@ def initUnitSync(libunitsync = None, tmpdir = None, filename = None):
 	version = usync.GetSpringVersion().decode()
 	logging.debug("using unitsync version %s" %(version))
 	usync.RemoveAllArchives()
-	if filename:
-		usync.AddArchive(filename.encode("ascii"))
-		usync.AddAllArchives(filename.encode("ascii"))
 	return usync
 
 def openArchive(usync, filename):
@@ -565,7 +562,17 @@ def dumpmap(usync, springname, outpath, filename, idx):
 	res.append(createMapInfoImage(usync,springname, "metal",1, "L","L;I", scaledsize, outpath))
 	return res
 
-def extractmetadata(usync, archiveh, filename, filepath, paths, data):
+def extractmetadata(usync, filepath, paths, accountid):
+
+	data = get_hash(filepath)
+	data['uid'] = accountid
+
+	filename=os.path.basename(filepath) # filename only (no path info)
+
+	usync.AddArchive(filename.encode("ascii"))
+	usync.AddAllArchives(filename.encode("ascii"))
+	archiveh = openArchive(usync, os.path.join("games",filename))
+
 
 	filelist = getFileList(usync, archiveh)
 	sdp = getSDPName(usync, archiveh)
@@ -611,21 +618,16 @@ def extractmetadata(usync, archiveh, filename, filepath, paths, data):
 def Extract_metadata(cfg, db, filepath, accountid):
 	#filename of the archive to be scanned
 	filepath=os.path.abspath(filepath)
-	filename=os.path.basename(filepath) # filename only (no path info)
 
 	if not os.path.exists(filepath):
 		logging.error("File doesn't exist: %s" %(filepath))
 		return
 
-	hashes = get_hash(filepath)
 	tmpdir = setupdir(filepath, cfg.paths['tmp']) #temporary directory for unitsync
-
-	usync = initUnitSync(cfg.paths['unitsync'], tmpdir, filename)
-	archiveh = openArchive(usync, os.path.join("games",filename))
+	usync = initUnitSync(cfg.paths['unitsync'], tmpdir)
 
 	assert(accountid > 0)
-	hashes['uid'] = accountid
-	data = extractmetadata(usync, archiveh, filename, filepath, cfg.paths, hashes)
+	data = extractmetadata(usync, filepath, cfg.paths, accountid)
 	try:
 		insertData(db, data)
 	except upqdb.UpqDBIntegrityError:
