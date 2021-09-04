@@ -76,7 +76,7 @@ def get_hash(filename):
 
 	with open(filename, "rb", 4096) as f:
 		while True:
-			data = fd.read(4096)
+			data = f.read(4096)
 			if not data: break
 			md5.update(data)
 			sha1.update(data)
@@ -202,14 +202,7 @@ def movefile(srcfile, dstfile):
 			return True
 		logging.error("Destination file already exists: dst: %s src: %s" %(dstfile, srcfile))
 		return False
-	try:
-		shutil.move(srcfile, dstfile)
-	except: #move failed, try to copy + delete
-		shutil.copy(srcfile, dstfile)
-		try:
-			os.remove(srcfile)
-		except:
-			logging.warn("Removing src file failed: %s" % (srcfile))
+	shutil.move(srcfile, dstfile)
 	logging.debug("moved file to (abs)%s :(rel)%s" %(srcfile, dstfile))
 	try:
 		os.chmod(dstfile, int("0444",8))
@@ -596,14 +589,14 @@ def extractmetadata(usync, filepath, paths):
 	data['splash'] = createSplashImages(usync, archiveh, filelist, paths['metadata'])
 
 	moveto = os.path.join(paths['files'], data["path"], data["filename"])
-	if not movefile(filepath, moveto):
-		logging.error("Couldn't move file %s -> %s" %(filepath, moveto))
-		return False
+	movefile(filepath, moveto)
 	assert(os.path.isfile(moveto))
 
 	data["name"] = escape(data["metadata"]['Name'])
 	data["version"] = escape(data["metadata"]['Version'])
 	data['sdp']=sdp
+
+	usync.CloseArchive(archiveh)
 	return data
 
 def Extract_metadata(cfg, db, filepath, accountid):
@@ -627,9 +620,7 @@ def Extract_metadata(cfg, db, filepath, accountid):
 		return False
 
 	logging.info("Updated '%s' version '%s' sdp '%s' in the mirror-system" % (data['name'], data['version'], data['sdp']))
-	return True
 
-	usync.CloseArchive(archiveh)
 	usync.RemoveAllArchives()
 	usync.UnInit()
 	del usync
