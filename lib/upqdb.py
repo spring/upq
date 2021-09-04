@@ -61,13 +61,6 @@ class UpqDB():
 			Column('title', VARCHAR(length=64)),
 			Column('description', TEXT()),
 			Column('country', VARCHAR(length=64)),
-			Column('ftp_url', VARCHAR(length=64)),
-			Column('ftp_user', VARCHAR(length=64)),
-			Column('ftp_pass', VARCHAR(length=64)),
-			Column('ftp_dir', VARCHAR(length=64)),
-			Column('ftp_passive', INTEGER(display_width=4)),
-			Column('ftp_ssl', INTEGER(display_width=4)),
-			Column('ftp_port', INTEGER(display_width=4)),
 			Column('url_prefix', VARCHAR(length=64)), # prefix to files
 			Column('url_daemon', VARCHAR(length=64)), # absolute url to daemon.php
 			Column('mirror_size', INTEGER(display_width=11)), # maximum size of mirror
