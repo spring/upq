@@ -103,6 +103,7 @@ class UpqDB():
 		#	Column('fid', Integer, ForeignKey("file.fid"), nullable=True, unique=True),
 		#	Column('repo', Integer, ForeignKey("rapid-repo.rid"), nullable=True, unique=True),
 		#	Column('sdp', VARCHAR(length=32), unique=True),
+		#	Column('timestamp', TIMESTAMP(timezone=False)),
 
 		self.tables['tag']=Table('tag', self.meta,
 			Column('tid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
