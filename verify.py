@@ -1,12 +1,12 @@
 from lib import upqdb, upqconfig
-import os
+import os, datetime
 
 # verify files in db and in filesystems
 
 cfg = upqconfig.UpqConfig()
 db = upqdb.UpqDB(cfg.db['url'], cfg.db['debug'])
 
-rows = db.query("select path, filename from file where path <> ''")
+rows = db.query("select path, filename, timestamp, fid from file where path <> ''")
 
 dbfiles = set()
 c = 0
@@ -16,6 +16,12 @@ for row in rows:
 	dbfiles.add(filename)
 	#print(filename)
 	assert(os.path.isfile(filename))
+	"""
+	ftimestamp = os.path.getmtime(filename)
+	if ftimestamp < row[2].timestamp():
+		db.query("update file set timestamp='%s' where fid=%d" %(datetime.datetime.fromtimestamp(ftimestamp), row[3]))
+		print("local file is older")
+	"""
 
 files = set()
 
