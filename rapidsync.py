@@ -13,16 +13,9 @@
 # or maybe by the xml-rpc interface (or cron?)
 
 
-from lib import log, upqdb, upqconfig
-
-import sys
-
-import json
-import os
+from lib import log, upqdb, upqconfig, rapidsync
 
 cfg = upqconfig.UpqConfig()
 db = upqdb.UpqDB(cfg.db['url'], cfg.db['debug'])
-
-from lib import rapidsync
-j = rapidsync.Rapidsync(cfg, db)
+rapidsync.Rapidsync(cfg, db)
 
