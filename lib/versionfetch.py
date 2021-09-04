@@ -43,13 +43,14 @@ class Versionfetch():
 		url = self.prefix +'/' + data['path']
 		cid = upqdb.getCID(self.db, category)
 		#print "%s %s %s %s" % (filename, version, category, url)
-		res = self.db.query("SELECT fid, md5 from file WHERE version='%s' and cid=%s" % (version, cid))
+		res = self.db.query("SELECT fid, md5, timestamp from file WHERE version='%s' and cid=%s" % (version, cid))
 		fileinfo = res.first()
+		timestamp = datetime.datetime.fromtimestamp(data['filectime'])
 		if fileinfo:
 			fid = fileinfo[0]
 			assert(fid > 0)
-			if data["md5"] != fileinfo[1]:
-				self.db.query("UPDATE file set md5='%s' WHERE fid=%s"%  (data['md5'], fid))
+			if data["md5"] != fileinfo[1] or timestamp != fileinfo[2]:
+				self.db.query("UPDATE file set md5='%s', timestamp='%s' WHERE fid=%s"%  (data['md5'], timestamp, fid))
 		else:
 			fid = self.db.insert("file", {
 				"filename" : filename,
@@ -57,8 +58,7 @@ class Versionfetch():
 				"version": version,
 				"cid" : cid,
 				"md5" : data['md5'],
-				"timestamp": datetime.datetime.fromtimestamp(data['filectime']),
-				#"timestamp": data['filectime'],
+				"timestamp": timestamp,
 				"size": data['filesize'],
 				"status": 1,
 				})
