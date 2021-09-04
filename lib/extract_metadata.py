@@ -454,6 +454,7 @@ def insertData(db, data):
 
 	assert(data["path"] in ("games", "maps"))
 	assert("/" not in data["filename"])
+	assert(data["uid"] > 0)
 	if fid<=0:
 		fid=db.insert("file", {
 			"name": data["name"],
