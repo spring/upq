@@ -50,6 +50,13 @@ def GetMetadataPaths(images):
 		res.append("https://springfiles.springrts.com/metadata/"  + image)
 	return res
 
+def GetTags(db, fid):
+	rows = db.query('SELECT tag FROM tag WHERE fid=%d' % fid)
+	res = []
+	for row in rows:
+		res.append(row[0])
+	return res
+
 def GetResult(request):
 	cfg = upqconfig.UpqConfig()
 	db = upqdb.UpqDB(cfg.db['url'], cfg.db['debug'])
@@ -114,7 +121,7 @@ def GetResult(request):
 		d = dict(row)
 		#inject local file as mirror
 		if d["category"] in ["game", "map"]:
-			d["mirrors"] = ["https://springfiles.springrts.com/" + d["path"] + d["filename"]]
+			d["mirrors"] = ["https://springfiles.springrts.com/files/" + d["path"] + "/" + d["filename"]]
 		else:
 			d["mirrors"] = []
 
@@ -136,6 +143,7 @@ def GetResult(request):
 		#if "images" in request:
 
 		#json.dumps(row)
+		d["tags"] = GetTags(db, d["fid"])
 		del(d["fid"])
 		d["timestamp"] = d["timestamp"].isoformat()
 
@@ -143,6 +151,7 @@ def GetResult(request):
 			d["springname"] = d["name"]
 		else:
 			d["springname"] = d["name"] + " " + d["version"]
+
 
 		clientres.append(d)
 
