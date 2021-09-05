@@ -23,7 +23,7 @@ def GetQuery(request, binary, tag, cond):
 		return []
 	params = {
 		"binary": binary,
-		tag : upqdb.escape(request[tag])
+		tag : upqdb.escape(request[tag].replace("*", "%"))
 	}
 	#print(params)
 	return [cond.format(**params)]
