@@ -122,7 +122,7 @@ def GetResult(request):
 		#print(mirrors)
 		#print(row)
 
-		d["metadata"] = json.loads(d["metadata"])
+		d["metadata"] = json.loads(d["metadata"]) if d["metadata"] else {}
 		if "images" in request:
 			for k in ["splash", "mapimages"]:
 				if k in d["metadata"]:
