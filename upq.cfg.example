@@ -121,10 +121,3 @@ temppath=/tmp
 enabled = true
 concurrent = 1
 
-[job sf_sync]
-enabled = true
-concurrent = 1
-rpcurl = http://springfiles.springrts.com/xmlrpc.php
-username = upq
-password = upq
-maxrequests = 10
