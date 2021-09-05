@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import cgi, os, cgitb, html
+import cgi, os, cgitb, html, shutil
 
 print("Content-type: text/html\n")
 cgitb.enable()
@@ -55,7 +55,13 @@ def SaveUploadedFile(form):
 	fileitem = form["filename"]
 	if not fileitem.file:
 		return "Missing file form"
-	filename = save_uploaded_file(fileitem, "/tmp/springfiles-upload")
+
+	tmpdir = "/tmp/springfiles-upload"
+	total, used, free = shutil.disk_usage(tmpdir)
+	if free < 5 * 1024 * 1024 * 1024:
+		return "To few disk space availabile: %d MiB" %(free / (1024 * 1024) )
+
+	filename = save_uploaded_file(fileitem, tmpdir)
 	if not filename:
 		return "Couldn't store file"
 
