@@ -129,7 +129,10 @@ def GetResult(request):
 		#print(mirrors)
 		#print(row)
 
-		d["metadata"] = json.loads(d["metadata"]) if d["metadata"] else {}
+		try:
+			d["metadata"] = json.loads(d["metadata"]) if d["metadata"] else {}
+		except json.decoder.JSONDecodeError:
+			d["metadata"] = ""
 		if "images" in request:
 			for k in ["splash", "mapimages"]:
 				if k in d["metadata"]:
@@ -165,15 +168,12 @@ for k,v in cgi.parse().items():
 
 result = GetResult(request)
 
-if not result:
-	print("Content-type: text/html\n")
+if "callback" in request:
+	# strip anything except a-Z0-9
+	print("Content-type: application/javascript\n")
+	cb = upqdb.escape(request["callback"], set("abcdefhijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"));
+	print( cb + "(" +  json.dumps(result) + ");")
 else:
-	if "callback" in request:
-		# strip anything except a-Z0-9
-		print("Content-type: application/javascript\n")
-		cb = upqdb.escape(request["callback"], set("abcdefhijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"));
-		print( cb + "(" +  json.dumps(result) + ");")
-	else:
-		print("Content-type: application/json\n")
-		print(json.dumps(result))
+	print("Content-type: application/json\n")
+	print(json.dumps(result))
 
