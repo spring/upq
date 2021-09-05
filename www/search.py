@@ -7,9 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from lib import upqdb, upqconfig
 import json
 import random
-import cgi, cgitb
-
-cgitb.enable()
+import cgi
 
 def getlimit(request):
 	offset = 0
@@ -124,6 +122,7 @@ def GetResult(request):
 		#print(mirrors)
 		#print(row)
 
+		d["metadata"] = json.loads(d["metadata"])
 		if "images" in request:
 			for k in ["splash", "mapimages"]:
 				if k in d["metadata"]:
@@ -139,20 +138,19 @@ def GetResult(request):
 		#json.dumps(row)
 		del(d["fid"])
 		d["timestamp"] = d["timestamp"].isoformat()
+
+		if d["version"] == "":
+			d["springname"] = d["name"]
+		else:
+			d["springname"] = d["name"] + " " + d["version"]
+
 		clientres.append(d)
 
 	return clientres
 
-#request = {
-#	#"offset": "10",
-#	#"limit": "3",
-#	#"nosensitive": "",
-#	#"logical": "or",
-#	"springname": "DeltaSiegeDry",
-#	"callback": "123",
-#}
-
 request = {}
+#request={'_': '1630833475755', 'callback': 'processData', 'images': 'on', 'nosensitive': 'on', 'springname': '*'}
+
 for k,v in cgi.parse().items():
 	request[k] = v[0]
 
