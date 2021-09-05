@@ -547,14 +547,14 @@ def dumpmap(usync, springname, outpath, filename, idx):
 	res.append(createMapInfoImage(usync,springname, "metal",1, "L","L;I", scaledsize, outpath))
 	return res
 
-def extractmetadata(usync, filepath, paths):
+def extractmetadata(usync, filepath, metadir):
 	"""
 	>>> datadir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)),  "../tests"))
 	>>> mapfile = os.path.join(datadir, "maps/blank_v1.sd7")
 	>>> assert(os.path.isfile(mapfile))
 	>>> tmpdir = setupdir(mapfile, "/tmp")
 	>>> usync = initUnitSync(tmpdir=tmpdir)
-	>>> data = extractmetadata(usync, mapfile, {"metadata": "/tmp/"})
+	>>> data = extractmetadata(usync, mapfile, "/tmp/")
 	>>> print(data['metadata']['MapFileName'] == 'maps/Blank v1.smf')
 	True
 	"""
@@ -577,7 +577,7 @@ def extractmetadata(usync, filepath, paths):
 	if idx>=0: #file is map
 		springname = usync.GetMapName(idx).decode()
 		data["metadata"] = getMapData(usync, filename, idx, archiveh, springname)
-		data['mapimages'] = dumpmap(usync, springname, paths['metadata'], filename,idx)
+		data['mapimages'] = dumpmap(usync, springname, metadir, filename,idx)
 		data['path'] = "maps"
 		data['category_name'] = "map"
 	else: # file is a game
@@ -596,7 +596,7 @@ def extractmetadata(usync, filepath, paths):
 
 	_, extension = os.path.splitext(filename)
 	data["filename"] = GetNormalizedFilename(data["metadata"]['Name'], data["metadata"]['Version'], extension)
-	data['splash'] = createSplashImages(usync, archiveh, filelist, paths['metadata'])
+	data['splash'] = createSplashImages(usync, archiveh, filelist, metadir)
 	data["name"] = escape(data["metadata"]['Name'])
 	data["version"] = escape(data["metadata"]['Version'])
 	data['sdp']=sdp
@@ -616,7 +616,7 @@ def Extract_metadata(cfg, db, filepath, accountid):
 	usync = initUnitSync(cfg.paths['unitsync'], tmpdir)
 
 	assert(accountid > 0)
-	data = extractmetadata(usync, filepath, cfg.paths)
+	data = extractmetadata(usync, filepath, cfg.paths["metadata"])
 	data['uid'] = accountid
 
 	moveto = os.path.join(cfg.paths['files'], data["path"], data["filename"])
