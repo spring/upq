@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 
 import cgi, os, cgitb, html, shutil
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+
 
 print("Content-type: text/html\n")
 cgitb.enable()
@@ -57,23 +60,20 @@ def SaveUploadedFile(form):
 		return "Missing file form"
 
 	tmpdir = "/tmp/springfiles-upload"
-	total, used, free = shutil.disk_usage(tmpdir)
-	if free < 5 * 1024 * 1024 * 1024:
-		return "To few disk space availabile: %d MiB" %(free / (1024 * 1024) )
+
+
+	from lib import upqconfig
+	cfg = upqconfig.UpqConfig()
+	for path in [cfg.paths["files"], tmpdir]:
+		total, used, free = shutil.disk_usage(tmpdir)
+		if free < 5 * 1024 * 1024 * 1024:
+			return "To few disk space availabile: %d MiB in %s" %(free / (1024 * 1024), path)
 
 	filename = save_uploaded_file(fileitem, tmpdir)
 	if not filename:
 		return "Couldn't store file"
 
-	upqdir = "/home/springfiles/upq"
-	assert(os.path.isdir(upqdir))
-	oldcwd = os.getcwd()
-	os.chdir(upqdir)
-	import sys
-	sys.path.append(upqdir)
-	#print(upqdir)
-	output =  ParseAndAddFile(filename, accountid)
-	os.chdir(oldcwd)
+	output =  ParseAndAddFile(filename, accountid, cfg)
 	return output
 
 def SetupLogger():
@@ -84,9 +84,8 @@ def SetupLogger():
 	logging.getLogger().addHandler(logging.StreamHandler(stream=log_stream))
 	return log_stream
 
-def ParseAndAddFile(filename, accountid):
-	from lib import log, upqconfig, upqdb, extract_metadata
-	cfg = upqconfig.UpqConfig()
+def ParseAndAddFile(filename, accountid, cfg):
+	from lib import log, upqdb, extract_metadata
 	db = upqdb.UpqDB(cfg.db['url'], cfg.db['debug'])
 
 	output = SetupLogger()

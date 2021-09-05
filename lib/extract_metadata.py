@@ -612,6 +612,7 @@ def Extract_metadata(cfg, db, filepath, accountid):
 		logging.error("File doesn't exist: %s" %(filepath))
 		return
 
+	oldcwd = os.getcwd() # unitsync chdirs, keep current cwd, to restore it later
 	tmpdir = setupdir(filepath, cfg.paths['tmp']) #temporary directory for unitsync
 	usync = initUnitSync(cfg.paths['unitsync'], tmpdir)
 
@@ -634,6 +635,7 @@ def Extract_metadata(cfg, db, filepath, accountid):
 	usync.RemoveAllArchives()
 	usync.UnInit()
 	del usync
+	os.chdir(oldcwd)
 	assert(tmpdir.startswith("/home/springfiles/upq/tmp/"))
 	shutil.rmtree(tmpdir)
 	logging.info("*** Done! ***")
