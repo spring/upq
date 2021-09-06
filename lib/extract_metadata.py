@@ -26,6 +26,7 @@ import hashlib
 import json
 import filecmp
 import logging
+import datetime
 
 from lib.unitsync import unitsync
 
@@ -448,7 +449,7 @@ def insertData(db, data):
 			"uid": data['uid'],
 			"path": data["path"],
 			"filename": data["filename"],
-			"timestamp": upqdb.now(), #fixme: use file timestamp
+			"timestamp": data["timestamp"],
 			"size": data["size"],
 			"status": 1,
 			"md5": data["md5"],
@@ -563,6 +564,7 @@ def extractmetadata(usync, filepath, metadir):
 
 	data = get_hash(filepath)
 	data["size"] = os.path.getsize(filepath)
+	data["timestamp"] = datetime.datetime.fromtimestamp(os.path.getmtime(filename))
 
 	filename=os.path.basename(filepath) # filename only (no path info)
 
