@@ -163,8 +163,13 @@ def GetResult(request):
 request = {}
 #request={'_': '1630833475755', 'callback': 'processData', 'images': 'on', 'nosensitive': 'on', 'springname': '*'}
 
+#request = {"md5": "311d2bc8fd1bdb092b7d1f162da5fc44"}
+
 for k,v in cgi.parse().items():
-	request[k] = v[0]
+	if isinstance(v, list):
+		request[k] = v[0]
+	else:
+		request[k] = v
 
 result = GetResult(request)
 
