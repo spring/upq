@@ -73,6 +73,7 @@ def SaveUploadedFile(form):
 	if not filename:
 		return "Couldn't store file"
 
+	assert(accountid > 0)
 	output =  ParseAndAddFile(filename, accountid, cfg)
 	return output
 
