@@ -420,7 +420,7 @@ def saveImage(image, size, imagedir):
 		return
 	image.save(absname)
 	os.chmod(absname,int("0644",8))
-	logging.debug("Wrote " + absname)
+	logging.debug("Wrote " + filename)
 	return filename
 
 
@@ -449,14 +449,14 @@ def insertData(db, data):
 			"path": data["path"],
 			"filename": data["filename"],
 			"timestamp": upqdb.now(), #fixme: use file timestamp
-			"size": os.path.getsize(filename),
+			"size": data["size"],
 			"status": 1,
 			"md5": data["md5"],
 			"sha1": data["sha1"],
 			"sha256": data["sha256"],
 			})
 	else:
-		db.query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s', md5='%s', sha1='%s', sha256='%s', status=1 WHERE fid=%s" %(
+		db.query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s', md5='%s', sha1='%s', sha256='%s', status=1, filename='%s', path='%s' WHERE fid=%s" %(
 			data['name'],
 			data['version'],
 			data['sdp'],
@@ -465,6 +465,8 @@ def insertData(db, data):
 			data["md5"],
 			data["sha1"],
 			data["sha256"],
+			data["filename"],
+			data["path"],
 			fid
 			))
 	# remove already existing depends
@@ -560,6 +562,7 @@ def extractmetadata(usync, filepath, metadir):
 	"""
 
 	data = get_hash(filepath)
+	data["size"] = os.path.getsize(filepath)
 
 	filename=os.path.basename(filepath) # filename only (no path info)
 
@@ -577,7 +580,7 @@ def extractmetadata(usync, filepath, metadir):
 	if idx>=0: #file is map
 		springname = usync.GetMapName(idx).decode()
 		data["metadata"] = getMapData(usync, filename, idx, archiveh, springname)
-		data['mapimages'] = dumpmap(usync, springname, metadir, filename,idx)
+		data['metadata']['mapimages'] = dumpmap(usync, springname, metadir, filename,idx)
 		data['path'] = "maps"
 		data['category_name'] = "map"
 	else: # file is a game
@@ -596,7 +599,7 @@ def extractmetadata(usync, filepath, metadir):
 
 	_, extension = os.path.splitext(filename)
 	data["filename"] = GetNormalizedFilename(data["metadata"]['Name'], data["metadata"]['Version'], extension)
-	data['splash'] = createSplashImages(usync, archiveh, filelist, metadir)
+	data['metadata']['splash'] = createSplashImages(usync, archiveh, filelist, metadir)
 	data["name"] = escape(data["metadata"]['Name'])
 	data["version"] = escape(data["metadata"]['Version'])
 	data['sdp']=sdp
@@ -616,7 +619,6 @@ def Extract_metadata(cfg, db, filepath, accountid):
 	tmpdir = setupdir(filepath, cfg.paths['tmp']) #temporary directory for unitsync
 	usync = initUnitSync(cfg.paths['unitsync'], tmpdir)
 
-	assert(accountid > 0)
 	data = extractmetadata(usync, filepath, cfg.paths["metadata"])
 	data['uid'] = accountid
 
@@ -626,8 +628,8 @@ def Extract_metadata(cfg, db, filepath, accountid):
 
 	try:
 		insertData(db, data)
-	except upqdb.UpqDBIntegrityError:
-		logging.error("Duplicate file detected: %s %s %s" % (data["filename"], data['name'], data['version']))
+	except upqdb.UpqDBIntegrityError as e:
+		logging.error("Duplicate file detected: %s %s %s %s" % (data["filename"], data['name'], data['version'], str(e)))
 		return False
 
 	logging.info("Updated '%s' version '%s' sdp '%s' in the mirror-system" % (data['name'], data['version'], data['sdp']))

@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import func
-from sqlalchemy.dialects.mysql import TEXT, INTEGER, BIGINT, DATETIME, CHAR, VARCHAR, TIMESTAMP
+from sqlalchemy.dialects.mysql import TEXT, MEDIUMTEXT, INTEGER, BIGINT, DATETIME, CHAR, VARCHAR, TIMESTAMP
 
 
 cats = {}
@@ -89,7 +89,7 @@ class UpqDB():
 			Column('version', VARCHAR(length=256)), #spring version of this file
 			Column('cid', INTEGER(display_width=11)), #category of this file: game/map
 			Column('sdp', VARCHAR(length=32),nullable=True, unique=True), #for this file
-			Column('metadata', TEXT()),
+			Column('metadata', MEDIUMTEXT()),
 			UniqueConstraint('name', 'version', 'cid'),
 			UniqueConstraint('filename', 'cid')
 			)
