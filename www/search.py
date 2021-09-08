@@ -148,7 +148,8 @@ def GetResult(request):
 		#json.dumps(row)
 		d["tags"] = GetTags(db, d["fid"])
 		del(d["fid"])
-		d["timestamp"] = d["timestamp"].isoformat()
+		if d["timestamp"]:
+			d["timestamp"] = d["timestamp"].isoformat()
 
 		if d["version"] == "":
 			d["springname"] = d["name"]
