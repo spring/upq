@@ -564,7 +564,7 @@ def extractmetadata(usync, filepath, metadir):
 
 	data = get_hash(filepath)
 	data["size"] = os.path.getsize(filepath)
-	data["timestamp"] = datetime.datetime.fromtimestamp(os.path.getmtime(filename))
+	data["timestamp"] = datetime.datetime.fromtimestamp(os.path.getmtime(filepath))
 
 	filename=os.path.basename(filepath) # filename only (no path info)
 
