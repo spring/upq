@@ -60,6 +60,7 @@ def SaveUploadedFile(form):
 		return "Missing file form"
 
 	tmpdir = "/tmp/springfiles-upload"
+	os.makedirs(tmpdir, exist_ok=True)
 
 
 	from lib import upqconfig
