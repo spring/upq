@@ -66,9 +66,9 @@ def SaveUploadedFile(form):
 	from lib import upqconfig
 	cfg = upqconfig.UpqConfig()
 	for path in [cfg.paths["files"], tmpdir]:
-		total, used, free = shutil.disk_usage(tmpdir)
+		total, used, free = shutil.disk_usage(path)
 		if free < 5 * 1024 * 1024 * 1024:
-			return "To few disk space availabile: %d MiB in %s" %(free / (1024 * 1024), path)
+			return "To few disk space available: %d MiB in %s" %(free / (1024 * 1024), path)
 
 	filename = save_uploaded_file(fileitem, tmpdir)
 	if not filename:
