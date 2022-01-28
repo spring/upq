@@ -609,16 +609,15 @@ def extractmetadata(usync, filepath, metadir):
 	usync.CloseArchive(archiveh)
 	return data
 
-def Extract_metadata(cfg, db, filepath, accountid):
+
+def extract_metadata_unitsync(cfg, db, filepath, accountid, tmpdir):
 	#filename of the archive to be scanned
 	filepath=os.path.abspath(filepath)
 
 	if not os.path.exists(filepath):
 		logging.error("File doesn't exist: %s" %(filepath))
-		return
+		return False
 
-	oldcwd = os.getcwd() # unitsync chdirs, keep current cwd, to restore it later
-	tmpdir = setupdir(filepath, cfg.paths['tmp']) #temporary directory for unitsync
 	usync = initUnitSync(cfg.paths['unitsync'], tmpdir)
 
 	data = extractmetadata(usync, filepath, cfg.paths["metadata"])
@@ -639,11 +638,19 @@ def Extract_metadata(cfg, db, filepath, accountid):
 	usync.RemoveAllArchives()
 	usync.UnInit()
 	del usync
-	os.chdir(oldcwd)
-	assert(tmpdir.startswith("/home/springfiles/upq/tmp/"))
-	shutil.rmtree(tmpdir)
 	logging.info("*** Done! ***")
-	return
+	return True
+
+
+def Extract_metadata(cfg, db, filepath, accountid):
+	oldcwd = os.getcwd() # unitsync chdirs, keep current cwd, to restore it later
+	tmpdir = setupdir(filepath, cfg.paths['tmp']) #temporary directory for unitsync
+	try:
+		return extract_metadata_unitsync(cfg, db, filepath, accountid, tmpdir)
+	finally:
+		assert tmpdir.startswith("/home/springfiles/upq/tmp/")
+		shutil.rmtree(tmpdir)
+		os.chdir(oldcwd)
 
 if __name__ == "__main__":
 	import doctest
