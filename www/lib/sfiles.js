@@ -1,32 +1,76 @@
 var SFILES_URL = '/json.php';
+//var SFILES_URL = 'https://springfiles.springrts.com/json.php'; // for local testing only
 var REQUEST_TIMEOUT_MS = 7000;
-
 
 var TYPE_GENERAL = 0;
 var TYPE_SEARCH = 1;
 var TYPE_DETAILS = 2;
 
-var type = TYPE_GENERAL;
-
 var MAX_RECENT_ITEMS = 10;
 var DEFAULT_SEARCH_ITEMS = 10;
-var MAX_SEARCH_ITEMS = 60;
-var SEARCH_LIMIT = 100;  // server-side code limits results to 64
+var MORE_ITEMS_INCREMENT = 60;
+var MAX_SEARCH_ITEMS = 10000;
+
 var latestData = null;
 
-var hovermenuTimer = -1;
+var hoverMenuTimer = -1;
 var HOVERMENU_TIME_MS = 3000;
+
+var mapKeywordData = null;
+
+// list of categories with ordered map keywords
+var mapKeywordCategories = [ 
+	{name: "Size", description: "Map area : smaller than 12x12,larger than 18x18 or in between" , keywords : ["small", "medium", "large"]}, 
+	{name: "Land / Water", description: "How relevant are the water areas relative to land" ,keywords : ["land", "amphibious", "water"]},
+	{name: "Traversability", description: "Is it particularly easy or hard for land/water units to move across the map" , keywords : ["open", "obstructed" ]}
+];
+// descriptions associated to map keywords
+var mapKeywordDescriptions = {
+	// size 
+	small: "Map area <= 12x12", 
+	medium: "12x12 < map area <= 18x18",
+	large: "Map area > 18x18",
+	// land / water
+	land: "Mostly land",
+	amphibious: "Mixed land and water areas, land-only or water-only units may not be viable",
+	water: "Mostly water",
+	// traversability
+	open: "Mostly open, few or easily crossable terrain features",
+	obstructed: "Many steep hills, chasms, land/water transitions or other choke points",
+	lava: "Has lava instead of water",
+	acid: "Has damage-dealing acid instead of water",
+	"void": "Has void instead of water",
+	air: "Key areas only reachable by air units",
+	// other
+	metal: "Continuous metal yield across the surface instead of discrete metal spots",
+	ffa: "Map suitable for free-for-all battles"
+};
+
+
+// form fields used to generate query to server
+var formFields = {
+	"type" : TYPE_GENERAL,
+	"filter" : "",
+	"category" : "",
+	"keywords" : "",
+	"minW" : "",
+	"minH" : "",
+	"maxW" : "",
+	"maxH" : "",
+	"latestOnly" : 0
+};
+var nonTextFormFields = {"latestOnly": true}
 
 var allCategories = {
 	"game" : "Games",
 	"map" : "Maps",
 	"engine" : "Engines"
-}
+};
 
 var contentUsageTipByCategory = {
 	"game" : "<span class=\"content_h4\">What to do with this file?</span><br>First you need to download the Spring engine to play this game.<br><br>Games for Spring are .sd7 or .sdz files. To install these files move them into (Unix) ~/.spring/games or (Windows) \"My Documents\\My Games\\Spring\\games\".<br><br>Use the \"Reload maps/games\" option from the \"Tools\" menu in SpringLobby.",
 	"map" : "<span class=\"content_h4\">What to do with this file?</span><br>First you need to download the Spring engine to play on this map.<br><br>Maps are .sd7 or .sdz files. To install these files move them into (Unix) ~/.spring/maps or (Windows) \"My Documents\\My Games\\Spring\\maps\".<br><br>Use the \"Reload maps/games\" option from the \"Tools\" menu in SpringLobby."
-}
+};
 
 var gameThumbnailsRegex = [
 {regex : /^metal factions[.]*/, thumbnail : "thumb_mf.jpg" },
@@ -67,15 +111,15 @@ function enableHoverMenu() {
 			});
 			$("#hovermenu").show();
 
-			clearTimeout(hovermenuTimer);
-			hovermenuTimer = setTimeout(function () {
+			clearTimeout(hoverMenuTimer);
+			hoverMenuTimer = setTimeout(function () {
 					$("#hovermenu").hide();
 				}, HOVERMENU_TIME_MS);
 
 		});
 
 		$("body").click(function () {
-			clearTimeout(hovermenuTimer);
+			clearTimeout(hoverMenuTimer);
 			$("#hovermenu").hide();
 		});
 
@@ -84,11 +128,38 @@ function enableHoverMenu() {
 	}, 50);
 }
 
+function toggleFilterFormVisibility() {
+	if ($("#filterFormDiv").is(":visible")) {
+		$("#filterFormDiv").hide();
+	} else {
+		showFilterForm();
+	}
+}
+
+function showFilterForm() {
+	setFilterFormContent();
+
+	// show box horizontally centered on filter button  	
+	// but get the top offset from the menu icon instead
+	var pos = $("#filterFormButton").offset();
+	var width = $("#filterFormButton").width();
+	var childWidth = $("#filterFormDiv").width();
+	var top = $(".menu_button").offset().top+$(".menu_button").height();
+	
+	$("#filterFormDiv").css({
+		top: top,
+		left: pos.left +width/2 - childWidth/2,
+		position: 'absolute'
+	});
+	$("#filterFormDiv").show();
+}
+
 // get request parameter
 function getGETParameter(name) {
 	if (name = (new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)')).exec(location.search)) {
 		return decodeURIComponent(name[1]);
 	}
+	return null;
 }
 
 // set hover menu content
@@ -99,6 +170,35 @@ function setHoverMenuContent() {
 	h += '</table>';
 
 	$("#hovermenu").html(h);
+}
+
+// set filter form
+function setFilterFormContent() {
+	var h = '<table cellspacing="1" border="0" class="filterFormTable">';
+	if (formFields.category) {
+		h += '<tr><th>Filter parameters ('+formFields.category+')</th></tr>';
+		if (formFields.category == "map") {
+			h += '<tr><td>Size: <input type="text" id="minW" maxlength="2" size="1" onchange="syncFormField(this)">&nbsp;x&nbsp;';
+			h += '<input type="text" id="minH" maxlength="2" size="1" onchange="syncFormField(this)"> to ';
+			h += '<input type="text" id="maxW" maxlength="2" size="1" onchange="syncFormField(this)">&nbsp;x&nbsp;';
+			h += '<input type="text" id="maxH" maxlength="2" size="1" onchange="syncFormField(this)"></td></tr>';
+
+			h += '<tr><td>Key Words: <input type="text" id="keywords" maxlength="30" size="10" onchange="syncFormField(this)"><br><span style="font-size:80%">lower case words separated by &quot;,&quot;</span></td></tr>';		
+			
+			h += '<tr><td>Only show latest version for each item <input type="checkbox" id="latestOnly" value="1" onchange="syncFormField(this)"></td></tr>';
+		} else {
+			h += '<tr><td>Extra filter parameters only available for maps...</td></tr>';
+		}
+	} else {
+		for (key in allCategories) {
+			h+='<tr><td><a class="abutton" style="font-size: 90%" href="?type=1&filter=&category='+key+'">'+allCategories[key]+'</a></td></tr>';
+		}
+	}
+	h += '</table>';
+
+	$("#filterFormDiv").html(h);
+	
+	updateAvailableFormFields();
 }
 
 // generate centered loading gif thingy
@@ -138,12 +238,55 @@ function sendRequest(sfQuery,query) {
 			if (textStatus === "timeout") {
 				// something went wrong, show message
 				$('#dataDiv').html("<h2>Server unavailable.<br/><br/>Please try again later...</h2>");
+			} else if (textStatus === "error") {
+				$('#dataDiv').html("<h2>Server error.<br/><br/>Please try again later...</h2>");
 			}
 		}
 	}).done(function() {
 		var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + query;
 		window.history.pushState({path:newUrl},'',newUrl);
+		
+		// if map keyword data hasn't been loaded yet, get it
+		if (mapKeywordData == null) {
+			sendMapKeywordDataRequest();
+		}
 	});
+}
+
+// get map keyword data from server
+function sendMapKeywordDataRequest() {
+	$.ajax({
+		url: SFILES_URL + "?getMapKeywordData=1",
+		dataType: "jsonp",
+		timeout: REQUEST_TIMEOUT_MS,
+		crossDomain: true,
+		jsonpCallback: "processMapKeywordData"
+	});
+}
+
+
+// get "width X height" string from metadata if item is a map
+function getMapSizeStrFromMetadata(item) {
+	var metadata = item.metadata;
+	var mapSizeStr = "";
+	if (metadata && item.category == "map") {
+		mapSizeStr = ""+metadata.Width +"&nbsp;X&nbsp;"+ metadata.Height; 
+	}
+	return mapSizeStr;
+}
+
+// format date
+function formatDate(dateStr) {
+	if(dateStr) {
+		return dateStr.substring(0,dateStr.indexOf("T"))+"&nbsp;"+dateStr.substring(dateStr.indexOf("T")+1);
+	}
+	
+	return "";
+}
+
+// capitalize first character in a string
+function capitalizeFirstChar(str) {
+	return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 // get item thumbnail
@@ -173,11 +316,77 @@ function getItemThumbnail(item) {
 	return img;
 }
 
+// compose html for map category/keyword shortcuts table
+function getMapKeywordDataHtml() {
+	if (mapKeywordData != null) {
+		var shownKeywords = {}
+		var kwDataByName = {}
+		for (var i = 0; i < mapKeywordData.length; i++) {
+			var item = mapKeywordData[i];
+			kwDataByName[item.keyword] = item;
+		} 
+		
+		var h = '<table cellpadding="5" cellspacing="0" border="0" class="search_results" style="float: right;"><tr><th colspan="2" align="center"><span class="content_h3">Map Categories</span></th></tr>';
+		// first try to show categorized keywords
+		for (var i=0; i < mapKeywordCategories.length; i++) {
+			var cat = mapKeywordCategories[i];
+			var catShown = false;
+			
+			for (var j=0; j< cat.keywords.length; j++) {
+				var kw = cat.keywords[j];
+				var item = kwDataByName[kw]
+				if (kwDataByName[kw]) {
+					if (!catShown) {
+						h += '<tr><td class="quick_find_map_category"><span style="font-size: 80%" title="'+cat.description+'">'+cat.name+'</span></td></tr>';
+						catShown = true;
+					}
+					h+='<tr><td>&emsp;<a class="abutton" href="?type=1&filter=&category=map&keywords='+kw+'&latestOnly=1" title="'+mapKeywordDescriptions[kw]+'">'+capitalizeFirstChar(kw)+'</a>&nbsp;<span style="font-size: 90%" >('+item.maps+')</span> </td></tr>';
+					shownKeywords[kw] = 1;
+				}
+			}
+		}
+		
+		// show remaining keywords
+		if (Object.keys(shownKeywords).length < mapKeywordData.length) {
+			h += '<tr><td class="quick_find_map_category"><span style="font-size: 80%" title="Other properties">Other</span></td></tr>';
+		
+			for (var i = 0; i < mapKeywordData.length; i++) {
+				var item = mapKeywordData[i];
+				var kw = item.keyword;
+				
+				if (!shownKeywords[kw]) {
+					h+='<tr><td>&emsp;<a class="abutton" href="?type=1&filter=&category=map&keywords='+kw+'&latestOnly=1" '+(mapKeywordDescriptions[kw] ? ' title="'+mapKeywordDescriptions[kw]+'"' : '')+'>'+capitalizeFirstChar(kw)+'</a>&nbsp;<span style="font-size: 90%" >('+item.maps+')</span> </td></tr>';
+					shownKeywords[kw] = 1;
+				}
+			}
+		
+		}
+		
+		h += '</table>';
+
+		return h;		
+	}
+	return "";
+}
+
+// process map keyword data, update view if available
+function processMapKeywordData(data) {
+	if (data != null) {
+		mapKeywordData = data;
+		
+		var div = document.getElementById("mapKeywordShortcutsDiv");
+		if (div) {
+			div.innerHTML = getMapKeywordDataHtml(); 	
+		}
+	}
+}
+
 // process data and generate view
-function processData(data,showAll) {
+function processData(data,showLimit) {
 	if (data != null) {
 		var h = '<table width="100%" ><tr><td align="center">';
-		if (type == TYPE_GENERAL) {
+		
+		if (formFields.type == TYPE_GENERAL) {
 			h+='<table width="100%"><tr>';
 			
 			// general description
@@ -201,18 +410,20 @@ function processData(data,showAll) {
 				var item = data[i];
 				
 				var name = item.springname;
-				var date = item.timestamp;
+				var date = formatDate(item.timestamp);
 				var mirrors = item.mirrors;
 				var img = getItemThumbnail(item);
 				var category = item.category.toUpperCase();
 				var sdp = item.sdp;
 				var md5 = item.md5;
 				var version = item.version;
+				var mapSizeStr = getMapSizeStrFromMetadata(item);
+				
 				// item table
 				h += '<tr class="res_row'+(i%2 ? '_':'')+'"><td style="width:10px;">#' + (i + 1) + '</td><td style="width:100%"><table style="width: 100%;">';
 				
-				h+='<tr><td>'+date+'</td><td align="right"><span class="category"> '+category+' </span></td></tr>';
-				h+='<tr><td>'+name+(version ? '<br><span style="font-size:70%">version '+version+'</span>':'')+'</td><td rowspan="2" style="width:6vw;"><img class="search_thumbnail" src="'+img+'"></td></tr>';
+				h+='<tr><td>'+name+'</td><td align="right"><span class="category"> '+category+' </span></td></tr>';
+				h+='<tr><td style="font-size:80%">'+date+(version ? '<br>version '+version:'')+(mapSizeStr ? '<br>'+mapSizeStr:'')+'</td><td rowspan="2" style="width:6vw;"><img class="search_thumbnail" src="'+img+'"></td></tr>';
 				h+='<tr><td><button onclick="go('+TYPE_DETAILS+',\''+md5+'\')">view details...</button></td></tr>';
 				
 				h += '</table></td></tr>';
@@ -224,19 +435,12 @@ function processData(data,showAll) {
 			h+='</td>';
 
 			// quick find - maps
-			h+='<td style="width:25%" valign="top">';
-			h += '<table cellpadding="5" cellspacing="0" border="0" class="search_results" style="width:30%; float: right;"><tr><th colspan="2" align="center"><span class="content_h3">Map Categories</span></th></tr>';
-			h += '<tr><td><a href="?type=1&filter=&category=map&tags=1v1"><img class="quick_find_map_category" src="images/1v1.png"></a></td><td><a href="?type=1&filter=&category=map&tags=2v2"><img class="quick_find_map_category" src="images/2v2.png"></a></td></tr>';
-			h += '<tr><td><a href="?type=1&filter=&category=map&tags=team"><img class="quick_find_map_category" src="images/team.png"></a></td><td><a href="?type=1&filter=&category=map&tags=ffa"><img class="quick_find_map_category" src="images/ffa.png"></a></td></tr>';
-			h += '<tr><td><a href="?type=1&filter=&category=map&tags=metal"><img class="quick_find_map_category" src="images/metal.png"></a></td><td><a href="?type=1&filter=&category=map&tags=no-metal"><img class="quick_find_map_category" src="images/no-metal.png"></a></td></tr>';
-			h += '<tr><td><a href="?type=1&filter=&category=map&tags=watermap"><img class="quick_find_map_category" src="images/water.png"></a></td><td><a href="?type=1&filter=&category=map&tags=some-water"><img class="quick_find_map_category" src="images/some-water.png"></a></td></tr>';
-			h += '<tr><td><a href="?type=1&filter=&category=map&tags=no-water"><img class="quick_find_map_category" src="images/no-water.png"></a></td><td><a href="?type=1&filter=&category=map&tags=flat"><img class="quick_find_map_category" src="images/flat.png"></a></td></tr>';
-			h += '<tr><td><a href="?type=1&filter=&category=map&tags=hilly"><img class="quick_find_map_category" src="images/hilly.png"></a></td><td><a href="?type=1&filter=&category=map&tags=mountainous"><img class="quick_find_map_category" src="images/mountainous.png"></a></td></tr>';
-			h += '</table>';
-			h+='</td>';
+			h += '<td style="width:25%" valign="top" id="mapKeywordShortcutsDiv">';
+			h += getMapKeywordDataHtml(); 
+			h += '</td>';
 			
 			h+='</tr></table>';
-		} else if (type == TYPE_SEARCH) {
+		} else if (formFields.type == TYPE_SEARCH) {
 			// list of matching items
 			h += '<table cellpadding="5" cellspacing="0" border="0" class="search_results" style="width:70%"><tr><th colspan="2" align="center"><span class="content_h1">Search Results<br><span style="font-size:50%">'+(data.length > MAX_SEARCH_ITEMS ? (Math.min(data.length,MAX_SEARCH_ITEMS)+"+") : data.length )+' matches</span></span></th></tr>';
 			if (data && data.length > 0) {
@@ -246,28 +450,33 @@ function processData(data,showAll) {
 					var item = data[i];
 					
 					var name = item.springname;
-					var date = item.timestamp;
+					var date = formatDate(item.timestamp);
 					var mirrors = item.mirrors;
 					var category = item.category.toUpperCase();
 					var img = getItemThumbnail(item);
 					var sdp = item.sdp;
 					var md5 = item.md5;
 					var version = item.version;
+					var mapSizeStr = getMapSizeStrFromMetadata(item);
+					
 					// item table
 					h += '<tr class="res_row'+(i%2 ? '_':'')+'"><td style="width:1vw;">#' + (i + 1) + '</td><td style="width:100%"><table style="width: 100%;">';
 					
-					h+='<tr><td>'+date+'</td><td align="right"><span class="category"> '+category+' </span></td></tr>';
-					h+='<tr><td>'+name+(version ? '<br><span style="font-size:70%">version '+version+'</span>':'')+'</td><td rowspan="2" style="width:6vw;"><img class="search_thumbnail" src="'+img+'"></td></tr>';
+					h+='<tr><td>'+name+'</td><td align="right"><span class="category"> '+category+' </span></td></tr>';
+					h+='<tr><td style="font-size:80%">'+date+(version ? '<br>version '+version:'')+(mapSizeStr ? '<br>'+mapSizeStr:'')+'</td><td rowspan="2" style="width:6vw;"><img class="search_thumbnail" src="'+img+'"></td></tr>';
 					h+='<tr><td><button onclick="go(TYPE_DETAILS,\''+md5+'\')">view details...</button></td></tr>';
 					
 					h += '</table></td></tr>';
 					resultsShown++;
-					if (!showAll && resultsShown >= DEFAULT_SEARCH_ITEMS || (resultsShown >= MAX_SEARCH_ITEMS)) {
+					if ((!showLimit && resultsShown >= DEFAULT_SEARCH_ITEMS) || (resultsShown >= showLimit)) {
 						break;
 					}
 				}
-				if (!showAll && data.length > resultsShown) {
-					h += '<tr><td colspan="2" align="center"><button type="button" onclick="processData(latestData,true)"> ... more ...</button></td></tr>';
+				if (data.length > resultsShown) {
+					if(!showLimit) {
+						showLimit = 0;
+					}
+					h += '<tr><td colspan="2" align="center"><button type="button" onclick="processData(latestData,'+(showLimit+60)+')"> ... more ...</button></td></tr>';
 				}
 			} else {
 				h+= '<tr><td>No results found.</td></tr>';
@@ -275,7 +484,7 @@ function processData(data,showAll) {
 			}
 			h += '</table>';
 
-		} else if (type == TYPE_DETAILS) {
+		} else if (formFields.type == TYPE_DETAILS) {
 			
 			if (data.length >0) {
 				var item = data[0];
@@ -283,16 +492,24 @@ function processData(data,showAll) {
 				var sdp = item.sdp;
 				var md5 = item.md5;
 				var version = item.version;
-				var date = item.timestamp;
+				var date = formatDate(item.timestamp);
 				var mirrors = item.mirrors;
 				var mapImages = item.mapimages;
 				var category = item.category;
 				var size = item.size;
-				var tags = item.tags;
+				var keywords = item.keywords;
 				var filename = item.filename;
-				//var description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sed purus magna. Ut pharetra vestibulum mauris, ac hendrerit tortor tincidunt vel. Vestibulum sit amet turpis fringilla, interdum mi non, pharetra orci. Cras at cursus quam. Nullam at est quis velit viverra euismod nec at libero. Vestibulum accumsan purus mauris, at tristique felis ultricies sit amet. Aliquam consequat lacinia magna, id euismod erat euismod ac. Morbi posuere elit ut eleifend dictum. Sed congue volutpat consequat. Sed auctor augue odio, non laoreet risus vulputate vel. Morbi ac eros vel lacus ullamcorper posuere. Aliquam vulputate volutpat mi, non efficitur sapien pulvinar sit amet. Phasellus pulvinar tempus pellentesque. Maecenas hendrerit leo erat, eget porttitor leo dictum in.<br><br>Ut venenatis risus sit amet lectus lacinia, ut tincidunt orci tempus. Curabitur vitae tincidunt magna. Integer semper, magna eu pretium lobortis, orci dolor porttitor nibh, sit amet imperdiet justo quam a urna. Etiam semper nibh ligula, cursus hendrerit odio dignissim vel. Sed accumsan fringilla justo, at ultrices ante facilisis non. Vivamus in ipsum id sapien pharetra pharetra. Aliquam eleifend mollis ex, ac bibendum risus viverra ut. Morbi vel bibendum mi, sit amet luctus risus. In malesuada massa vel turpis consequat, id tincidunt felis aliquet. Nunc elit felis, condimentum sit amet hendrerit vel, fringilla in leo. Suspendisse potenti.<br><br>Cras scelerisque vestibulum pulvinar. Aenean vitae massa vitae mi dignissim porta. Etiam ultricies fermentum tellus, a sollicitudin metus semper at. Sed mattis consequat varius. Donec eu bibendum leo. Curabitur egestas justo mauris, nec fringilla justo tincidunt vel. Maecenas ac ex a justo ornare mollis vel quis nisl. Suspendisse id eros commodo, fringilla nibh a, semper eros. Aliquam nec porttitor odio, ultricies lacinia erat. Etiam luctus ipsum et massa hendrerit, ut pellentesque sapien molestie. Nunc eget arcu posuere, efficitur dolor non, rutrum diam. Duis aliquet libero id sem aliquam, non varius nulla consequat.<br><br>Morbi laoreet libero eu turpis semper, sit amet feugiat dolor efficitur. Proin interdum nibh id dui eleifend porttitor. Praesent pulvinar nulla in semper tincidunt. Donec commodo ligula ultricies facilisis elementum. Mauris varius blandit diam, in pretium erat pretium quis. Nullam aliquet sem et dolor iaculis, at cursus sem tincidunt. Praesent varius maximus congue. Etiam laoreet gravida nibh, a laoreet tellus tincidunt vel. Duis vulputate enim eget nibh maximus pulvinar. Integer hendrerit elit et dapibus cursus. Ut venenatis tellus vitae placerat molestie. Nunc tempus, ante non sollicitudin mattis, nibh sem sagittis ante, vitae mollis lacus enim nec libero. Aliquam erat volutpat. Sed velit enim, tincidunt sit amet purus eget, convallis lobortis urna.";
 				var description = "";
-
+				var metadata = item.metadata;
+				if (metadata) {
+					description = metadata.Description;
+				}
+				var mapSizeStr = getMapSizeStrFromMetadata(item);
+				var author = "?";
+				if (metadata) {
+					author = metadata.Author;
+				}
+				
 				// update document title
 				document.title = item.springname;
 				
@@ -303,6 +520,7 @@ function processData(data,showAll) {
 				h+= '<tr><td valign="top"><table>';
 				h+='<tr><td><span class="label">Modified:</span> '+date+'</td></tr>';
 				h+='<tr><td><span class="label">Category:</span> <span class="category"> '+category.toUpperCase()+' </span></td></tr>';
+				h+='<tr><td><span class="label">Author:</span> '+author+'</td></tr>';
 				if (sdp) {
 					h+='<tr><td><span class="label">SDP:</span> '+sdp+'</td></tr>';
 				}
@@ -312,12 +530,18 @@ function processData(data,showAll) {
 				}
 				var sizeMb = size/(1024*1024);
 				h+='<tr><td><span class="label">Size:</span> '+sizeMb.toFixed(1)+' MB ('+size+' bytes)</td></tr>';
-				var tagsStr = "";
-				if (tags && tags.length > 0) {
-					for (var i=0; i< tags.length; i++) {
-						tagsStr +='&emsp;<span class="category">'+tags[i]+'</span>';
+				var keywordsStr = "";
+				if (keywords && keywords.length > 0) {
+					keywords = keywords.split(',');
+					for (var i=0; i< keywords.length; i++) {
+						var kwDesc = "";
+						if (category == "map") {
+							kwDesc = mapKeywordDescriptions[keywords[i]];
+						}
+						
+						keywordsStr +='&nbsp;<span class="category" '+(kwDesc ? ' title="'+kwDesc+'"':'')+'>'+keywords[i]+'</span>';
 					}
-					h+='<tr><td><span class="label">Tags:</span> '+tagsStr+'</td></tr>';	
+					h+='<tr><td><span class="label">Keywords:</span> '+keywordsStr+'</td></tr>';	
 				}
 
 				if (mirrors && mirrors.length > 0) {
@@ -334,6 +558,16 @@ function processData(data,showAll) {
 				if (tip) {
 					h+='<tr><td style="font-size:80%"><hr/>'+tip+'</td></tr>';
 				}
+				if (metadata) {
+					if (category == "map") {
+						h+='<tr><td><hr/><h4>In-game properties:</h4></td></tr>';
+						h+='<tr><td><span class="label">Size:</span> '+mapSizeStr+'</td></tr>';
+						h+='<tr><td><span class="label">Wind:</span> '+metadata.MinWind+'-'+metadata.MaxWind+'</td></tr>';
+						h+='<tr><td><span class="label">Tidal:</span> '+metadata.TidalStrength+'</td></tr>';
+						h+='<tr><td><span class="label">Gravity:</span> '+metadata.Gravity+'</td></tr>';
+					}
+				}
+
 				if (description) {
 					h+='<tr><td><hr/>'+description+'</td></tr>';
 				}
@@ -371,85 +605,165 @@ function appendMessage(msg) {
 	messageDiv.innerHTML += '<br/>' + msg;
 }
 
-// clear filter
+// clear filter (reload page)
 function clearFilter() {
 	fGo('?type='+TYPE_GENERAL);
 }
 
-// go to search url
-function go(t,filter,category,tags) {
-	if (!t) {
-		t = getGETParameter('type');
+// clear form fields
+function clearFormFields() {
+	for (const paramId in formFields) {
+		if (!nonTextFormFields[paramId]) {
+			formFields[paramId] = "";
+		}
 	}
-	if (!t){
-		t = TYPE_GENERAL;
+	formFields.latestOnly = 0;
+	formFields["type"] = TYPE_GENERAL;
+	updateAvailableFormFields();
+}
+
+// sync html input value with formFields js table
+function syncFormField(el) {
+	if ($(el).is(':checkbox')) {
+		formFields[el.id] = el.checked ? 1 : 0;
+	} else {
+		formFields[el.id] = el.value;
 	}
+}
+
+// load filter parameters from url query string
+function loadFilterParametersUrl() {
+	for (const paramId in formFields) {
+		var value = getGETParameter(paramId);
+		if (value !== null) {
+			formFields[paramId] = value;
+		}
+	}
+}
+
+// update all available form fields to match the formFields
+function updateAvailableFormFields() {
+	for (const paramId in formFields) {
+		if (!nonTextFormFields[paramId]) {
+			setFormTextField(paramId,formFields[paramId]);
+		}
+	}
+	setFormCheckboxField('latestOnly',formFields.latestOnly);
+}
+// set a form text field value, if available
+function setFormTextField(paramId,value) {
+	var obj = $('#'+paramId);
+	if (obj.length > 0) {
+		obj.val(value);
+	}
+}
+// set a form checkbox field value, if available
+function setFormCheckboxField(paramId,value) {
+	var obj = $('#'+paramId);
+	if (obj.length > 0) {
+		obj.prop( "checked", value ? 1 : 0 );
+	}
+}
+
+// get form text field
+function getFormTextField(paramId) {
+	var obj = $('#'+paramId);
+	if (obj.length > 0) {
+		return obj.val().trim();
+	}
+	return null;
+}
+
+// get form checkbox field
+function getFormCheckboxField(paramId) {
+	var obj = $('#'+paramId);
+	if (obj.length > 0) {
+		return obj.is(':checked') ? 1 : 0;
+	}
+	return null;
+}
+
+// send request to get data from server
+// set parameters override formFields table
+// response updates url query string to match
+function go(type,filter,category,keywords) {
+	if (!type) {
+		type = formFields.type;
+	} else {
+		formFields.type = type;
+	}
+	
 	if (!filter) {
 		filter = $('#filter').val().trim();	
 		// replace spaces and separators with * for easier matching
 		filter = filter.replace(/[ \-_]/g,"*");
-		$('#filter').val(filter);
-	}
-	if (!filter) {
-		filter = getGETParameter('filter');
-	}
-	if (!filter) {
-		filter = "";
+	} else {
+		// replace spaces and separators with * for easier matching
+		filter = filter.replace(/[ \-_]/g,"*");
+		formFields.filter = filter;
+		setFormTextField('filter',filter);
 	}
 	
 	if (!category) {
-		category = getGETParameter('category');
+		category = formFields.category;
+	} else {
+		formFields.category = category;
 	}
-	if (!category) {
-		category = "";
+	
+	if (!keywords) {
+		keywords = formFields.keywords;
+	} else {
+		formFields.keywords = keywords;
 	}
-	if (!tags) {
-		tags = getGETParameter('tags');
-	}
-	if (!tags) {
-		tags = "";
-	}
-	var extraFilter = "";
 
-	if (category || tags) {
+	// visual indicator of category selected
+	var extraFilter = "";
+	if (category || keywords) {
 		extraFilter = "(";
 		if (category) {
 			extraFilter += " "+category;
 		}
-		if (tags) {
-			extraFilter += " "+tags;
+		if (keywords) {
+			extraFilter += " "+keywords;
 		}
 		extraFilter += " )";
 	}
 	$('#extraFilter').html(extraFilter);
+
+	// add filter form 
+	if (category) {
+		setFilterFormContent();
+	}
 	
-	t = parseInt(t);
-	type = t;
 	var query = "";
 	var sfQuery = "";
+	var filterformQStr = "";
+	switch(category) {
+		case ("map"): 
+			filterformQStr = "&minW="+formFields.minW+"&minH="+formFields.minH+"&maxW="+formFields.maxW+"&maxH="+formFields.maxH+"&latestOnly="+formFields.latestOnly+"&keywords="+keywords;
+		break;
+		default:
+			filterformQStr = "&latestOnly="+formFields.latestOnly+"&keywords="+keywords;
+		break;
+	}
 	//alert("t="+t+" filter="+filter);
-	switch(t) {
+	switch(parseInt(type)) {
 		case (TYPE_GENERAL):
 			query = "?type=" + TYPE_GENERAL;	
-			sfQuery = "?nosensitive=on&images=on&springname=*";
+			sfQuery = "?nosensitive=on&images=on&metadata=1&springname=*";
 		break;
 		case (TYPE_SEARCH):
-			query = "?type=" + TYPE_SEARCH+"&filter="+filter+"&category="+category+"&tags="+tags;	
-			sfQuery = "?nosensitive=on&images=on&springname=*"+filter+"*&category=*"+category+"*&tags=*"+tags+"*&limit="+SEARCH_LIMIT;
+			query = "?type=" + TYPE_SEARCH+"&filter="+filter+"&category="+category+filterformQStr;	
+			sfQuery = "?nosensitive=on&images=on&metadata=1&springname=*"+filter+"*&category=*"+category+"*&keywords="+keywords+"&limit="+MAX_SEARCH_ITEMS+filterformQStr;
 		break;		
 		case (TYPE_DETAILS):
 			query = "?type=" + TYPE_DETAILS + "&filter=" + filter;
-			sfQuery = "?nosensitive=on&images=on&md5=" + filter;
+			sfQuery = "?nosensitive=on&metadata=1&images=on&md5=" + filter;
 		break;
 		default:
 		
 		break;
 	}
-	sendRequest(sfQuery,query);	
 	
-	if (type == TYPE_DETAILS) {
-		$('#filter').val('');	
-	} else {
-		$('#filter').val(filter);
-	}
+	sendRequest(sfQuery,query);
 }

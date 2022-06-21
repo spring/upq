@@ -105,20 +105,9 @@ hr {
     padding: 0;
 }
 
-.menu{
-	margin-left:auto;
-	margin-right:auto;
-	height: 46px;
-	border: 1px solid #888888;
-	outline: 5px solid black;
-	background-color:black;
-	border-spacing: 1px;
-	border-collapse: separate;
-}
-
 .menu_icon {
 	display: inline-block; 
-	border-right: 1px solid #555555; 
+	border-right: 1px solid #404040; 
 }
 
 .menu_button{
@@ -165,7 +154,27 @@ hr {
 
 
 
-
+#filterFormDiv {
+	display: block;
+	border: 1px solid gray;
+	position: absolute;
+	left:0px;
+	top: 0px;
+	z-index: 10;
+	display:none;
+	background-color:black;
+}
+.filterFormTable {
+	font-size: 80%;
+	background-color:black;
+	border-collapse: collapse;
+}
+.filterFormTable td,th {
+	border: 1px solid black;
+	background-color: #303030;
+	border-spacing: 1px;
+	padding: 5px;
+}
 
 #hovermenu {
 	display: block;
@@ -241,9 +250,12 @@ hr {
 }
 
 .quick_find_map_category {
-	width: 5vw;
-	height: 5vw;
+	background: linear-gradient(90deg, rgba(0,255,0,0.2) 0%, rgba(0,255,0,0) 90%);
+	height: 0.5vw;
+	font-weight:bold;
+	padding:2px;
 }
+
 
 .label {
 	font-weight:bold;
