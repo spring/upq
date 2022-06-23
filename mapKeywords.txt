@@ -1,0 +1,2075 @@
+1 Pass Greenland;medium
+1 Pass Greenland Final;medium
+1 Pass Greenland Inverted;medium
+1 Pass Greenland Redux;medium
+1 Pass Greenland Redux Superspeed;medium
+1 Pass Greenland Remake Final;medium
+1944 - Westerplatte;large
+1944_Antwerp_Alpha2;large
+1944_BloodBay;ffa;small
+1944_BocageSkirmish;small
+1944_BocageSmall;small
+1944_Caucasus_Skirmish;small
+1944_Cooper_Hill;small
+1944_FloodBank;medium
+1944_Hill;ffa;large
+1944_Keep_Off_The_Grass;small
+1944_Kiev;medium
+1944_Liege;large
+1944_Moro_River;ffa;large
+1944_Plateau;large
+1944_Prokhorovka;medium
+1944_Prokhorovka_Tactics;medium
+1944_Red_Planet;small
+1944_Red_Planet_Tactics;small
+1944_River_Valley;large
+1944_Road_To_Rome;medium
+1944_Sierra_Tactics;medium
+1944_Terra_Firma;medium
+1944_Titan;medium
+1944_Village_Crossing;small
+1longpass tiberiumland;large
+1v1_test;medium
+2B4-Core-Proto-Planet;large
+2Lakes;small
+2_Continents_Remake;large
+2_Mountains_Battlefield;medium
+2_Mountains_Battlefield_v2_(polar_edition);medium
+2_Valleys;medium
+2_Valleys_V.3-By_Wired;small
+3 Pass Greenland;medium
+3 Way Red Sea;medium
+3_Bridges;medium
+4 Way Battle;large
+4B_facility;medium
+4Skulls;small
+4way noname;large
+4_bases;small
+5;medium
+aaa;medium
+Aavikko;large
+Abductors;small
+Aberdeen;medium;small
+Aberdeen3;medium
+Aberdeen6;medium;small
+Aberdeen6v6_Fix;large
+Absolute_Zero;medium
+Absolution;medium
+acidbridge;large
+AcidicQuarry;small
+acidquadratic;large
+acidredux;medium
+aconpeak;small
+Adamantine Mountain;small
+Adamantine_Mountian;small
+Adansonia;medium
+Aetherian Void;large
+AFBAKERMANsLAIR;small
+africa;small
+Aftermath;large
+aftershock;large
+AI: Proving Grounds;small
+airport;small
+Akilon Wastelands;medium
+Akilon Wastelands ZK;medium
+Akilon Wastes;medium
+Al Anih - Ila Tion;medium
+Alaska;medium
+Albion;ffa;large
+AlienDesert;small
+All That Glitters;medium
+Alpha-Site;medium
+AlphaSiegeDry;medium
+Alpine way;medium
+Altair;ffa;medium
+AltairHeckCrossing;ffa;small
+AltairHeckCrossing 16x16;ffa;medium
+Altair_Crossing;small
+Altair_Pass;small
+Altored Divide Bar Remake;medium
+Altored Divide Flooded beta;medium
+Altored Divide Remake;medium
+Altored Divide Remake V1 fix;medium
+Altored Divide Remake V1 fix2;medium
+Altored_Arctic;medium
+Altored_Divide;medium
+Altored_Earth;ffa;large
+Amalthea;medium
+Amarante;ffa;medium
+AmazonDelta;medium
+AncientArena;large
+Angel Crossing;ffa;medium
+Angel Pass;medium
+Anglo-saxon Starfish Redux;large
+angryDUCK;small
+angryDUCKb2;small
+Anteer Strait;medium
+Anteer Strait RC;medium
+Anteer-Strait-2-rc;medium
+anyville;large
+Aortic_Delta;small
+aPathBetween;small
+apb;small
+Apophis;medium
+Apophis v2;medium
+Applesauce;small
+AppleVille-Two;large
+AquariusCrossing;small
+Aquatic Divide Revised;small
+Aquatic_Divide_TNM05;small
+Aqua_Castles;medium
+Arachnophobia;small
+Archers Battlefield;medium
+Archers_Valley;small
+Archipelago;medium
+Archsimkats_Valley;medium
+Arctic Inferno;ffa;small
+ArcticPlains;medium
+ArcticZone;large
+Arctic_Pass;small
+Area 17;large
+arena;medium;small
+Ares;small
+Arizona;medium
+Arkadash Desert;small
+Armoduland;medium
+ARock;small
+AS-BAF2;small
+Ashap_Plateau;small
+Ashap_Plateau_III;small
+Ashpen;small
+Asscension10;medium
+Asteriod-Dilo22;large
+asteroid;large
+Asteroid Defense;large
+Asteroid-P23845;medium
+Asteroid-P23845-Redux;medium
+AsteroidBelt;medium
+asteroid_def;large
+Asteroid_Defense;large
+Asteroid_Mines;small
+Astral Valley;small
+AstroTurf;large
+AstroTurf v2;large
+Atlantic;large
+Atlantis_V.85;medium
+Atuminoa;large
+Aum;medium
+Aurelian;ffa;medium
+Aurelian vBeta1;medium
+Aurelian vBeta2;medium
+Aurelian vBeta3;ffa;medium
+Aurelian vBeta4;ffa;medium
+Aurelian vBeta5;ffa;medium
+Ausnahmezustand;medium
+australia7castles;small
+AutumnWood;medium
+Avalanche;small
+Avalancher;small
+Avenge The Fallen;medium
+AVGSuperSpeedMetal_Xtrem;metal;small
+AWallDividesIt;medium
+Azure Rampart;medium
+Azure Rampart 1.1 acidic;medium
+AzureFields;medium
+A_Football_Field.;small
+A_Valley_Beta;small
+BA-Waterways;large
+Babelon;small
+Badlands;small
+BallerBurg(en);large
+Balls map;medium
+Banana Republic;ffa;small
+BananaDunes;small
+BananaValley;medium
+banana_split;small
+Banana_Split_Fusion;small
+Bandit_Plains;medium
+Barbary Coves;medium
+BarR;ffa;small
+BarracudaBay;small
+Barreer;small
+Barren;small
+Bastion;medium
+Battle for Planet XIV;medium
+Battle for PlanetXVII;small
+Battle Range;small
+BattleCity;medium
+BattleForTheEmpire;small
+Battletude;large
+Battle_for_Eidola_Prime;large
+Battle_for_Moon-XO;small
+Battle_Grounds;small
+Battle_Holms;ffa;large
+Battle_Lines;medium
+battle_platform;small
+Bay_Battle;medium
+BA_BlueBend_ChallengeMap;medium
+Beach2;small
+Beach_Invasion_beta12;small
+Bear_Canyon;medium
+BeastBattlefield;small
+BellicoseIslands;small
+BellicoseIslands_ZK;small
+Bethezda;medium
+Big Road;small
+bigmap;medium
+Bilateral;large
+Black Mescalin;small
+BlackLake_Swamp;medium
+BlackLake_Swamp_v;small
+BlackStar;medium
+Blank;small
+blauezwiebel;medium
+Blend Warland;small
+Blindside;large
+BlockFort;small
+BlockWars;large;metal
+BlockWars-FFA;ffa;large;metal
+BlockWars-V1.1;large
+BlockWarsFFA;ffa;large;metal
+Blue Comet;medium
+Blue fields;large
+Blue Lagoon;medium;small
+Blue Lagoon v4 (Large);ffa;medium
+Blue Planet;medium
+BlueBend;medium
+bluer_fields_no_wind;large
+bluetardfields;large
+blue_fields;large
+Blue_Lagoon;small
+Bora-Bora;large
+Boulder_Beach;ffa;medium
+Brazillian_Battlefield;small
+Brazillian_Battlefield_Remake;small
+Brickland;small
+Bridge;small
+Bridge Fix;small
+Bridge map;large
+Bridging_the_Divide;medium
+brun;small
+Bryce_Arena;small
+Bryce_Arena_fixed;ffa;medium
+Bryce_Canyon;small
+Bryce_Canyon_fixed;ffa;medium
+Bryce_Valley;small
+Bryce_Valley_fixed;medium
+bsmap;large
+buisb2;small
+BumpyBrawl;small
+Bunny;small
+Busan;medium
+Bypass;medium
+Caduceus vBeta1;small
+Caduceus vBeta2;small
+Caeserea;small
+Cage Fight 1.0-KotH;medium
+Cage Fight 1.1-KotH;medium
+Cage Fight 1.2-KotH;medium
+Calamity;medium
+Calayo;small
+Calayo2;small
+Caldera;small
+Callisto;medium
+CanonCanal;large
+Cany Waters Beta;small
+Canyon;large
+canyonduo;medium
+Canyon_Crossing;medium
+Canyon_Redux;medium
+Canyon_Wasteland;medium
+Cape_Violet;medium
+Castel_gods;ffa;medium
+Castel_godsV21_fix;ffa;medium
+Castle Well;small
+Castles;medium
+Castles16x16flat;medium
+cathralda;medium
+Cattle and Loveplay;medium
+Cattle and Loveplay NO WORMS;medium
+cattle_and_loveplay;ffa;medium
+Catwalk;small
+CausticPasses;medium
+CausticRealm;medium
+Caustic_Park;small
+CDay;ffa;small
+Centerrock;medium
+Centerrock Remake;medium
+Centerrock Remake Dry;land;medium
+CenterRock River;medium
+Centerrock_ZK;medium
+Central Hub;small
+Centre-command;small
+Centrecommand_beta;small
+Cervino;medium
+Charlie in the Hills;medium
+Chas-One;small
+Chasm;small
+Checker Ponds Remake;small
+Chernobyl;small
+Chess;medium
+Chess_b1;small
+Chess_b2;small
+chezmorgen;small
+Chicken attack;small
+Chicken Nuggets;small
+Chicken Scratch;small
+Chicken Volcano Beta;large
+ChickenFABS;small
+ChickenNest;large
+Chicken_Farm;small
+Chicken_Nuggets;small
+Chicken_Roast;small
+Chinollar;small
+Chocolate Hills;ffa;small
+Chocolate_Rain;large
+Christmas Comet;medium
+Christmas Horse;small
+circled;small
+Cirme5;small
+CityConflict;small
+CityControl;small
+Clashtle;small
+ClayHills;small
+Claymore;ffa;large
+CLEARaDITCH;large
+cliffdown;medium
+CliffHanger;large
+CloseCombat;small
+CloseDestruction;small
+Cloud9;medium
+Clover;ffa;large
+Clover_Isle_Basic;small
+Clover_Isle_Basic fix;small
+coagulation;small
+Coagulation Marsh;medium;small
+Coast To Coast Remake;small
+Coastal;small
+CoastalDry;small
+Coastlines-beta;large
+Coastlines_Dry;medium
+Coastline_Dry;medium
+Coasts;small
+Codar;small
+Cold Snap;small
+coldsnap;small
+Cold_Koom;large
+Cold_Koom Water;large
+cold_snap;small
+Colorado;medium
+Colorado_V2;ffa;medium
+Colors;small
+Columbia Basin;medium
+Comet Catcher Prime;medium
+Comet Catcher Redux;medium
+Comet Catcher Reloaded;ffa;medium
+Comet Catcher Remake;medium
+CometCatcher;small
+CometCatcherFlooded;medium
+Comet_crack;medium
+Complex_Contact;small
+ConfusionLabyrinth;large
+ConquerorsIsle;large
+ConquerorsIsle-dry;large
+Conquest_of_Paradise;medium
+ContestedCanyon;small
+Continental;ffa;large
+contiworldbig;large
+Conversation;small
+CookieMonster;small
+cooler_fields;large
+Cooper Hill;small
+Cooper_Hill_TNM02;small
+Cooper_Range;medium
+Core Platform;medium
+Core Platform AVWMS;medium
+Core-Creek;medium
+Core-P4354;medium
+Core-Prime-Mini;small
+CoreCourtyard;medium
+CorePrimeCorrida;small
+CorePrimeCorridor;small
+CorePrimeCorridor-V1.3;small
+CorePrime_re;large
+CorePrime_revision1;large
+corepyramid;large
+Core_Faf;small
+Core_Prime_Bridges;medium;metal
+Core_Prime_Industrial_Area;medium;metal
+core_ssm_labyrinth;large
+Corium-Mars;medium
+Corpse_Queen_Fields;large
+Corpse_Queen_Fields_v1;large
+CorrosivePits;large
+Corrupted Core;small
+Corspe Turbo;large
+Cosmos;large
+CostalDry;small
+County_Crossing;small
+Courtyard;large
+Cow;small
+Coyote_Creek;small
+CPI-Impact;medium
+CPU;ffa;medium
+Craggy Hills;large
+CrampMetal;medium;metal
+crater;large;medium
+Crater Islands Remake;small
+CrazyMase;small
+Crescent_Bay;ffa;large
+Crestfallen-Metropolis;medium
+Crimson Comet;small
+Crimson Crater;small
+Crimson_Paradise;medium
+Crimson_Paradise_lr;medium
+Crossfire;small
+Crossing;medium
+Crossing_4_final;small
+CrossWar;large
+Crubick Plains;medium
+Crucible;small
+Crucifix;large
+Crust;medium
+CrustyCrust;small
+Crystal-Bridges;medium
+Crystal-Harbor;medium
+Crystal-World;small
+CT_Archway;medium
+CT_Conflict_Luna;medium
+CT_Eitbyeit_Gorge;small
+CT_Eureka;medium
+CT_Fishbone_Ridge;medium
+CT_PathWinder;large
+CT_Threeway;medium
+CT_Tumblebrush_Basin;medium
+Cull;small
+Curved_Focus;small
+CybranLogo;large
+DamageRounded;large
+Dark Water Wasteland;ffa;small
+Darkroom;small
+DarkSide Remake;small
+Daruga;small
+Data Cache L1;small
+Daybreak Canyon;small
+DDAY;small
+DDAY_CHX;small
+Dead Reef;medium
+Dead Reef Dry;medium
+DeadLands;small
+DeadLandsUnbalancedCommandersBeta7;small
+Deadlock;ffa;large
+Dead_Vally;small
+Death Valley;medium
+Deaths_Half_Mile;medium
+DeathValley;medium
+Deeploria Fields;large
+DeepSpaceConflict;large
+DeepWater;small
+Defender''s Advantage;small
+Delta Seige Dry Reloaded vBETA4;medium
+Delta Siege Dry Reloaded vBETA4;medium
+DeltaSiege;medium
+DeltaSiege Morph;medium
+DeltaSiege Special;medium
+DeltaSiege Special Water;medium
+DeltaSiegecry;medium
+DeltaSiegeDGun;medium
+DeltaSiegeDry;large;medium
+DeltaSiegeDry Deluxe;medium
+DeltaSiegeDry G;medium
+DeltaSiegeDry Hacked;medium
+DeltaSiegeDry Red Alert Edition;medium
+DeltaSiegeDry Remix Fix;medium
+DeltaSiegeDry Revolution;medium
+DeltaSiegeDry S;medium
+DeltaSiegeDry Special;medium
+DeltaSiegeDry Special Final;medium
+DeltaSiegeDry Special Remix;medium
+DeltaSiegeDry X;medium
+DeltaSiegeDry Xmas;medium
+DeltaSiegeDry16th;medium
+DeltaSiegeDry16th DaBomb;medium
+DeltaSiegeDryExtended;medium
+DeltaSiegeDryFATALITY;medium
+DeltaSiegeDryRandomized;medium
+DeltaSiegeDryRandomizedNOBA;medium
+DeltaSiegeDryRevX;large
+DeltaSiegeDrySuperSpeed;medium
+DeltaSiegeDry_DamageDeal;medium
+DeltaSiegeDry_Fixed;medium
+DeltaSiegeDry_NoCombomb;medium
+DeltaSiegeDry_Reloaded_vBETA3;medium
+DeltaSiegeDuoX;large
+DeltaSiegeGRID;medium
+DeltaSiegePrime;ffa;medium
+DeltaSiegePrime Ultimate;medium
+DeltaSiegePrime UnbalancedCommanders beta;medium
+DeltaSiegePrime UnbalancedCommanders beta 19 UglyCore;medium
+DeltaSiegePrime UnbalancedCommanders beta5;medium
+DeltaSiegeRe;large
+DeltaSiegeRevX;large
+DeltaSiegeTest;medium
+DeltaSiegeX;medium
+DeltaSiegeXUnbalancedCommandersBeta12;medium
+DeltaSiegeXUnbalancedCommandersBeta13;medium
+DeltaSiege_Island_8_Way;ffa;large
+Delta_Highgrounds_B1;large
+Desert;medium
+Desert Dev;medium
+Desert Needle Small;medium
+DesertCliffs;small
+desertdunes;medium
+deserteagle;large
+Deserted Third;small
+DesertedCrossing;small
+Deserted_Gully;medium
+Desertforts;medium
+Desertmountain;small
+Desertmountain17_Fix;small
+DesertNeedleSmall;medium
+DesertPlateaus;medium
+DesertSiege;medium
+DesertTriad;small
+DesertTriadFlooded	;small
+DesertTriadFlooded;small
+DesertVally;medium
+Desert_Delta_Siege;ffa;large
+Desert_Plateaus;small
+Desert_storm;medium
+Desolate;medium
+DesolateBattlefield;medium
+Desolation;small
+Dessicated Sinkhole b1;large
+Detroit;large
+DianaBeach;ffa;medium
+DigitalDivide_PT2;small
+Digital_Siege;small
+DigSite;medium
+Direct Memory Access 0.5c (beta);medium
+Direct Memory Access 0.5e (beta);medium
+DireStrights;large
+DistrictWar;large
+Ditched;small
+Divided_Shores;medium
+Divided_Shores-Dry;medium
+Dividing_Wall;medium
+DockMetal;large
+Dockside;medium
+Doo''s SeaBalancing testmap SSB2;medium
+Doomed;large
+Dota;small
+DoubleLLTAComplex;large
+DownCount;small
+Downpour;ffa;medium
+DownRiver;medium
+DownRiver_Beta;medium
+Downs_of_Destruction;medium
+Downs_of_Destruction_Fix;medium
+DOXTA;small
+Drab;small
+DragonEye;small
+DragonEyeArctic;small
+DragonEyeTemperate;small
+Dragons HQ;medium
+Drake_Mountains;medium
+DryDeltaSiege Special;medium
+DryLakeBed;ffa;medium
+DryRiver;small
+Dry_lands;small
+DSD 8 Way;ffa;large
+DSD Capture The Flag;medium
+DSD4l1f3;medium
+DSD4lif3;medium
+DSD4life;medium
+DSD4lyfe;medium
+DSDR;medium
+DSD_Balanced;medium
+DSD_BA_T1_ONLY;medium
+Dual Core;small
+Dual Icy Run;small
+DualingKiwis;large
+duck;small
+duckfusions;small
+duckfusionsfix;small
+Duckquest;small
+Duel;small
+Dueling_Bases;small
+Dueling_Forts;small
+DuelRift;small
+Duggans-Metal-Map;medium;metal
+Duggans-Metal-Two;medium;metal
+duke nukem;ffa;metal;small
+duke_nukem;ffa;metal;small
+Dune;medium
+DunePatrolRC1;small
+DunePatrolRedux;small
+DunePatrol_wip;small
+Dune_Desert;small
+Dust_Bowl;large
+DWDeadDesert;medium
+Dworld;ffa;large
+Dworld Acidic;large
+DworldDuo;large
+Earatope;small
+Earth FFA;ffa;large
+Easter Bunny v1 Horse;medium
+Easter Bunny v2 Horse;medium
+Echo Canyon;small
+EE-DeltaGlade;medium
+EE-Deserted_Sinkhole;large
+EE-DustBowl;medium
+EE-RiverGlade;medium
+EE-Waterways;large
+EgoGreenFields;medium
+Egypt;medium
+Eisenwald;medium
+Eisland;large
+Elements3;medium
+Emain Macha;medium
+EmainMacha Remake;medium
+Emerald Escarpment;medium
+Emerald Island;small
+Emereld;large
+EmmanuelFarm;small
+Enceladus;medium
+Enclaves;medium
+Energy Spire Plain;small
+EnhancedSiegedry;medium
+Entrenched_Plains;medium
+Epic;large
+Epic Water dragon later;large
+Epic-EE-CrossingGlade;small
+Epic40x40;large
+EpicLawn;large
+EpicShore;large
+EpicShore2;large
+EpicShoreLongcat;medium
+Epic_Water_v1_x80;large
+EpsilonSiegeDry_alpha6;medium
+erml;medium
+Errotep_Crossing;large
+escalante_beta3;medium
+Escarpment;medium
+EternityOcean;large
+Etorrep_Glacier;medium
+EU1;large
+Eureka;medium
+Euro-Risk;large
+EuroGreen;small
+EuroGreen-Redux;small
+Europe_a1;large
+Europe_a2;large
+Evad River Confluence;small
+Evad_River_Confluence;small
+Evergreen_Haven;small
+Evergreen_Haven-Redux;medium
+Evil Eyes;medium
+Evolution in War;small
+Evolutionary;small
+EvoRTS - Altored Divide;medium;small
+EvoRTS - Craggy Creek;medium;small
+EvoRTS - Delta Siege;medium
+EvoRTS - Division;small
+EvoRTS - Eye of Horus;medium
+EvoRTS - Glacier Pass;medium
+EvoRTS - Higher Grounds;medium
+EvoRTS - New Iammas;ffa;medium;small
+EvoRTS - Pockmark Valley;medium;small
+EvoRTS - Proving Grounds;medium;small
+EvoRTS - RiverGlade;medium;small
+EvoRTS - Winter Basin;medium
+EvoRTS-Altored_Divide;small
+EvoRTS-A_House_Divided;medium
+EvoRTS-CaisRevenge;medium
+EvoRTS-Deserted_Gully;medium
+EvoRTS-Division;small
+EvoRTS-New_Iammas;ffa;medium;small
+EvoRTS-Pockmark_Valley;small
+EvoRTS-Riverdale;medium
+EvoRTS-RiverGlade;small
+EvoRTS-SwampValley;medium
+EvoRTS-Tale_of_Two_Hills;medium
+EvoRTS-TwinPeaks;medium
+Expandation;medium
+ExpandedTropics;large
+Expanded_Confluence;ffa;large
+Expanded_Confluence_dry;large
+Eye Of Horus;medium
+Eye_Of_Horus;medium
+Fairyland;small
+Fallendell;small
+Fastest Map;medium
+Fastest Map - Big;large
+FastestMapForever;medium
+FataMorgana;ffa;medium
+Faya;large
+Fetid Marsh;medium
+FF-AsteroidBattle;large
+FF-SpeedPlatforms;large
+FF-Surrounded;large
+FHBeta;small
+Fields_Of_Isis;small
+Fields_of_silver;large
+Field_of_Isis;medium
+Fifteen Platforms;small
+FinalTestMap;small
+Finnish Flag;small
+FinnsRevengeR;medium
+Finns_Revenge;small
+FireAtWill;medium
+Firebreak;small
+Firebreak vBeta1;small
+Firebreak vBeta2;small
+Firebreak vBeta3;small
+first;small
+Fishbone_Ridge;medium
+Fissure_wip;small
+FizzyLakes;medium
+Flannel-World;large
+Flat-Map;medium
+Flathill Islands;small
+Flatlands;medium
+Flats and Forests Remake;large
+FlattyPatty;small
+FlattyPatty1.1;small
+Floating_CastleBETA;medium
+Flooded Valley;small
+FloodedDesert;medium
+Flooded_Valley;small
+Floppy Dgun;small
+Flower B1;large
+FolsomDam;ffa;medium;small
+FolsomDamCore;small
+FolsomDamDeluxe;medium
+FolsomDamFinal;medium
+FolsomDamFlooded;medium
+FolsomDamR;medium
+Foothills;small
+Foothill_Basin;small
+Foothill_Basin_Redux;medium
+Forge;medium
+ForgottenTemple;small
+Forgotten_Atoll;medium
+Forgotten_Crossing;small
+FortifiedIsland BETA;large
+FortifiedIslandSmall BETA;medium
+Fortress;medium
+Fortress of Hadez;large
+Fort_Delta;medium
+four islands;large
+Four_Lakes;medium
+Fracture beta;medium
+Fractured_Continents;medium
+Fractured_Eyes;small
+Fractured_Faces;medium
+Free-Zone;medium
+French Flag;small
+French Flag beta;small
+French Flag test;small
+French Flag test beta;small
+French Flag v1.34 Fixed;small
+French Flag v1.37 Fixed;small
+French Flag v1.4 Fixed;small
+FroobMetal;medium;metal
+FrostBite;small
+Frostburn;small
+FrostyCove;small
+FrozenFortress;medium
+FrozenFortress_v1;medium
+FrozenFourway;medium
+FrozenPlanet;small
+Frozen_Ford;small
+Frozen_Gauntlet_TNM03;small
+FTIG_Battlefield;small
+FujiMount;medium
+Full_Moon;small
+Gaatskaan;medium
+Ganymede;medium
+GargantuanEpicShore;large
+GargantuanFieldsOfIsis;large
+GargantuanIcyRun;large
+Garlic;medium;small
+Gasfornuis;medium
+Gecko Isle;medium
+Gehenna Rising;ffa;medium
+GenBloods-Crossing;small
+GengDoWoingDin;large
+Gentle Romp;small
+Geo Green Fields;ffa;large
+GeoGreenFields X;medium
+GeoGreenFields X v4 Countdown;medium
+GeoGreenFields X v4 Countdown Fix;medium
+GeoGreenFieldsTechA;medium
+GeoGreenFieldsTechA Final;medium
+GeoGreenFieldsTechA Fix;medium
+GeoGreenFieldsTechA X;medium
+GeoGreenField_fix;ffa;large
+GeoGreenField_fix_final;ffa;large
+GeoGreenField_fix_v4-notidals;large
+GeoGreenField_fix_v5-notidals;large
+GeoGreenWideFields X;large
+Georgian_war;medium
+geo_green;large
+geo_green_widepass;large
+ger_vs_nk;medium
+Geyser_Plains_TNM04;small
+Geyser_Plains_ZK;small
+Ghenna Rising;ffa;medium
+GhostPeak;medium
+Giant Hills and Valleys b2;large
+Glacier;small
+Glacier Pass;small
+Glacier_Pass;medium
+Glacier_Plateau;large
+Glacies;small
+Glass_Dreams;large
+Gods Of War 2;medium
+Gods Of War 2 Remake;medium
+Goldrush;medium
+Gornhole;medium
+grad;medium
+GrainyCrossing;small
+GrandCanyon_Final;medium
+GrandRiver;large;small
+GrassyPlain;small
+Grassy_Paradox;small
+GravitySiegeDry;medium
+Graystone;medium
+Great Divide;small
+Great_Pyramid_Desert;small
+Green Comet;medium
+Green Comet Basic;medium
+Green Debug Build units;large
+Green Farms Concept;large
+Green fields mk2;large
+Green Flat x34;large
+Green River Confluence;ffa;medium
+Green-Canyon;small
+Greener Fields Big;large
+Greener_Fields;medium
+Greener_Fields no wind;medium
+Greenest Fields;ffa;medium
+GreenFields_Island;large
+GreenHaven;medium
+Greenhaven Remake;medium
+GreenHaven-Redux;medium
+Greenhaven_Remake;large
+Greenheaven;large
+greenriver;medium
+Greensnap;small
+GreenStress;medium
+GreenValley;medium
+Greenwold_Ghaut;small
+Green_Cool_Fields;large
+Green_Fields;medium
+Green_Fields_fix;medium
+Green_Fields_For_CA;medium
+Green_Geo_Fields;large
+Green_Pharms_R3.5a;large
+green_river_confluence;medium
+GreyHillValley;medium
+Grts_Cookedwell;large
+Grts_DesertValley;large
+Grts_Gantelope;medium
+Grts_Gunmetal_Harbor;large
+Grts_Messa;large
+Grts_Northernmountains;large
+Grts_RiverMouth;large
+Grts_RiverValley;large
+GRTS_River_Valley;large
+Grts_Rocky_Glacier;medium
+Gunmetal_Harbor;large
+Gyser_Plains_TNM04;small
+Halean Ruins;ffa;small
+HallstattLake;medium
+Halowarz;large
+HamburgerHill;large
+Harbinger;ffa;large
+hardnips;large
+Hard_Charge;small
+haunteddowns;medium
+HazardDesert;ffa;medium
+hazarddesert002;medium
+Heartbreaker;medium
+Heat;large
+Heavy_Metal;large;metal
+Hell;medium
+Hellite;small
+Hells Pass;medium
+Hells_Teeth;small
+Hex Farm;large;small
+Hexian Arena;large
+Hexiwars;large
+Hide and Seek;ffa;medium
+Hide_and_Seek;medium
+High Forts;medium
+Higher_Grounds;ffa;medium
+Highfield;medium
+HighGround;medium
+HighGroundsDelta;large
+HighJump;medium
+HighJumpNoLava;medium
+highland;large
+HighNoon-Redux;medium
+HighTides;ffa;small
+Hightops3;small
+Highway 95;medium
+Highway 95 East;medium
+Highway 95 West;medium
+Highway To Skull Beta;small
+High_And_Low;large
+High_and_Low_Redux;large
+Hikinen_ja_Oksettava_Kaurapuuro;large
+Hikinen_ja_Oksettava_Kaurapuuro-5v5;medium
+Hills_And_Passes;medium
+Hills_and_Valleys;medium
+HnH_beta;small
+Hohenheim;large
+HoldTheFire;ffa;small
+HolyWater;small
+Hooked;small
+Horrors_of_War;medium
+HorstAndGraben;large
+Hostil Planet;large
+HostilPlanet;small
+hotlips001;large
+Hotlips_Redux;large
+hotstepper;small
+Hotstepper 5;ffa;small
+hotstepper_LM;small
+Hourglass;medium
+Hundred Isles Remake;small
+Hydraiel;medium
+Hydra_Dust_swamps;ffa;small
+Hydra_FFA;ffa;small
+Hydra_Landofthelost;small
+Hydra_Shard_valley;ffa;medium
+Hydra_Talus;medium
+Iammas Prime;ffa;medium
+Ibex;medium
+Ice Scream;medium
+IceArenA;ffa;medium
+IceBergs;large
+Iced Coffee;small
+Iceland;medium
+Ice_Bergs;ffa;large
+Ice_Mountain;ffa;medium
+Icy Crater;small
+Icy LongRun v2 beta;small
+Icy LongRun v2 beta2;small
+Icy LongRun v2 beta3;small
+Icy Run;small
+IcySea;ffa;large
+IcyVeryLong-10-Run;large
+IcyVeryLong-2-Run;medium
+IcyVeryLong-5-Run;large
+Icy_Shell;small
+Icy_Shell_alpha;small
+Icy_Shell_Beta;small
+Impact;medium;small
+Impact Beta;large
+Imperfect;small
+Imperfection;small
+Incandescence;medium
+Incandescence Remake;medium
+Inculta;medium
+Indar;medium
+indonesia;small
+indonesia003;small
+Industrial Revolution;medium
+Industrial_Revolution;medium
+Insular Encounter;medium
+Intercontinental32x32;large
+Intersection;ffa;small
+Into Battle;small
+Into Battle Redux;small
+Invernus;medium
+Inverse_conditions;ffa;medium
+IronHill;ffa;small
+Iron_Craters;ffa;medium
+Iron_Isle;medium
+IsisDelta;small
+Island in the Sun;medium
+IslandAlpha;small
+IslandConquest;medium
+IslandDivide;medium
+IslandHopping;medium
+Islandmap;large
+Islandos map;large
+IslandParadise;medium
+Islands_In_War;medium
+IslandTest;medium
+Isle of Grief;medium
+Isthmus Plain;small
+Italy_Fixed;large
+Ithaka;medium
+Its Wide;medium
+Ivands_Pocket_World;small
+Izki Channel;small
+Izki Channel vBeta2;small
+Izki Channel vBeta3;small
+JapanMap;small
+John''s-pond_rc;small
+johns_pass;small
+Jonathan''s-pond_beta;small
+jungle_MoonQ20x_remake;medium
+Jurassic Sands;small
+Kappa_Basin;medium
+Kappa_Basin_Flooded;medium
+Kappa_Basin_Flooded_ZK;medium
+Kappa_Puddle;medium
+Kapsi Test;small
+karma;small
+Karst;small
+Katastrophe;medium
+Keksland;small
+KillahDeathMetal.1.1;small
+KingOfTheCastle;medium
+Kithrup;medium
+Kivekset_Halkova_Bassotaajuus;small
+Knockout;large
+KnockoutR;medium
+KochCanyon;medium
+Kolmogoro;ffa;large
+Kolmogorov Remake;large
+Koom Gorge;medium
+Koom Gorge 3vs3 edition;small
+Koom Gorge 3vs3 edition1.1;small
+Koom Gorge 3vs3 edition1.2;small
+Koom Valley;large
+Koom Valley 3;large
+KoomValleyBar;large
+Koth;large
+KP-Chasm;small
+KP-Water-Spout;small
+Krakatoa;ffa;large
+Kremoweczka;medium
+Kriegsmarine;medium
+Kroglaunch;medium
+Krom;small
+Kurczak;small
+Kuvkkan;small
+La Isla Bonita;medium
+LaCrater;medium
+Lake Carne;small
+Lake Carne dry;small
+LakeDay;large;small
+LakeLargo;small
+Lakeshore;small
+land and sea;large
+Land_Bridge_BETA2;medium
+Larg;small
+LargeChannel;large
+Last Standoff;medium
+Lava And Two Hills;small
+Lava Highground;small
+Lava Rivers;small
+Lava_Reef;small
+LeCuir;small
+LEGO;large
+Lego_of_me;small
+Levels;medium
+Leyline;medium
+LittleValley;medium
+Little_Brook;medium
+Living Lands;small
+LLTAComplex;medium
+Loki;small
+Lonely Oasis;medium
+Long Mesa;medium
+LongCat;large
+LongCat32;medium
+LongRavine;small
+Long_Division;large
+Loony Bin;small
+LoreaGurpila;ffa;large
+Lost;medium;small
+Lost-and-Found;ffa;large
+Lowland Crossing Revised;small
+Lowland_Crossing_TNM01;small
+LowTide;medium
+LunarIslands;small
+Lunatic Bowl;medium
+luschinfloggen;small
+Lush-Greens-Four;ffa;small
+Lush-Greens-Two;small
+Lushe-Centers;small
+LushImpact;small
+LushRiver;medium
+LV412;medium
+m4p4;ffa;medium
+magicforest;small
+magnetic_Lands;ffa;large
+magnetic_Lands_smaller;ffa;medium
+Magnus;small
+Major_Madness3.0;small
+Makmap;small
+Malibu Beach;medium
+Malmi;medium
+Mamap;small
+mandelbrot2x2;small
+MandoCastles;large;medium
+MandoCastlesDuo;large
+MandoMiniCastles;small
+MandoSiegeDry;medium
+Map-Concepts;small
+map1;small
+Mapdev Tutorial Stage 1;small
+Mapdev Tutorial Stage 2;small
+mapdev-stage1;small
+mapname;small
+Marble-Isles;large
+Marble_Madness_Map;small
+Marijuana;small
+Marijuana Fusion;small
+Mariposa Island;medium
+Marred;small
+Mars;small
+Marsbar;small
+Marshlands_v;small
+marssea;small
+MartianDesert;small
+Martian_Battleground;medium
+maze;small
+Mearth;large
+Melange;ffa;large
+Melt;ffa;medium
+Meltwater;medium
+MeltyHeck;small
+MentalDuck;small
+Mercurial;small
+Mercury;medium
+Merirosvon_Karvainen_Perse;medium
+Mescaline;medium
+Metal heck green;large;metal
+Metal-Alley-Redux;medium;metal
+Metal-Corners;large;metal
+metal-islands;medium;metal
+Metal-Isles;large;metal
+Metal-Isles-Redux;large;metal
+Metal-Pelt-Smoth;metal;small
+MetalDream;medium;metal
+MetalHeck;ffa;metal;small
+MetalHeck-XL;ffa;metal;small
+MetalHeckGreen;ffa;metal;small
+MetalKing;metal;small
+metalkings;large;metal
+MetalOcean;metal;small
+MetalPit;metal;small
+MetalWall;metal;small
+MetalWallLarge;large;metal
+Metal_Castles;metal;small
+metal_hell;medium;metal
+Metal_Holms;ffa;large
+Metal_Plate;ffa;large
+MicroMetalAlpha;metal;small
+Mini-DeltaSiegeDry;small
+MiniChess;small
+MINICOOPER_Metal;medium
+minidsd;small
+MiniFolsomDamDeluxe;small
+MiniFolsomDamDeluxeV4;small
+MiniMe;small
+Mininuggets;small
+MiniTabula-beta;small
+Mini_Chess;small
+Mini_DeltaSiegeDry;small
+Mini_SpeedMetal;metal;small
+Mini_SpeedMetal_Duo;metal;small
+Mini_SpeedMetal_Wide;metal;small
+Mini_SuperSpeedMetal;metal;small
+Mini_SuperSpeedMetal_4_Way;ffa;metal;small
+Mini_SuperSpeedMetal_Duo;metal;small
+Mini_SuperSpeedMetal_Wide;metal;small
+Mini_SuperSpeedMetal_Wide_Fix;metal;small
+Mirage;medium
+Mithril Mountain;small
+MoGB_Castles_Meme;medium
+MoGB_Islands;large
+MoGB_Jovem_Nerd;medium
+Monolith NaAr RC1;small
+Monopoly;medium
+monte;large
+Moon Quartet Remake;large
+Moon Quartet Revision;medium
+MoonQ10;small
+MoonQ10x;small
+MoonQ20x;medium
+MoonQ20XR;medium
+MoonQ20XR2;medium
+MoonRoom;medium
+Moor;large
+MorbusXeno;medium
+MorsFort;small
+Mosaic;small
+Mosh_Pit;large
+Motkottava_Nakkivahvero;medium
+Mountain Lake;medium
+Mountain Pass;medium
+Mountain Passes;medium
+Mountain Passes Re;medium
+Mountain Siege;medium
+MountainGassLands;ffa;small
+Mountainrange;medium
+Mountain_Lake;medium
+Mountain_Range;medium
+MountDustmore;medium
+Mt. Fujimatchie;medium
+muck;small
+multi fields;large
+NanoArena;small
+NarrowValleyR1;medium
+Nation;ffa;large
+nations_alpha1;large
+nations_beta1;large
+Neo Geyser;small
+neptuneredux;medium
+neurope_a2;large
+neurope_a3;large
+neurope_a4;large
+neurope_a5;large
+neurope_a7;large
+Neurope_Remake;large
+New_Lammas;medium
+nightmare;medium
+Nightscape;small
+NightskyOpera;medium
+Nine_Metal_Islands;large;metal
+Ninja-K;small
+nld-big10;large
+Nomad_Beta;small
+NoMetal SpeedMetal;small
+noori;small
+Noruas-ReDux;medium
+Noruas-ReMake;medium
+NOTA Supreme Battlefield;large
+NOTA-Nitrogen_Ocean;large
+notAdotaMap;medium
+notAmap;large
+No_Mans_Land;ffa;small
+Nuclear Winter;medium
+Nuclear Winter Bar;medium
+NuclearFallout;medium
+Nuclear_Winter;medium
+oasis;small
+Oberon;small
+Oberon_fix;medium
+Obsidian;medium
+Obsidian_0.1_Beta;medium
+Obsidian_0.2_beta;small
+Obsidian_0.3_beta;medium
+Obsidian_0.5_beta;medium
+Obsidian_0.6_beta;medium
+OceanHills;small
+Ocean_Battlefield;small
+OkiRiver;large
+Okiriver_Remake;large
+Oktogon;ffa;large
+omega;small
+Omega Valley;medium
+Omniside;small
+Onyx Cauldron;medium
+OnyxCauldron1;medium
+OnyxCauldron1.5;medium
+OnyxCauldron1.6;medium
+OnyxCauldron1_NoRain;medium
+Ooooweeee;medium
+Oort_Cloud;large
+Opal-Islands;medium
+opcodehaven;small
+Opposing City States;medium
+OranUteros;small
+Otago;medium
+Otago Redux;medium
+Output;small
+OverCrudeWater16;medium
+OverCrudeWater32;large
+OverCrudeWater32_flat;large
+OverPass;small
+Over_Crude_Water;large
+pacman;small
+Painted Badlands;medium
+Painted Desert Remake;medium
+Palladium 0.5 (beta);small
+Paradise Lost;medium
+Paradise_Lost;medium
+Parched_Mesa;medium
+Paridise;medium
+Paridise-Dry;medium
+Paridise-Revamp;ffa;medium
+Passe-muraille;medium
+Pathway;medium
+Pathways;large
+PaxPrime;large
+PCB;small
+PeakyMcPeakaMuffin;small
+Pearl Springs;large
+pemsterland;medium
+Pemsterland-Beta;ffa;medium
+Pentos;ffa;large
+Peripheral Consciousness;medium
+Phobis-One;small
+Pillar_of_Doom;ffa;small
+Pinacle;large
+PincushionRemake;small
+Pinewood_Derby;small
+PirateDivide;medium
+Pit Chasm v;medium
+PizzaTime;medium
+Placid_Stream;medium
+Plains_and_passes;large
+Plateau;small
+plateau2;medium
+plateauscuffle;small
+Plateau_Divide;large
+PlateDomination;large
+Platform;small
+Plethora_of_Ponds;large
+Plutonian_Pass;small
+Plutonium_Fields;small
+Polish Actual Flag;small
+Polish Fixed Flag;small
+Polish Flag;small
+ponysrock;small
+PoolSide;medium
+Porculon;small
+Porky_Islands;medium
+Prime;medium
+Prime''s Ghetto;large
+Pripyat Stadium;medium
+Prismar Archipelago;medium
+Pro-Iron-Pools;medium
+Prokhorovka;medium
+Proving Grounds;small
+ProvingGrounds;small
+Pydah-Pass;small
+Quad Core;small
+QUADSTACKER;ffa;large
+Quagmire;small
+Quarry;small
+Queens_gambit;medium
+Quicksand;medium
+Quicksilver;small
+Quicksilver Remake;medium
+Quoth;medium;small
+Rage;ffa;large
+Raghnarok;ffa;large
+Rainbow Land;small
+RainShadowRidge;medium
+Rain_Shadow_Ridge;medium
+Raised_Divide;small
+Random Bassin;large
+Random Bassin 20x15;medium
+Random Crags;small
+RandomMap;small
+RandomMapGen12x12;small
+RandomMapGen12x12 1.6.11 ZK;small
+RandomMapGen12x12 1.6.12 ZK;small
+RandomMapGen12x12 1.6.2 ZK;small
+RandomMapGen12x12 1.6.3 ZK;small
+RandomMapGen12x12 1.6.4 ZK;small
+RandomMapGen12x12 1.6.5 ZK;small
+RandomMapGen12x12 1.6.6 ZK;small
+RandomMapGen12x12 1.6.7 ZK;small
+RandomMapGen12x12 1.6.8 ZK;small
+RandomMapGen12x12 1.6.9 ZK;small
+RandomMapGen16x16;medium
+RandomMapGen24x24;large
+RandomMapGen24x24 TEST VERSION;large
+RandomMapGen24x24 TestVersion1;large
+RandomMapGen8x8;small
+RandomMapGen8x8 Beta;small
+Rapids;small
+RatRace;medium
+RattleSnake;small
+Ravaged;small
+Ravaged_flooded;small
+Ravaged_Lava;small
+Ravaged_v2-mini;small
+Ravenholm;medium
+ra_crossfire;medium
+ra_viper_beat;small
+Real;medium
+Real Europe;ffa;large
+RealSoutheastAsia;ffa;large
+RealSoutheastAsiaV2;ffa;large
+Real_Mars;large
+Red Alert;small
+Red Comet;small
+Red Comet Remake;land;small
+Red Craters;small
+Red Planet Impact;small
+Red Planet Impact v2;small
+Red Planet Remake;small
+Red River North Remake;medium
+Red River Remake;large
+Red Rock Desert;ffa;medium
+Redhaven;medium
+RedPlague;small
+red_beta;medium
+Red_Green;small
+Red_Triangle;medium
+Red_Triangle_ReMake;medium
+Reef_Race;medium
+Relics;medium
+Requiem Outpost;medium
+ReRaghnarok;ffa;large
+res;medium
+Resting_Place;medium
+Richat;medium
+ridges_n''_passes;medium
+Rifted;medium
+Ring Atoll Remake;large
+Ring Atoll Remake AA-version;large
+Ring_Atoll_Remake;medium
+Risk;large
+River Dale;medium
+River Of Flame;medium
+River Valley;small
+riverbed;medium
+Riverdale Remake;medium
+riverMountain;small
+Riverrun;large
+rivervalley1.2;large
+rivervalley1.3;large
+River_Dale_Remake;medium
+Road to War;large
+Road_to_War_Remake;large
+Robot Plateau;large
+Robot Plateau med;large
+Rockies;small
+RockoNRoll;small
+Rogues River;ffa;medium
+Rogues River vBeta1;ffa;medium
+Rogues River vBeta2;ffa;medium
+Rogues River vBeta3;ffa;medium
+RollingHills;small
+RorShock;small
+Rosetta;medium
+RoughShores;ffa;medium
+RumblingForest;medium
+Rush_Hour-By_Wired;small
+Rust Valley;small
+Rusted_Divide;small
+Rusty Warehouse;small
+RustyDelta;medium
+RustyDelta_Final;medium
+rysia;large
+rysia_hrf;large
+S44_fields6x14;small
+Sacrifice;medium
+SailAway;medium
+SalmonStream;medium
+SaltrockColony;small
+SaltrockColonyR;ffa;small
+Sand Castles;small
+sandcastles;medium
+SandCastles2;medium
+Sandcastles2Big;large
+SandCastles2_Meteors;medium
+SandcastlesBig;large
+SandOfGold;medium
+SandOfGreen;medium
+SandOfMines;medium
+SandOfMinesFinal;medium
+Sands of Time;small
+Sands of War;small
+SandX;small
+Sangriento;medium
+SapphireShores;small
+SapphireShoresDuo_Beta0.1;medium
+SapphireShores_Beta0.1;small
+SapphireShores_Dry;small
+SapphireShores_Duo;medium
+Saturated Bog;small
+Schizo_Shores;small
+Schongs Cany Beta;medium
+Schongs Cany Beta1;small
+Schongs Cany Beta2;medium
+schongs cany beta4;medium
+SchongsDelta;medium
+Scorched Crossing;medium
+ScorpioBattleground;medium
+Scorpion;ffa;medium
+Scrap-Metal;large
+screwThisMapName;medium
+Sea Barrier;small
+Sea Battle;medium
+sea Defense;large
+Sea of Dunes;large
+Seatofpower;ffa;medium
+Seatofpower_1.3;medium
+Sector9;medium
+SennaDuck;small
+SennaFields;ffa;large;medium
+SennaFields_GeoFantasy;large
+sennafields_v4_k;large
+Sertagatta;medium
+Sertaleina;small
+Seth''s Ravine;medium
+Seths Ravine Remake;medium
+Seths_Ravine;medium
+SevenIslands;large
+SevenIslandsMini;large
+SevenIslandsMini-V3;large
+Sever;medium
+Severnaya_Industrial;medium
+sf;large
+Share mode test beta;small
+SheEp;small
+SheerMetal;large;metal
+Sherwood;small
+Sheva;ffa;medium
+ShevaDotA;medium
+Shifting Sands;small
+Shimmershore;small
+Shimmershore vBeta1;small
+Shimmershore vBeta2;small
+Shimmershore vBeta3;small
+Shimmershore vBeta4;ffa;small
+Shimmershore vBeta5;ffa;small
+Shimmershore vBeta6;small
+Shining_Islands;small
+shore2shore redux;medium
+Shore2Shore_Remake;medium
+Shoretoshore;medium;small
+Shore_to_Shore;medium
+SiberianDivide;medium
+SiegeCastle;medium
+Sierra;medium
+Silent Sea;medium
+siliconeDesert;ffa;medium
+Silo_valley;small
+Silt_Outcropping;large
+silver_lake;small
+Sima;medium
+Simple 6 Way 1.0-KotH;medium
+Simple 6 Way 1.1-KotH;medium
+Simple 6 Way 1.2-KotH;medium
+Simple6Way;ffa;medium
+SimpleBowl;small
+SimpleChess;ffa;small
+Singu Test;small
+Singularity Test;small
+SixWayIsland;ffa;small
+Skape;medium
+SkirmishValley;small
+skmPrime;small
+Skoor_Battleground;medium
+Skulduggery;medium
+Skullduggery 1.3 WIP;medium
+Skullduggery 1.4 WIP;medium
+SkullIslandFFA;ffa;large
+Sky Fortress Sigma;medium;small
+Sky_Fortress;small
+sk_doom;small
+sk_hive;small
+sk_mudhole;small
+Slated_Fate;small
+Small Supreme Battlefield;medium
+Small Supreme Battlefield Dry;medium
+Small Supreme Battlefield V2 Special;medium
+Small Supreme Islands;medium
+Small Supreme Lake Dry;small
+Small Volcano;medium
+SmallDivide;small
+SmallSpeedComet;small
+SmallSupBF2 SeaEdit;medium
+SmallSupBF2 SeaEdit 0.3 WIP;medium
+SmallSupremeBattlefieldSpecial;ffa;medium
+Small_Divide-Remake;small
+Small_Pass;small
+Small_Supreme_Battlefield;medium
+Small_Supreme_Lake_Dry;small
+smek;ffa;medium
+Smoth-Heights;medium
+Smoth-Heights-Redux;medium
+SnakeIsland;medium
+SnowAlert;small
+Snowbound;small
+Snowscape;large
+Snowy_Mesa;medium
+Solitude;small
+SoupAssault;medium
+Sparewood;ffa;small
+Sparewood_Remake;small
+Spartan_Isle;ffa;small
+Speed Ball Hovers;small
+Speed Metal River;medium;metal
+Speed2Metal;metal;small
+SpeedBall_X20;ffa;large;metal
+SpeedBattleSpire;large
+SpeedComet;medium;metal
+SpeedMaze;medium
+SpeedMetal;metal;small
+SpeedMetal BAR;metal;small
+SpeedMetalBacon A;medium;metal
+SpeedMetalBig;medium;metal
+SpeedMetalCorridor;metal;small
+SpeedMetalDuo;medium;metal
+SpeedMetalQuattro;large;metal
+SpeedMetalX2SIze;medium;metal
+Speedrnetall;medium;metal
+SpeedSquare;metal;small
+SpeedWaterDuo;medium;metal
+SpeedWaterDuo (Lord Ras Edit);medium
+Speedy-Waters;medium;metal
+Speedy_Metal2;metal;small
+Speed_Ball;metal;small
+Speed_Balls_16_Kernel_Panic;metal;small
+Speed_Balls_16_Way;ffa;metal;small
+Speed_Balls_18_Way;ffa;medium;metal
+Speed_Balls_6_Way;ffa;metal;small
+Speed_Balls_DualCore;ffa;medium;metal
+Speed_Balls_Star_6_Way;ffa;medium;metal
+Speed_Ball_10x10_TechA;metal;small
+Speed_Ball_Isles_16_Way_Hack;large;metal
+Speed_Ball_Isles_8_Way;medium;metal
+Speed_Ball_Isles_8_Way_Hack;medium;metal
+Speed_Ball_Low;metal;small
+Speed_Ball_Matrix_16_Way_NoMetal;large
+Speed_Ball_Matrix_16_Way_NoMetal_V3;large
+Speed_Ball_Matrix_9_Way_Modless;medium;metal
+Speed_Ball_Matrix_9_Way_NoMetal;medium
+Speed_Ball_Ring;metal;small
+Speed_Ball_Ring_8_Hack2;metal;small
+Speed_Ball_Suicide;metal;small
+Speed_Ball_TechA;metal;small
+Speed_Calamity;medium
+Speed_Centerrock;medium
+Speed_Chicken_Farm;small
+Speed_Chicken_Nuggets;small
+Speed_Chicken_Roast;small
+Speed_CometCatcherRedux;medium;metal
+Speed_Donut;large;metal;small
+Speed_Donut_10x10;metal;small
+Speed_Donut_20x20;large;metal
+Speed_Donut_20x20_Normal;large;metal
+Speed_Dworld;large;metal
+Speed_LLTAComplexDuo;large
+Speed_Mearth;large;metal
+Speed_neurope;large;metal
+Speed_Squares;metal;small
+Speed_StormSiege;metal;small
+Speed_StormSiegeDuo;medium;metal
+Speed_StormSiegeDuoWet;medium;metal
+Speed_Talus;medium;metal
+Speed_TheRockJungle;medium;metal
+Speed_Throne;large;metal
+spiders web;medium
+Splintered4x4;ffa;small
+SplinteredTropics;medium
+SplinteredTropicsDry;medium
+Spooler Buffer 0.5 (beta);small
+Spring Racers Track;medium
+Spring-Islands;large
+SpringMountainDelta;medium
+Squonut v1 by Zeaga;small
+StarLightStation;small
+Steel_Fields;large;metal
+StoneBridges;medium
+StormBay;medium
+StormSiege;small
+Stratos;small
+Stronghold;medium
+Stronghold_beta;ffa;medium
+Suasti;small
+summer_dream;large
+summer_dream_alpha;large
+summer_dream_s44_alpha;large
+Sunderance;medium
+SunkenOutpost;medium
+supcom;large
+SuperCorePrimeCorridor;metal;small
+SuperCorePrimeCorridor-V1.3;small
+SuperFieldsOfIsis;large
+SuperGeoGreenFields X;large
+SuperMarsBattle;small
+SuperPlateDomination;large
+SuperShipWar;medium
+SuperSolarSystem;large
+SuperSpeedMetal;small
+SuperSpeedMetalBacon A;large
+SuperSpeedMetalEarthmode;small
+SuperSpeedMetalX;large
+SuperSpeedMetal_Edit;small
+SuperSpeedMetal_XCtrem;small
+SuperSpeedMetal_Xtrem;small
+SuperVaubanFortress;large
+SuperVaubanFortress32x16;large
+Super_Speed_Ball_Matrix_16_Way;large
+Supreme Battlefield;large
+Supreme Battlefield Dry;large
+Supreme Battlefield Remix;large
+Supreme Lake;medium
+Supreme Lake Dry;medium
+SupremeBattlefieldMirrored Beta;large
+Supreme_Battlefield_Dry;large
+Supreme_Crossing;medium
+Supreme_Lake;medium
+Supreme_Lake_Dry;medium
+Surrounded_Grounds;medium
+SwampIsland;large
+Sypor;medium
+SyporBeta;medium
+SyrinBeta;medium
+Syrin_hires;medium
+T2GameCharlieintheHills;medium
+T2GameDeltaSiegeDry;medium
+Tabula;medium
+Tabula_Flooded;medium
+Tabula_Remake;medium
+Tactical_Divide;medium
+take2;small
+take5;small
+Taldarim;large
+TalenFortB1;medium
+Tale_of_Two_Hills;medium
+Talus;medium
+Talus-wet;ffa;medium
+Talus-wet ZK;ffa;medium
+TandemCraters;medium
+Tangerine;medium
+Tangerine_Remake;medium
+Tangled Isthmus Revised;small
+Tangled_Isthmus;small
+Tartarus;small
+Tau10;medium
+Tau10Dry;medium
+Tau11;medium
+Tau12;medium
+TeamFortress;small
+tech mix lands;large
+Techno Basin;large
+Techno Island;large
+Techno Island v0.1;large
+Techno Lands;large;small
+techno lands 3v3;small
+techno lands 3v3 b3;small
+techno lands 3v3 x3;small
+techno lands 5v5 narrow;medium
+techno lands 5v5 narrow b3;medium
+Techno Lands 8v8 b3;large
+techno lands acidown;large
+Techno Lands Epyc Shore;large
+Techno Lands Final;large;medium
+Techno Lands Final 11.0;large
+Techno Lands Final 11.1;large
+Techno Lands Final Boat;large
+Techno Lands Final Lucky;medium
+Techno Lands Final TransAny;large
+Techno Lands Final v8.0 clean;large
+Techno Lands Final Water;large
+Techno Lands Gizmo Edition;large
+Techno Lands LONG_AND_STRONG;large
+Techno Lands Silver OP Epic;medium
+Techno Lands Silver OP Epic Tidal;medium
+techno lands throwdown;large
+Techno Water;ffa;medium
+Technophobia;medium
+Techno_Lands 5v5 Siege;medium
+Techno_Lands 5v5 world champ juma OP;medium
+Techno_Lands 7v7 world champ juma OP;medium
+Techno_Lands juma V2;medium
+Tehachapi Divide;medium
+TEHPINK;medium
+Tempest;large
+Tempest Dry;large
+Tempest Siege;medium
+Temple Redux;small
+tendrilmountain;medium
+Ternion;ffa;small
+Terra;medium
+Terry;medium
+test;medium
+TEST2W;small
+test847;small
+testingbrokenplasmaserver;medium
+TestMap;medium
+TestMap2014;ffa;small
+Testmap_Tp;large;medium
+testowa;small
+testt;small
+test_geogreen;ffa;large
+Tetrad;ffa;small
+ThatBridge;medium
+The Cold Place Remake;small
+The Highlands;medium
+The Hole;medium
+The Oasis;small
+The Pass;medium
+The river Nix;large
+The Rock;small
+The-Islands;ffa;large
+TheAbyss;large
+TheBeachBeta;medium
+TheBowlBridged;large
+TheColdPlace;small
+TheFantasticCrevMor;medium
+TheGloryField;small
+TheGreatValley;medium
+TheHunters;medium
+TheMission;ffa;large
+ThePass;small
+TheRing;ffa;small
+TheRiver;large
+TheRock;ffa;medium
+TheRockFinal;medium
+TheRockJungle;medium
+TheRockJungle_Fix2;medium
+TheSwampFinal;small
+theWildBlue;medium
+The_Pass;medium
+The_Passzu!;small
+the_rising;medium
+The_River;small
+The_Road;medium
+The_Road_Final;medium
+The_Road_Vtest;medium
+The_Vanguard;medium
+The_Wastes;medium
+THIS IS UGLY;small
+THIShugespace;large
+Thornford;medium
+Thornford Crossing;medium
+ThreeBumps;small
+ThreeKeeps;medium
+ThreeReefs16;ffa;medium
+Throne;ffa;large
+Throne Acidic;ffa;large
+Throne Acidic No Roads;ffa;large
+Throne Doo Edit;ffa;large
+Throne Quad;large
+TidalBay;small
+Tidal_War;small
+Timna Island;medium
+TinyMe;small
+TinySkirmish;small
+TinySkirmishRedux1;small
+TinySkirmishRedux1.1;small
+tiny_dry_lake;small
+Titan;medium
+Titan -v2 Singularity Mode;medium
+Titan-Flooded;medium
+Titan-v2 Commshare Test b;medium
+Titan-v2 Commshare v1.1 Test b;medium
+Titan-v2 Coop mode test 2 b;medium
+Titan-v2 Coop mode test b;medium
+Titan-v2 Share Mode beta;medium
+Titan-v2 Singu Mode;medium
+Titan-v2 Singu Mode 2 b;medium
+Titan-v2 Singu Mode 2.1 b;medium
+Titan-v2 Singu Mode 2.2 b;medium
+Titan-v2 Singu Mode 2.3 b;medium
+Titan-v2 Singu Mode 2.4 b;medium
+Titan-v2 Singu Mode 2.51 b;medium
+Titan-v2 Singu Mode 2.52 b;medium
+Titan-v2 Singu Mode 2.53 b;medium
+Titan-v2 Singu Mode 2.54 b;medium
+Titan-v2 Singu Mode 2.55 b;medium
+Titan-v2 Singu Mode 2.56 b;medium
+TitanDuel;small
+TitanDuel UnbalancedCommanders Beta;small
+TitanDuel UnbalancedCommanders Beta 16 -- ARMONLY;small
+TitanDuel UnbalancedCommanders Beta 17 -- randomARMcom;small
+TitanDuel UnbalancedCommanders Beta 18 -- randomARMcom;small
+TitanDuel UnbalancedCommanders Beta 19 UglyCore;small
+TitanDuel UnbalancedCommanders Beta2;small
+TitanDuel UnbalancedCommanders Beta3;small
+TitanDuel UnbalancedCommanders Beta4;small
+TitanDuel UnbalancedCommanders Beta5;small
+TL Dropzone;large
+TMA;ffa;large
+TMA-0 v1;ffa;large
+TMA20;large
+TMA20X;ffa;large
+TMA20XR;large
+Tombstone Desert;small
+Tombstone_Desert;small
+Top_Gear;small
+Torn Islands Remake;medium
+TornIslands;medium
+Total_Cascade;medium
+Total_Destruction;large
+Tournament Desert;small
+TournamentIslands;medium
+tower;small
+tower3step13a;small
+tower4step2;small
+Town;large
+TPB;medium
+Trail of Tiers;small
+Trefoil;medium
+Trefoil Remake;medium
+Trefoil_v2 Unbalanced Commanders Beta;medium
+Trefoil_v2 Unbalanced Commanders Beta 19 UglyCore;medium
+Trench;small
+Trench Warfare;small
+Trenches;large
+Trenches64;small
+Trenches_fixed;large
+Trench_Linked;small
+Trench_Linked_WE;small
+Tri-Vega;small
+Tribase;large
+Tricy Run v02 beta;small
+Tricy Run v03 beta;small
+Tricy_Run;small
+Trinity;medium
+Triple Threat;medium
+Trisilo;small
+Tritech;large
+Trojan Hills;small
+trojaner;medium
+Trojan_Hills;small
+Trololo;small
+Trololo_zombie;small
+Tropical;large
+Tropicalo;small
+TrumptonHill;small
+Tuckedup_16x12;medium
+TulwarCanyon;medium
+Tumult;medium
+Tundra;medium
+Tundra Continents;large
+Turkish Flag;small
+turkish flag chix;small
+Turkish Flag FFA;ffa;small
+Turkish Flag v3.02 Large;small
+turkish flag vtest2;small
+Turkish Flag vtest4;small
+Turkish Flag vtest5;small
+Turtle Town;small
+Twilight_Canyon;medium
+Twin Lakes Park;large
+Twin Lakes Park Redux;large
+twintower4step;small
+Twisted Treeline;medium
+Twisted Treeline unba;medium
+Twisted Treeline Unbalanced Commanders Beta 20 -- It''s WAR;medium
+Twisted Treeline Unbalanced Commanders Beta 21 -- It''s WAR;medium
+Twisted Treeline Unbalanced Commanders Beta 21.1 -- It''s WAR;medium
+Twisted Treeline Unbalanced Commanders Beta 21.2 -- It''s WAR;medium
+Twisted Treeline Unbalanced Commanders Beta 21.4 -- It''s WAR;medium
+Twisted Treeline Unbalanced Commanders Beta 22.1 moBA;medium
+Twisted Treeline Unbalanced Commanders Beta 22.2 moBA;medium
+Twisted Treeline Unbalanced Commanders Beta 22.666 moBA;medium
+Twisted Treeline Unbalanced Commanders moBA Beta;medium
+twistedtreeline;medium
+Two Continents;large
+Two Continents Dry;large
+Two Continents Remake;large
+Two Rivers;large
+Two_Rivers;small
+Two_Towers;medium
+Typhoon_Islands;small
+Uglytopia;small
+Ultimate Pass Greenland;large
+unclejefrey;large
+unified_battlefield;medium
+Unit Catcher;medium
+urban_skirmish;small
+USA Invasion;large
+USA1;small
+Valiant_Saltscape;medium
+Valkrishau;medium
+Valles Marineris;medium
+VallesMarineris;small
+Valles_Marineris;medium
+Valley Of Unrest;small
+ValleyofDeath;medium
+ValleyofWar;medium
+VallysAndHills;small
+Vantage;small
+Vantage vBeta1;small
+Vantage vBeta2;small
+Vapor2;medium
+vauban;large
+VaubanFortress;large
+Vein;medium
+Verdant;medium;small
+vernal;small
+Vernal 3way;ffa;small
+vernal-3way;small
+VertigoThanatos;large
+Vestige;medium
+Vestige Revised;medium
+Victoria Crater;small
+Victoria Sponge;ffa;small
+Victoria_Crater_Alt;small
+Violence;large
+Violet Rampart;ffa;large
+Violet Rampart Generator;ffa;large
+Virid Lands;large
+Virtual_fields;medium
+VistaCanyon;small
+Vittra;small
+VoiVittuRemake;small
+volcanic basin;medium
+volcanic basin planetd;medium
+volcanoisland;medium
+VolcanoMountain;small
+Voltic Plateau;medium
+Vulcano;small
+Vulcano map;large
+Wadi;large
+WakkaWakka;small
+walhalla;small
+walhalla_double;small
+WALLMARIA;medium
+wanderlust;small
+WarpVal;medium
+Warpy;medium
+Warzone;ffa;large
+WasteofTALand;medium
+Water-Ways;small
+water_fields;large
+WesternFrontier;medium
+Whakamutunga_Riri;medium
+WhaleOnTheMiddle;small
+white;medium
+White Rabbit;medium
+Wide Pass;medium
+Wide Pass Final;medium
+Wide Pass NM;medium
+Wide Pass-Modless;medium
+WideOpenCombat;large
+Widepass;medium
+WidePass Fineto;medium
+WindsweptDesert;small
+WinnieDaPooh;small
+Winter_Wonderland;medium
+Wishing_Well;large
+World;large
+World War III;ffa;large
+World_FFA;ffa;large
+World_Satellite;large
+Worm-Ridden Desert Needle Small;medium
+WTF_RAW;small
+WWF_RAW;small
+w_beetlegeuzefinal;medium
+w_crossroads;medium
+X;large
+XacomBeach;small
+Xanthe Terra (Remake);medium
+XantheTerra;medium
+Xelric_Draw_beta2;small
+Xenolithic;medium
+XHC_Paradise;ffa;small
+Xiu Bi Crossing;medium
+Yilith;medium
+YukonSpring;medium
+Z;small
+Zed;small
+Zed 2.3 - MexesFix;small
+Zed Remake;small
+ZeroWars;small
+Zeta_Siege;medium
+Zeus01;small
+Zeus02;small
+Zeus02_Dual;small
+Zeus05_A;ffa;medium
+Ziggurat_Defense;large
+Zion;small
+Zoric;small
