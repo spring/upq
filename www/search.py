@@ -158,8 +158,8 @@ def GetResult(request):
 
 	# use different query to show only latest version for each name (maps only, for now)
 	if "latestOnly" in request and int(request["latestOnly"]) == 1 and "category" in request:
-		query += """INNER JOIN (SELECT name_without_version,MAX(name) AS latest FROM file WHERE cid=2 GROUP BY name_without_version) f2 ON (f.name_without_version=f2.name_without_version) 
-		WHERE f.name=f2.latest
+		query += """INNER JOIN (SELECT name_without_version,MAX(version_sort_number) AS latest FROM file WHERE cid=2 GROUP BY name_without_version) f2 ON (f.name_without_version=f2.name_without_version) 
+		WHERE f.version_sort_number=f2.latest
 		AND c.cid>0
 		"""
 	else:

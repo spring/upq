@@ -11,12 +11,12 @@
 
 import logging
 
-from sqlalchemy import create_engine, Index, Table, Column, Integer, String,DateTime,PickleType, MetaData, ForeignKey, Sequence, UniqueConstraint
+from sqlalchemy import create_engine, Index, Table, Column, Integer, Float, String,DateTime,PickleType, MetaData, ForeignKey, Sequence, UniqueConstraint
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import func
-from sqlalchemy.dialects.mysql import TEXT, MEDIUMTEXT, INTEGER, BIGINT, DATETIME, CHAR, VARCHAR, TIMESTAMP
+from sqlalchemy.dialects.mysql import TEXT, MEDIUMTEXT, INTEGER, BIGINT, DATETIME, CHAR, VARCHAR, TIMESTAMP, FLOAT
 
 
 cats = {}
@@ -90,9 +90,17 @@ class UpqDB():
 			Column('cid', INTEGER(display_width=11)), #category of this file: game/map
 			Column('sdp', VARCHAR(length=32),nullable=True, unique=True), #for this file
 			Column('metadata', MEDIUMTEXT()),
+			Column('name_without_version', VARCHAR(length=256),nullable=True), #spring name without the version part 
+			Column('map_width', INTEGER(display_width=11),nullable=True), #map width
+			Column('map_height', INTEGER(display_width=11),nullable=True), #map height
+			Column('version_sort_number', FLOAT(),nullable=True), # version number for easier comparison/sorting
 			UniqueConstraint('name', 'version', 'cid'),
 			UniqueConstraint('filename', 'cid')
 			)
+		self.tables['file_keyword']=Table('file_keyword', self.meta, #table with keyword strings associated with each file
+			Column('fid', Integer, ForeignKey("file.fid")), # file fid, delete cascade added by external SQL
+			Column('keyword', VARCHAR(length=128),nullable=False), # keyword
+			UniqueConstraint('fid', 'keyword'))
 
 		#self.tables['rapidrepo']=Table('rapidrepo', self.meta,
 		#	Column('rid', INTEGER(display_width=10), primary_key=True, nullable=False, autoincrement=True),
