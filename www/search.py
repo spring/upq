@@ -87,6 +87,22 @@ def PrintMapKeywordList():
 		if line:
 			print(line)
 	
+def GetKeywordsConditionsForQuery(kwStr):
+	query = ""
+	kwArr = kwStr.split(",")
+	pattern = re.compile("[A-Za-z0-9]+")
+	havingAdded = False
+	
+	for i in range(len(kwArr)):
+		kw = kwArr[i]
+		if pattern.fullmatch(kw):
+			if havingAdded == False:
+				query += " HAVING "
+				havingAdded = True
+			if i > 0:
+				query += " AND "
+			query += " keywords RLIKE '[[:<:]]%s[[:>:]]' " % kw
+	return query
 
 def GetResult(request):
 	cfg = upqconfig.UpqConfig()
@@ -151,10 +167,7 @@ def GetResult(request):
 	LEFT JOIN tag as t ON  f.fid=t.fid
 	LEFT JOIN file_keyword AS fk ON (f.fid=fk.fid)
 	"""
-	
-	keywordsSet = False
-	if "keywords" in request and request["keywords"] != "":
-		keywordsSet = True
+
 
 	# use different query to show only latest version for each name (maps only, for now)
 	if "latestOnly" in request and int(request["latestOnly"]) == 1 and "category" in request:
@@ -170,22 +183,9 @@ def GetResult(request):
 	"""% wherecond
 
 	query += " GROUP BY f.fid "
-	if keywordsSet:
-		kwArr = request["keywords"].split(",")
-		pattern = re.compile("[A-Za-z0-9]+")
-		havingAdded = False
-		
-		for i in range(len(kwArr)):
-			kw = kwArr[i]
-			if pattern.fullmatch(kw):
-				if havingAdded == False:
-					query += " HAVING "
-					havingAdded = True
-				if i > 0:
-					query += " AND "
-				query += " keywords RLIKE '[[:<:]]%s[[:>:]]' " % kw
-		
-
+	if "keywords" in request and request["keywords"] != "":
+		query += GetKeywordsConditionsForQuery(request["keywords"])
+	
 	query += " ORDER BY f.timestamp DESC %s " % getlimit(request)
 
 	#print(wherecond)
