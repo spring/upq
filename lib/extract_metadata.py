@@ -559,6 +559,18 @@ def dumpmap(usync, springname, outpath, filename, idx):
 	res.append(createMapInfoImage(usync,springname, "metal",1, "L","L;I", scaledsize, outpath))
 	return res
 
+def getVersionFromFilename(filename):
+	version = ""
+	matches = re.search('(?<=[\-_ vV])([vV]?[0-9\.]+[^\-_ ]*)(?=.sd.$)',filename)
+	if matches:
+		version = matches.group(1)
+	return version
+
+def getNameWithoutVersion(name,version):
+	if version:
+		return re.sub('(?i)[\-_ ]*[vV]?'+version,'',name).strip()
+	return name
+
 def getVersionSortNumber(version):
 	vCompArr=version.split('.')
 	cvString = ""
@@ -649,10 +661,9 @@ def extractmetadata(usync, filepath, metadir):
 		version = data["version"]
 		# workaround for version being empty on maps, get it from the file name, if possible
 		if not version : 
-			matches = re.search('(?<=[\-_ vV])([vV]?[0-9\.]+[^\-_ ]*)(?=.sd.$)',data["filename"])
-			if matches:
-				version = matches.group(1)
-		data["name_without_version"] = re.sub('(?i)[\-_ ]*[vV]?'+version,'',data["name"]).strip()
+			version = getVersionFromFilename(data["filename"])
+
+		data["name_without_version"] = getNameWithoutVersion(data["name"],version)
 		data["version_sort_number"] = getVersionSortNumber(version)
 		
 		metadata = data["metadata"]

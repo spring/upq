@@ -1,1018 +1,1015 @@
-1 Pass Greenland;medium
-1 Pass Greenland Final;medium
-1 Pass Greenland Inverted;medium
-1 Pass Greenland Redux;medium
-1 Pass Greenland Redux Superspeed;medium
-1 Pass Greenland Remake Final;medium
-1944 - Westerplatte;large
-1944_Antwerp_Alpha2;large
-1944_BloodBay;ffa;small
-1944_BocageSkirmish;small
-1944_BocageSmall;small
-1944_Caucasus_Skirmish;small
-1944_Cooper_Hill;small
-1944_FloodBank;medium
-1944_Hill;ffa;large
-1944_Keep_Off_The_Grass;small
-1944_Kiev;medium
-1944_Liege;large
-1944_Moro_River;ffa;large
-1944_Plateau;large
-1944_Prokhorovka;medium
-1944_Prokhorovka_Tactics;medium
-1944_Red_Planet;small
-1944_Red_Planet_Tactics;small
-1944_River_Valley;large
+1 Pass Greenland;land;medium
+1 Pass Greenland Final;land;medium
+1 Pass Greenland Inverted;land;medium
+1 Pass Greenland Redux;land;medium
+1 Pass Greenland Redux Superspeed;land;medium
+1 Pass Greenland Remake Final;land;medium
+1944 - Westerplatte;amphibious;large
+1944_Antwerp_Alpha2;land;large
+1944_BloodBay;amphibious;ffa;small
+1944_BocageSkirmish;land;small
+1944_BocageSmall;land;small
+1944_Caucasus_Skirmish;land;small
+1944_Cooper_Hill;land;small
+1944_FloodBank;land;medium
+1944_Hill;ffa;land;large
+1944_Keep_Off_The_Grass;land;small
+1944_Kiev;land;medium
+1944_Liege;land;large
+1944_Moro_River;ffa;land;large
+1944_Plateau;land;large
+1944_Prokhorovka;land;medium
+1944_Prokhorovka_Tactics;land;medium
+1944_Red_Planet;land;small
+1944_Red_Planet_Tactics;land;small
+1944_River_Valley;land;large
 1944_Road_To_Rome;medium
-1944_Sierra_Tactics;medium
-1944_Terra_Firma;medium
-1944_Titan;medium
-1944_Village_Crossing;small
-1longpass tiberiumland;large
+1944_Sierra_Tactics;land;medium
+1944_Terra_Firma;land;medium
+1944_Titan;land;medium
+1944_Village_Crossing;land;small
+1longpass tiberiumland;land;large
 1v1_test;medium
-2B4-Core-Proto-Planet;large
-2Lakes;small
-2_Continents_Remake;large
-2_Mountains_Battlefield;medium
-2_Mountains_Battlefield_v2_(polar_edition);medium
-2_Valleys;medium
-2_Valleys_V.3-By_Wired;small
-3 Pass Greenland;medium
-3 Way Red Sea;medium
-3_Bridges;medium
-4 Way Battle;large
-4B_facility;medium
-4Skulls;small
-4way noname;large
-4_bases;small
-5;medium
-aaa;medium
-Aavikko;large
-Abductors;small
-Aberdeen;medium;small
-Aberdeen3;medium
-Aberdeen6;medium;small
-Aberdeen6v6_Fix;large
-Absolute_Zero;medium
-Absolution;medium
-acidbridge;large
-AcidicQuarry;small
-acidquadratic;large
-acidredux;medium
+2B4-Core-Proto-Planet;land;large
+2Lakes;land;small
+2_Continents_Remake;amphibious;large
+2_Mountains_Battlefield;land;medium
+2_Mountains_Battlefield_v2_(polar_edition);land;medium
+2_Valleys;land;medium
+2_Valleys_V.3-By_Wired;land;small
+3 Pass Greenland;land;medium
+3 Way Red Sea;amphibious;ffa;medium
+3_Bridges;land;medium
+4 Way Battle;amphibious;ffa;land;large
+4B_facility;land;medium;metal
+4Skulls;land;small
+4way noname;ffa;land;large
+4_bases;ffa;land;small
+5;land;medium
+aaa;land;medium
+Aavikko;land;large
+Abductors;land;small
+Aberdeen;land;medium;small
+Aberdeen6v6_Fix;land;large
+Aberdeenv3;land;medium
+Absolute_Zero;amphibious;medium
+Absolution;land;medium
+acidbridge;acid;land;large
+AcidicQuarry;acid;air;small
+acidquadratic;acid;land;large
+acidredux;acid;land;medium
 aconpeak;small
-Adamantine Mountain;small
-Adamantine_Mountian;small
-Adansonia;medium
-Aetherian Void;large
-AFBAKERMANsLAIR;small
-africa;small
-Aftermath;large
-aftershock;large
-AI: Proving Grounds;small
-airport;small
-Akilon Wastelands;medium
-Akilon Wastelands ZK;medium
-Akilon Wastes;medium
-Al Anih - Ila Tion;medium
-Alaska;medium
-Albion;ffa;large
-AlienDesert;small
-All That Glitters;medium
-Alpha-Site;medium
-AlphaSiegeDry;medium
-Alpine way;medium
-Altair;ffa;medium
-AltairHeckCrossing;ffa;small
-AltairHeckCrossing 16x16;ffa;medium
-Altair_Crossing;small
-Altair_Pass;small
-Altored Divide Bar Remake;medium
-Altored Divide Flooded beta;medium
-Altored Divide Remake;medium
-Altored Divide Remake V1 fix;medium
-Altored Divide Remake V1 fix2;medium
-Altored_Arctic;medium
-Altored_Divide;medium
-Altored_Earth;ffa;large
-Amalthea;medium
-Amarante;ffa;medium
-AmazonDelta;medium
-AncientArena;large
-Angel Crossing;ffa;medium
-Angel Pass;medium
-Anglo-saxon Starfish Redux;large
-angryDUCK;small
-angryDUCKb2;small
-Anteer Strait;medium
-Anteer Strait RC;medium
-Anteer-Strait-2-rc;medium
-anyville;large
-Aortic_Delta;small
+Adamantine Mountain;land;small
+Adamantine_Mountian;land;small
+Adansonia;land;medium
+Aetherian Void;land;large
+AFBAKERMANsLAIR;land;small
+africa;amphibious;small
+Aftermath;land;large
+aftershock;amphibious;large
+AI: Proving Grounds;land;small
+airport;land;small
+Akilon Wastelands;land;medium
+Akilon Wastelands ZK;land;medium
+Akilon Wastes;land;medium
+Al Anih - Ila Tion;amphibious;medium
+Alaska;land;medium
+Albion;ffa;land;large
+AlienDesert;land;small
+All That Glitters;land;medium
+Alpha-Site;land;medium
+AlphaSiegeDry;land;medium
+Alpine way;land;medium
+Altair;ffa;land;medium
+AltairHeckCrossing;ffa;land;small
+AltairHeckCrossing 16x16;ffa;land;medium
+Altair_Crossing;land;small
+Altair_Pass;land;small
+Altored Divide Bar Remake;land;medium
+Altored Divide Flooded beta;medium;water
+Altored Divide Remake;land;medium
+Altored Divide Remake V1 fix;land;medium
+Altored Divide Remake V1 fix2;land;medium
+Altored_Arctic;amphibious;medium
+Altored_Divide;land;medium
+Altored_Earth;amphibious;ffa;large
+Amalthea;amphibious;medium
+Amarante;ffa;land;medium
+AmazonDelta;amphibious;medium
+AncientArena;land;large
+Angel Crossing;ffa;land;medium
+Angel Pass;land;medium
+Anglo-saxon Starfish Redux;amphibious;large
+angryDUCK;land;metal;small
+angryDUCKb2;land;metal;small
+Anteer Strait;medium;water
+Anteer Strait RC;medium;water
+Anteer-Strait-2-rc;medium;water
+anyville;land;large
+Aortic_Delta;land;small
 aPathBetween;small
-apb;small
-Apophis;medium
-Apophis v2;medium
-Applesauce;small
-AppleVille-Two;large
-AquariusCrossing;small
-Aquatic Divide Revised;small
-Aquatic_Divide_TNM05;small
-Aqua_Castles;medium
-Arachnophobia;small
-Archers Battlefield;medium
-Archers_Valley;small
-Archipelago;medium
-Archsimkats_Valley;medium
-Arctic Inferno;ffa;small
-ArcticPlains;medium
-ArcticZone;large
-Arctic_Pass;small
-Area 17;large
-arena;medium;small
-Ares;small
-Arizona;medium
-Arkadash Desert;small
-Armoduland;medium
+apb;land;small
+Apophis;land;medium;void
+Apophis v2;land;medium;void
+Applesauce;land;small
+AppleVille-Two;land;large
+AquariusCrossing;amphibious;small
+Aquatic Divide Revised;land;small
+Aquatic_Divide_TNM05;land;small
+Aqua_Castles;amphibious;medium;metal
+Arachnophobia;acid;amphibious;small
+Archers Battlefield;land;medium
+Archers_Valley;land;small
+Archipelago;amphibious;medium
+Archsimkats_Valley;land;medium
+Arctic Inferno;ffa;land;small
+ArcticPlains;land;medium
+ArcticZone;large;water
+Arctic_Pass;land;small
+Area 17;land;large
+arena;land;medium;small
+Ares;land;small
+Arizona;land;medium
+Arkadash Desert;land;small
+Armoduland;land;medium
 ARock;small
-AS-BAF2;small
-Ashap_Plateau;small
-Ashap_Plateau_III;small
+AS-BAF2;land;small
+Ashap_Plateau;land;small
+Ashap_Plateau_III;land;small
 Ashpen;small
-Asscension10;medium
-Asteriod-Dilo22;large
-asteroid;large
-Asteroid Defense;large
+Asscension10;amphibious;medium
+Asteriod-Dilo22;land;large
+asteroid;land;large;void
+Asteroid Defense;land;large;void
 Asteroid-P23845;medium
-Asteroid-P23845-Redux;medium
-AsteroidBelt;medium
-asteroid_def;large
-Asteroid_Defense;large
-Asteroid_Mines;small
-Astral Valley;small
-AstroTurf;large
-AstroTurf v2;large
-Atlantic;large
-Atlantis_V.85;medium
-Atuminoa;large
-Aum;medium
-Aurelian;ffa;medium
-Aurelian vBeta1;medium
-Aurelian vBeta2;medium
-Aurelian vBeta3;ffa;medium
-Aurelian vBeta4;ffa;medium
-Aurelian vBeta5;ffa;medium
-Ausnahmezustand;medium
+Asteroid-P23845-Redux;land;medium
+AsteroidBelt;air;medium;void
+asteroid_def;land;large;void
+Asteroid_Defense;land;large;void
+Asteroid_Mines;land;small;void
+Astral Valley;land;small
+AstroTurf;land;large;void
+AstroTurf v2;land;large;void
+Atlantic;amphibious;large
+Atlantis;amphibious;ffa;medium
+Atuminoa;amphibious;large
+Aum;ffa;land;medium
+Aurelian;ffa;medium;water
+Aurelian vBeta1;medium;water
+Aurelian vBeta2;medium;water
+Aurelian vBeta3;ffa;medium;water
+Aurelian vBeta4;ffa;medium;water
+Aurelian vBeta5;ffa;medium;water
+Ausnahmezustand;amphibious;medium
 australia7castles;small
-AutumnWood;medium
-Avalanche;small
-Avalancher;small
-Avenge The Fallen;medium
-AVGSuperSpeedMetal_Xtrem;metal;small
-AWallDividesIt;medium
-Azure Rampart;medium
-Azure Rampart 1.1 acidic;medium
-AzureFields;medium
-A_Football_Field.;small
-A_Valley_Beta;small
-BA-Waterways;large
-Babelon;small
-Badlands;small
-BallerBurg(en);large
-Balls map;medium
-Banana Republic;ffa;small
+AutumnWood;land;medium
+Avalanche;land;small
+Avalancher;land;small
+Avenge The Fallen;land;medium
+AVGSuperSpeedMetal_Xtrem;land;metal;small
+AWallDividesIt;amphibious;medium
+Azure Rampart;ffa;land;medium
+Azure Rampart 1.1 acidic;acid;ffa;land;medium
+AzureFields;land;medium
+A_Football_Field.;land;small
+A_Valley_Beta;land;small
+BA-Waterways;amphibious;large
+Babelon;land;small
+Badlands;land;small
+BallerBurg(en);land;large
+Balls map;amphibious;medium
+Banana Republic;ffa;land;small
 BananaDunes;small
-BananaValley;medium
-banana_split;small
-Banana_Split_Fusion;small
-Bandit_Plains;medium
-Barbary Coves;medium
-BarR;ffa;small
-BarracudaBay;small
-Barreer;small
-Barren;small
-Bastion;medium
-Battle for Planet XIV;medium
-Battle for PlanetXVII;small
+BananaValley;land;medium
+banana_split;metal;small
+Banana_Split_Fusion;metal;small
+Bandit_Plains;land;medium
+Barbary Coves;amphibious;medium
+BarR;ffa;land;small
+BarracudaBay;amphibious;small
+Barreer;land;small
+Barren;land;small
+Bastion;land;medium
+Battle for Planet XIV;land;medium
+Battle for PlanetXVII;land;small
 Battle Range;small
-BattleCity;medium
-BattleForTheEmpire;small
-Battletude;large
-Battle_for_Eidola_Prime;large
-Battle_for_Moon-XO;small
-Battle_Grounds;small
-Battle_Holms;ffa;large
-Battle_Lines;medium
-battle_platform;small
-Bay_Battle;medium
-BA_BlueBend_ChallengeMap;medium
-Beach2;small
-Beach_Invasion_beta12;small
-Bear_Canyon;medium
-BeastBattlefield;small
-BellicoseIslands;small
-BellicoseIslands_ZK;small
-Bethezda;medium
-Big Road;small
-bigmap;medium
-Bilateral;large
-Black Mescalin;small
-BlackLake_Swamp;medium
-BlackLake_Swamp_v;small
-BlackStar;medium
-Blank;small
-blauezwiebel;medium
-Blend Warland;small
-Blindside;large
-BlockFort;small
-BlockWars;large;metal
-BlockWars-FFA;ffa;large;metal
-BlockWars-V1.1;large
-BlockWarsFFA;ffa;large;metal
-Blue Comet;medium
-Blue fields;large
-Blue Lagoon;medium;small
-Blue Lagoon v4 (Large);ffa;medium
-Blue Planet;medium
-BlueBend;medium
-bluer_fields_no_wind;large
-bluetardfields;large
-blue_fields;large
-Blue_Lagoon;small
-Bora-Bora;large
-Boulder_Beach;ffa;medium
-Brazillian_Battlefield;small
-Brazillian_Battlefield_Remake;small
-Brickland;small
-Bridge;small
-Bridge Fix;small
-Bridge map;large
-Bridging_the_Divide;medium
+BattleCity;land;medium
+BattleForTheEmpire;land;small
+Battletude;amphibious;large
+Battle_for_Eidola_Prime;land;large
+Battle_for_Moon-XO;land;small
+Battle_Grounds;land;metal;small
+Battle_Holms;amphibious;ffa;large
+Battle_Lines;land;medium
+battle_platform;land;small
+Bay_Battle;amphibious;medium
+BA_BlueBend_ChallengeMap;land;medium
+Beach2;amphibious;small
+Beach_Invasion_beta12;amphibious;small
+Bear_Canyon;land;medium
+BeastBattlefield;land;small
+BellicoseIslands;small;water
+BellicoseIslands_ZK;small;water
+Bethezda;amphibious;medium
+Big Road;land;small
+bigmap;land;medium
+Bilateral;amphibious;large
+Black Mescalin;land;small
+BlackLake_Swamp;land;medium
+BlackLake_Swamp_v;land;small
+BlackStar;ffa;land;medium
+Blank;land;small
+blauezwiebel;land;medium
+Blend Warland;land;small
+Blindside;land;large
+BlockFort;land;small
+BlockWars;land;large;metal
+BlockWars-FFA;ffa;land;large;metal
+BlockWars-V1.1;land;large
+BlockWarsFFA;ffa;land;large;metal
+Blue Comet;medium;water
+Blue fields;land;large
+Blue Lagoon;medium;small;water
+Blue Lagoon v4 (Large);ffa;medium;water
+Blue Planet;medium;water
+BlueBend;land;medium
+bluer_fields_no_wind;land;large
+bluetardfields;land;large
+blue_fields;land;large
+Blue_Lagoon;small;water
+Bora-Bora;large;water
+Boulder_Beach;amphibious;ffa;medium
+Brazillian_Battlefield;land;small
+Brazillian_Battlefield_Remake;land;small
+Brickland;land;small
+Bridge;amphibious;small
+Bridge Fix;land;small
+Bridge map;amphibious;large
+Bridging_the_Divide;amphibious;medium
 brun;small
-Bryce_Arena;small
-Bryce_Arena_fixed;ffa;medium
-Bryce_Canyon;small
-Bryce_Canyon_fixed;ffa;medium
-Bryce_Valley;small
-Bryce_Valley_fixed;medium
-bsmap;large
-buisb2;small
-BumpyBrawl;small
-Bunny;small
-Busan;medium
-Bypass;medium
-Caduceus vBeta1;small
-Caduceus vBeta2;small
-Caeserea;small
+Bryce_Arena;land;small
+Bryce_Arena_fixed;ffa;land;medium
+Bryce_Canyon;land;small
+Bryce_Canyon_fixed;ffa;land;medium
+Bryce_Valley;land;small
+Bryce_Valley_fixed;land;medium
+bsmap;land;large
+buisb2;amphibious;small
+BumpyBrawl;land;small
+Bunny;land;metal;small
+Busan;amphibious;medium
+Bypass;land;medium
+Caduceus vBeta1;acid;land;small
+Caduceus vBeta2;acid;land;small
+Caeserea;land;small
 Cage Fight 1.0-KotH;medium
 Cage Fight 1.1-KotH;medium
 Cage Fight 1.2-KotH;medium
-Calamity;medium
-Calayo;small
-Calayo2;small
+Calamity;amphibious;medium
+Calayo;land;small
+Calayo2;land;small
 Caldera;small
-Callisto;medium
-CanonCanal;large
+Callisto;land;medium
+CanonCanal;amphibious;large;metal
 Cany Waters Beta;small
-Canyon;large
-canyonduo;medium
-Canyon_Crossing;medium
-Canyon_Redux;medium
-Canyon_Wasteland;medium
-Cape_Violet;medium
-Castel_gods;ffa;medium
-Castel_godsV21_fix;ffa;medium
-Castle Well;small
-Castles;medium
-Castles16x16flat;medium
-cathralda;medium
-Cattle and Loveplay;medium
-Cattle and Loveplay NO WORMS;medium
-cattle_and_loveplay;ffa;medium
-Catwalk;small
-CausticPasses;medium
-CausticRealm;medium
-Caustic_Park;small
+Canyon;amphibious;large
+canyonduo;amphibious;medium
+Canyon_Crossing;land;medium
+Canyon_Redux;land;medium
+Canyon_Wasteland;land;medium
+Cape_Violet;amphibious;medium
+Castel_gods;ffa;land;medium
+Castel_godsV21_fix;ffa;land;medium
+Castle Well;land;small
+Castles;land;medium
+Castles16x16flat;land;medium
+cathralda;land;medium
+Cattle and Loveplay;land;medium
+Cattle and Loveplay NO WORMS;land;medium
+cattle_and_loveplay;ffa;land;medium
+Catwalk;land;small
+CausticPasses;acid;land;medium
+CausticRealm;acid;land;medium
+Caustic_Park;acid;land;small
 CDay;ffa;small
-Centerrock;medium
-Centerrock Remake;medium
+Centerrock;land;medium
+Centerrock Remake;land;medium
 Centerrock Remake Dry;land;medium
-CenterRock River;medium
-Centerrock_ZK;medium
-Central Hub;small
-Centre-command;small
-Centrecommand_beta;small
-Cervino;medium
-Charlie in the Hills;medium
-Chas-One;small
-Chasm;small
-Checker Ponds Remake;small
-Chernobyl;small
-Chess;medium
-Chess_b1;small
-Chess_b2;small
-chezmorgen;small
-Chicken attack;small
-Chicken Nuggets;small
-Chicken Scratch;small
-Chicken Volcano Beta;large
-ChickenFABS;small
-ChickenNest;large
-Chicken_Farm;small
-Chicken_Nuggets;small
-Chicken_Roast;small
-Chinollar;small
-Chocolate Hills;ffa;small
-Chocolate_Rain;large
-Christmas Comet;medium
-Christmas Horse;small
+CenterRock River;land;medium
+Centerrock_ZK;land;medium
+Central Hub;land;small
+Centre-command;land;small
+Centrecommand_beta;land;small
+Cervino;land;medium
+Charlie in the Hills;land;medium
+Chas-One;land;small
+Chasm;land;metal;small
+Checker Ponds Remake;acid;land;small
+Chernobyl;acid;land;small
+Chess;land;medium
+Chess_b1;land;small
+Chess_b2;land;small
+chezmorgen;amphibious;small
+Chicken attack;land;small
+Chicken Nuggets;land;small
+Chicken Scratch;land;small
+Chicken Volcano Beta;land;large
+ChickenFABS;land;small
+ChickenNest;land;large
+Chicken_Farm;land;small
+Chicken_Nuggets;land;small
+Chicken_Roast;land;small
+Chinollar;land;small
+Chocolate Hills;ffa;land;small
+Chocolate_Rain;amphibious;large
+Christmas Comet;land;medium
+Christmas Horse;land;small
 circled;small
-Cirme5;small
-CityConflict;small
-CityControl;small
+Cirme5;land;small
+CityConflict;land;small
+CityControl;land;metal;small
 Clashtle;small
-ClayHills;small
-Claymore;ffa;large
-CLEARaDITCH;large
-cliffdown;medium
-CliffHanger;large
-CloseCombat;small
+ClayHills;land;metal;small
+Claymore;ffa;land;large
+CLEARaDITCH;land;large
+cliffdown;land;medium
+CliffHanger;land;large
+CloseCombat;land;small
 CloseDestruction;small
-Cloud9;medium
-Clover;ffa;large
+Cloud9;land;medium;metal;void
+Clover;ffa;land;large
 Clover_Isle_Basic;small
-Clover_Isle_Basic fix;small
+Clover_Isle_Basic fix;acid;ffa;land;small
 coagulation;small
-Coagulation Marsh;medium;small
-Coast To Coast Remake;small
-Coastal;small
-CoastalDry;small
-Coastlines-beta;large
-Coastlines_Dry;medium
-Coastline_Dry;medium
-Coasts;small
-Codar;small
-Cold Snap;small
-coldsnap;small
-Cold_Koom;large
-Cold_Koom Water;large
-cold_snap;small
-Colorado;medium
-Colorado_V2;ffa;medium
-Colors;small
-Columbia Basin;medium
-Comet Catcher Prime;medium
-Comet Catcher Redux;medium
-Comet Catcher Reloaded;ffa;medium
-Comet Catcher Remake;medium
-CometCatcher;small
-CometCatcherFlooded;medium
-Comet_crack;medium
-Complex_Contact;small
-ConfusionLabyrinth;large
-ConquerorsIsle;large
-ConquerorsIsle-dry;large
-Conquest_of_Paradise;medium
-ContestedCanyon;small
-Continental;ffa;large
-contiworldbig;large
-Conversation;small
-CookieMonster;small
-cooler_fields;large
-Cooper Hill;small
-Cooper_Hill_TNM02;small
-Cooper_Range;medium
-Core Platform;medium
-Core Platform AVWMS;medium
-Core-Creek;medium
-Core-P4354;medium
-Core-Prime-Mini;small
-CoreCourtyard;medium
-CorePrimeCorrida;small
-CorePrimeCorridor;small
-CorePrimeCorridor-V1.3;small
-CorePrime_re;large
-CorePrime_revision1;large
-corepyramid;large
-Core_Faf;small
-Core_Prime_Bridges;medium;metal
-Core_Prime_Industrial_Area;medium;metal
-core_ssm_labyrinth;large
-Corium-Mars;medium
-Corpse_Queen_Fields;large
-Corpse_Queen_Fields_v1;large
-CorrosivePits;large
-Corrupted Core;small
-Corspe Turbo;large
-Cosmos;large
-CostalDry;small
-County_Crossing;small
-Courtyard;large
-Cow;small
-Coyote_Creek;small
-CPI-Impact;medium
-CPU;ffa;medium
-Craggy Hills;large
+Coagulation Marsh;amphibious;medium;small
+Coast To Coast Remake;small;water
+Coastal;small;water
+CoastalDry;land;small
+Coastlines-beta;amphibious;large
+Coastlines_Dry;land;medium
+Coastline_Dry;land;medium
+Coasts;small;water
+Codar;land;small
+Cold Snap;land;small
+coldsnap;land;small
+Cold_Koom;land;large
+Cold_Koom Water;amphibious;large
+cold_snap;land;small
+Colorado;land;medium
+Colorado_V2;ffa;land;medium
+Colors;land;metal;small
+Columbia Basin;amphibious;medium
+Comet Catcher Prime;land;medium
+Comet Catcher Redux;land;medium
+Comet Catcher Reloaded;ffa;land;medium
+Comet Catcher Remake;land;medium
+CometCatcher;land;small
+CometCatcherFlooded;medium;water
+Comet_crack;land;medium
+Complex_Contact;land;small
+ConfusionLabyrinth;land;large;metal
+ConquerorsIsle;amphibious;large
+ConquerorsIsle-dry;land;large
+Conquest_of_Paradise;land;medium
+ContestedCanyon;land;small
+Continental;amphibious;ffa;large
+contiworldbig;amphibious;large
+Conversation;land;small
+CookieMonster;land;metal;small
+cooler_fields;land;large
+Cooper Hill;land;small
+Cooper_Hill_TNM02;land;small
+Cooper_Range;land;medium
+Core Platform;land;medium;void
+Core Platform AVWMS;land;medium;void
+Core-Creek;land;medium;metal
+Core-P4354;land;medium
+Core-Prime-Mini;land;metal;small
+CoreCourtyard;land;medium;metal
+CorePrimeCorrida;land;metal;small
+CorePrimeCorridor;land;metal;small
+CorePrimeCorridor-V1.3;land;metal;small
+CorePrime_re;land;large;metal
+CorePrime_revision1;land;large;metal
+corepyramid;amphibious;large
+Core_Faf;land;small
+Core_Prime_Bridges;land;medium;metal
+Core_Prime_Industrial_Area;land;medium;metal
+core_ssm_labyrinth;land;large;metal
+Corium-Mars;land;medium
+Corpse_Queen_Fields;land;large
+Corpse_Queen_Fields_v1;land;large
+CorrosivePits;acid;land;large
+Corrupted Core;land;small
+Corspe Turbo;land;large
+Cosmos;air;large;metal;void
+CostalDry;land;small
+County_Crossing;land;small
+Courtyard;land;large
+Cow;land;metal;small
+Coyote_Creek;land;small
+CPI-Impact;amphibious;medium
+CPU;ffa;land;medium
+Craggy Hills;land;large
 CrampMetal;medium;metal
-crater;large;medium
-Crater Islands Remake;small
-CrazyMase;small
-Crescent_Bay;ffa;large
-Crestfallen-Metropolis;medium
-Crimson Comet;small
-Crimson Crater;small
-Crimson_Paradise;medium
-Crimson_Paradise_lr;medium
-Crossfire;small
-Crossing;medium
-Crossing_4_final;small
-CrossWar;large
-Crubick Plains;medium
-Crucible;small
-Crucifix;large
-Crust;medium
+crater;land;large;medium
+Crater Islands Remake;amphibious;small
+CrazyMase;small;water
+Crescent_Bay;amphibious;ffa;large
+Crestfallen-Metropolis;amphibious;medium
+Crimson Comet;land;small
+Crimson Crater;land;small
+Crimson_Paradise;land;medium
+Crimson_Paradise_lr;land;medium
+Crossfire;land;small
+Crossing;land;medium
+Crossing_4_final;land;small
+CrossWar;amphibious;large
+Crubick Plains;amphibious;medium
+Crucible;land;lava;small
+Crucifix;amphibious;large
+Crust;land;medium
 CrustyCrust;small
-Crystal-Bridges;medium
-Crystal-Harbor;medium
-Crystal-World;small
-CT_Archway;medium
-CT_Conflict_Luna;medium
-CT_Eitbyeit_Gorge;small
-CT_Eureka;medium
-CT_Fishbone_Ridge;medium
-CT_PathWinder;large
-CT_Threeway;medium
-CT_Tumblebrush_Basin;medium
-Cull;small
-Curved_Focus;small
-CybranLogo;large
-DamageRounded;large
-Dark Water Wasteland;ffa;small
-Darkroom;small
-DarkSide Remake;small
-Daruga;small
-Data Cache L1;small
-Daybreak Canyon;small
-DDAY;small
-DDAY_CHX;small
-Dead Reef;medium
-Dead Reef Dry;medium
-DeadLands;small
-DeadLandsUnbalancedCommandersBeta7;small
-Deadlock;ffa;large
-Dead_Vally;small
-Death Valley;medium
-Deaths_Half_Mile;medium
-DeathValley;medium
-Deeploria Fields;large
-DeepSpaceConflict;large
+Crystal-Bridges;amphibious;medium
+Crystal-Harbor;medium;water
+Crystal-World;amphibious;metal;small
+CT_Archway;land;medium
+CT_Conflict_Luna;land;medium
+CT_Eitbyeit_Gorge;amphibious;small
+CT_Eureka;land;medium
+CT_Fishbone_Ridge;land;medium
+CT_PathWinder;land;large
+CT_Threeway;land;medium
+CT_Tumblebrush_Basin;land;medium
+Cull;small;water
+Curved_Focus;amphibious;ffa;small
+CybranLogo;land;large
+DamageRounded;ffa;land;large;metal
+Dark Water Wasteland;acid;amphibious;ffa;small
+Darkroom;ffa;land;metal;small
+DarkSide Remake;land;small
+Daruga;land;small
+Data Cache L1;land;small
+Daybreak Canyon;land;small
+DDAY;land;small
+DDAY_CHX;land;small
+Dead Reef;medium;water
+Dead Reef Dry;land;medium
+DeadLands;land;small
+DeadLandsUnbalancedCommandersBeta7;land;small
+Deadlock;ffa;land;large
+Dead_Vally;land;small
+Death Valley;land;medium
+Deaths_Half_Mile;land;medium
+DeathValley;land;medium
+Deeploria Fields;amphibious;large
+DeepSpaceConflict;air;large;void
 DeepWater;small
-Defender''s Advantage;small
-Delta Seige Dry Reloaded vBETA4;medium
-Delta Siege Dry Reloaded vBETA4;medium
-DeltaSiege;medium
-DeltaSiege Morph;medium
-DeltaSiege Special;medium
-DeltaSiege Special Water;medium
-DeltaSiegecry;medium
-DeltaSiegeDGun;medium
-DeltaSiegeDry;large;medium
-DeltaSiegeDry Deluxe;medium
-DeltaSiegeDry G;medium
-DeltaSiegeDry Hacked;medium
-DeltaSiegeDry Red Alert Edition;medium
-DeltaSiegeDry Remix Fix;medium
-DeltaSiegeDry Revolution;medium
-DeltaSiegeDry S;medium
-DeltaSiegeDry Special;medium
-DeltaSiegeDry Special Final;medium
-DeltaSiegeDry Special Remix;medium
-DeltaSiegeDry X;medium
-DeltaSiegeDry Xmas;medium
-DeltaSiegeDry16th;medium
-DeltaSiegeDry16th DaBomb;medium
-DeltaSiegeDryExtended;medium
-DeltaSiegeDryFATALITY;medium
-DeltaSiegeDryRandomized;medium
-DeltaSiegeDryRandomizedNOBA;medium
-DeltaSiegeDryRevX;large
-DeltaSiegeDrySuperSpeed;medium
-DeltaSiegeDry_DamageDeal;medium
-DeltaSiegeDry_Fixed;medium
-DeltaSiegeDry_NoCombomb;medium
-DeltaSiegeDry_Reloaded_vBETA3;medium
-DeltaSiegeDuoX;large
-DeltaSiegeGRID;medium
-DeltaSiegePrime;ffa;medium
-DeltaSiegePrime Ultimate;medium
-DeltaSiegePrime UnbalancedCommanders beta;medium
-DeltaSiegePrime UnbalancedCommanders beta 19 UglyCore;medium
-DeltaSiegePrime UnbalancedCommanders beta5;medium
-DeltaSiegeRe;large
-DeltaSiegeRevX;large
-DeltaSiegeTest;medium
-DeltaSiegeX;medium
-DeltaSiegeXUnbalancedCommandersBeta12;medium
-DeltaSiegeXUnbalancedCommandersBeta13;medium
+Defender's Advantage;land;small
+Delta Seige Dry Reloaded vBETA4;land;medium
+Delta Siege Dry Reloaded vBETA4;land;medium
+DeltaSiege;land;medium
+DeltaSiege Morph;land;medium
+DeltaSiege Special;land;medium
+DeltaSiege Special Water;amphibious;medium
+DeltaSiegecry;land;medium
+DeltaSiegeDGun;land;medium
+DeltaSiegeDry;land;large;medium
+DeltaSiegeDry Deluxe;land;medium
+DeltaSiegeDry G;land;medium
+DeltaSiegeDry Hacked;land;medium
+DeltaSiegeDry Red Alert Edition;land;medium
+DeltaSiegeDry Remix Fix;land;medium
+DeltaSiegeDry Revolution;land;medium
+DeltaSiegeDry S;land;medium
+DeltaSiegeDry Special;land;medium
+DeltaSiegeDry Special Final;land;medium
+DeltaSiegeDry Special Remix;land;medium
+DeltaSiegeDry X;land;medium
+DeltaSiegeDry Xmas;land;medium
+DeltaSiegeDry16th;land;medium
+DeltaSiegeDry16th DaBomb;land;medium
+DeltaSiegeDryExtended;land;medium
+DeltaSiegeDryFATALITY;land;medium
+DeltaSiegeDryRandomized;land;medium
+DeltaSiegeDryRandomizedNOBA;land;medium
+DeltaSiegeDryRevX;land;large
+DeltaSiegeDrySuperSpeed;land;medium
+DeltaSiegeDry_DamageDeal;land;medium
+DeltaSiegeDry_Fixed;land;medium
+DeltaSiegeDry_NoCombomb;land;medium
+DeltaSiegeDry_Reloaded_vBETA3;land;medium
+DeltaSiegeDuoX;land;large
+DeltaSiegeGRID;land;medium
+DeltaSiegePrime;ffa;land;medium
+DeltaSiegePrime Ultimate;land;medium
+DeltaSiegePrime UnbalancedCommanders beta;land;medium
+DeltaSiegePrime UnbalancedCommanders beta 19 UglyCore;land;medium
+DeltaSiegePrime UnbalancedCommanders beta5;land;medium
+DeltaSiegeRev;land;large
+DeltaSiegeRevX;land;large
+DeltaSiegeTest;land;medium
+DeltaSiegeX;land;medium
+DeltaSiegeXUnbalancedCommandersBeta12;land;medium
+DeltaSiegeXUnbalancedCommandersBeta13;land;medium
 DeltaSiege_Island_8_Way;ffa;large
-Delta_Highgrounds_B1;large
-Desert;medium
-Desert Dev;medium
-Desert Needle Small;medium
-DesertCliffs;small
-desertdunes;medium
-deserteagle;large
-Deserted Third;small
-DesertedCrossing;small
-Deserted_Gully;medium
-Desertforts;medium
-Desertmountain;small
-Desertmountain17_Fix;small
-DesertNeedleSmall;medium
-DesertPlateaus;medium
-DesertSiege;medium
-DesertTriad;small
-DesertTriadFlooded	;small
-DesertTriadFlooded;small
-DesertVally;medium
-Desert_Delta_Siege;ffa;large
-Desert_Plateaus;small
-Desert_storm;medium
-Desolate;medium
-DesolateBattlefield;medium
-Desolation;small
+Delta_Highgrounds_B1;land;large
+Desert;land;medium
+Desert Dev;land;medium
+Desert Needle Small;land;medium
+DesertCliffs;land;small
+desertdunes;land;medium
+deserteagle;ffa;land;large
+Deserted Third;ffa;small
+DesertedCrossing;land;small
+Deserted_Gully;land;medium
+Desertforts;ffa;land;medium
+Desertmountain;land;small
+Desertmountain17_Fix;land;small
+DesertNeedleSmall;land;medium
+DesertPlateaus;land;medium;small
+DesertSiege;land;medium
+DesertTriad;ffa;land;small
+DesertTriadFlooded;ffa;small;water
+DesertVally;land;medium
+Desert_Delta_Siege;ffa;land;large
+Desert_Plateaus;land;medium;small
+Desert_storm;land;medium
+Desolate;land;medium
+DesolateBattlefield;land;medium
+Desolation;land;small
 Dessicated Sinkhole b1;large
-Detroit;large
-DianaBeach;ffa;medium
-DigitalDivide_PT2;small
-Digital_Siege;small
-DigSite;medium
-Direct Memory Access 0.5c (beta);medium
-Direct Memory Access 0.5e (beta);medium
-DireStrights;large
-DistrictWar;large
-Ditched;small
-Divided_Shores;medium
-Divided_Shores-Dry;medium
+Detroit;amphibious;large
+DianaBeach;amphibious;ffa;medium
+DigitalDivide_PT2;land;small
+Digital_Siege;land;small
+DigSite;land;medium
+Direct Memory Access 0.5c (beta);land;medium
+Direct Memory Access 0.5e (beta);land;medium
+DireStrights;amphibious;large
+DistrictWar;amphibious;large
+Ditched;land;small
+Divided_Shores;amphibious;medium
+Divided_Shores-Dry;land;medium
 Dividing_Wall;medium
-DockMetal;large
-Dockside;medium
-Doo''s SeaBalancing testmap SSB2;medium
-Doomed;large
-Dota;small
-DoubleLLTAComplex;large
-DownCount;small
-Downpour;ffa;medium
-DownRiver;medium
-DownRiver_Beta;medium
-Downs_of_Destruction;medium
-Downs_of_Destruction_Fix;medium
-DOXTA;small
-Drab;small
-DragonEye;small
-DragonEyeArctic;small
-DragonEyeTemperate;small
-Dragons HQ;medium
-Drake_Mountains;medium
+DockMetal;amphibious;large
+Dockside;amphibious;medium
+Doo's SeaBalancing testmap SSB2;amphibious;medium
+Doomed;land;large
+Dota;land;small
+DoubleLLTAComplex;land;large
+DownCount;land;small
+Downpour;amphibious;ffa;medium
+DownRiver;amphibious;medium
+DownRiver_Beta;amphibious;medium
+Downs_of_Destruction;amphibious;medium
+Downs_of_Destruction_Fix;amphibious;medium
+DOXTA;land;small
+Drab;land;small
+DragonEye;land;small
+DragonEyeArctic;land;small
+DragonEyeTemperate;land;small
+Dragons HQ;land;medium
+Drake_Mountains;land;medium
 DryDeltaSiege Special;medium
 DryLakeBed;ffa;medium
-DryRiver;small
-Dry_lands;small
-DSD 8 Way;ffa;large
-DSD Capture The Flag;medium
-DSD4l1f3;medium
-DSD4lif3;medium
-DSD4life;medium
-DSD4lyfe;medium
-DSDR;medium
-DSD_Balanced;medium
-DSD_BA_T1_ONLY;medium
-Dual Core;small
-Dual Icy Run;small
-DualingKiwis;large
-duck;small
-duckfusions;small
-duckfusionsfix;small
-Duckquest;small
-Duel;small
-Dueling_Bases;small
-Dueling_Forts;small
-DuelRift;small
-Duggans-Metal-Map;medium;metal
-Duggans-Metal-Two;medium;metal
-duke nukem;ffa;metal;small
-duke_nukem;ffa;metal;small
-Dune;medium
-DunePatrolRC1;small
-DunePatrolRedux;small
-DunePatrol_wip;small
-Dune_Desert;small
-Dust_Bowl;large
-DWDeadDesert;medium
-Dworld;ffa;large
-Dworld Acidic;large
-DworldDuo;large
-Earatope;small
-Earth FFA;ffa;large
-Easter Bunny v1 Horse;medium
-Easter Bunny v2 Horse;medium
-Echo Canyon;small
-EE-DeltaGlade;medium
-EE-Deserted_Sinkhole;large
-EE-DustBowl;medium
-EE-RiverGlade;medium
-EE-Waterways;large
-EgoGreenFields;medium
-Egypt;medium
-Eisenwald;medium
-Eisland;large
-Elements3;medium
-Emain Macha;medium
-EmainMacha Remake;medium
-Emerald Escarpment;medium
-Emerald Island;small
-Emereld;large
-EmmanuelFarm;small
-Enceladus;medium
-Enclaves;medium
-Energy Spire Plain;small
-EnhancedSiegedry;medium
-Entrenched_Plains;medium
-Epic;large
-Epic Water dragon later;large
-Epic-EE-CrossingGlade;small
-Epic40x40;large
-EpicLawn;large
-EpicShore;large
-EpicShore2;large
-EpicShoreLongcat;medium
-Epic_Water_v1_x80;large
-EpsilonSiegeDry_alpha6;medium
-erml;medium
-Errotep_Crossing;large
-escalante_beta3;medium
-Escarpment;medium
-EternityOcean;large
-Etorrep_Glacier;medium
-EU1;large
-Eureka;medium
-Euro-Risk;large
-EuroGreen;small
-EuroGreen-Redux;small
-Europe_a1;large
-Europe_a2;large
-Evad River Confluence;small
-Evad_River_Confluence;small
-Evergreen_Haven;small
-Evergreen_Haven-Redux;medium
-Evil Eyes;medium
-Evolution in War;small
-Evolutionary;small
-EvoRTS - Altored Divide;medium;small
-EvoRTS - Craggy Creek;medium;small
-EvoRTS - Delta Siege;medium
-EvoRTS - Division;small
-EvoRTS - Eye of Horus;medium
-EvoRTS - Glacier Pass;medium
-EvoRTS - Higher Grounds;medium
-EvoRTS - New Iammas;ffa;medium;small
-EvoRTS - Pockmark Valley;medium;small
-EvoRTS - Proving Grounds;medium;small
-EvoRTS - RiverGlade;medium;small
-EvoRTS - Winter Basin;medium
-EvoRTS-Altored_Divide;small
-EvoRTS-A_House_Divided;medium
-EvoRTS-CaisRevenge;medium
-EvoRTS-Deserted_Gully;medium
-EvoRTS-Division;small
-EvoRTS-New_Iammas;ffa;medium;small
-EvoRTS-Pockmark_Valley;small
-EvoRTS-Riverdale;medium
-EvoRTS-RiverGlade;small
-EvoRTS-SwampValley;medium
-EvoRTS-Tale_of_Two_Hills;medium
-EvoRTS-TwinPeaks;medium
-Expandation;medium
-ExpandedTropics;large
-Expanded_Confluence;ffa;large
-Expanded_Confluence_dry;large
-Eye Of Horus;medium
-Eye_Of_Horus;medium
-Fairyland;small
-Fallendell;small
-Fastest Map;medium
-Fastest Map - Big;large
-FastestMapForever;medium
-FataMorgana;ffa;medium
-Faya;large
-Fetid Marsh;medium
-FF-AsteroidBattle;large
-FF-SpeedPlatforms;large
-FF-Surrounded;large
-FHBeta;small
-Fields_Of_Isis;small
-Fields_of_silver;large
-Field_of_Isis;medium
-Fifteen Platforms;small
+DryRiver;land;small
+Dry_lands;land;small
+DSD 8 Way;ffa;land;large
+DSD Capture The Flag;land;medium
+DSD4l1f3;land;medium
+DSD4lif3;land;medium
+DSD4life;land;medium
+DSD4lyfe;land;medium
+DSDR;land;medium
+DSD_Balanced;land;medium
+DSD_BA_T1_ONLY;land;medium
+Dual Core;land;small
+Dual Icy Run;land;small
+DualingKiwis;land;large;metal
+duck;land;metal;small
+duckfusions;land;metal;small
+duckfusionsfix;land;metal;small
+Duckquest;land;metal;small
+Duel;land;small
+Dueling_Bases;land;small
+Dueling_Forts;land;small
+DuelRift;small;water
+Duggans-Metal-Map;land;medium;metal
+Duggans-Metal-Two;land;medium;metal
+duke nukem;ffa;land;metal;small
+duke_nukem;ffa;land;metal;small
+Dune;land;medium
+DunePatrolRC1;amphibious;small
+DunePatrolRedux;amphibious;small
+DunePatrol_wip;amphibious;small
+Dune_Desert;land;small
+Dust_Bowl;land;large
+DWDeadDesert;land;medium
+Dworld;amphibious;ffa;large
+Dworld Acidic;acid;ffa;land;large
+DworldDuo;amphibious;ffa;large
+Earatope;land;small
+Earth FFA;amphibious;ffa;large
+Easter Bunny v1 Horse;land;medium
+Easter Bunny v2 Horse;land;medium
+Echo Canyon;land;small
+EE-DeltaGlade;amphibious;medium
+EE-Deserted_Sinkhole;land;large
+EE-DustBowl;land;medium
+EE-RiverGlade;amphibious;medium
+EE-Waterways;amphibious;large
+EgoGreenFields;land;medium
+Egypt;amphibious;medium
+Eisenwald;land;medium
+Eisland;amphibious;large;metal
+Elements3;amphibious;medium
+Emain Macha;land;medium
+EmainMacha Remake;land;medium
+Emerald Escarpment;land;medium
+Emerald Island;amphibious;small
+Emereld;land;large
+EmmanuelFarm;land;metal;small
+Enceladus;land;medium
+Enclaves;land;medium
+Energy Spire Plain;land;small
+EnhancedSiegedry;land;medium
+Entrenched_Plains;land;medium
+Epic;land;large
+Epic Water dragon later;large;water
+Epic-EE-CrossingGlade;amphibious;small
+Epic40x40;land;large
+EpicLawn;land;large
+EpicShore;large;water
+EpicShore2;large;water
+EpicShoreLongcat;medium;water
+Epic_Water_v1_x80;large;water
+EpsilonSiegeDry_alpha6;land;medium
+erml;medium;metal;water
+Errotep_Crossing;amphibious;large;metal
+escalante_beta3;land;medium
+Escarpment;land;medium
+EternityOcean;large;water
+Etorrep_Glacier;land;medium
+EU1;amphibious;ffa;large
+Eureka;land;medium
+Euro-Risk;amphibious;ffa;large
+EuroGreen;land;small
+EuroGreen-Redux;land;small
+Europe_a1;amphibious;ffa;large
+Europe_a2;amphibious;ffa;large
+Evad River Confluence;amphibious;ffa;small
+Evad_River_Confluence;amphibious;ffa;small
+Evergreen_Haven;land;small
+Evergreen_Haven-Redux;land;medium
+Evil Eyes;land;medium
+Evolution in War;land;small
+Evolutionary;acid;land;small
+EvoRTS - Altored Divide;land;medium;small
+EvoRTS - Craggy Creek;land;medium;small
+EvoRTS - Delta Siege;land;medium
+EvoRTS - Division;land;small
+EvoRTS - Eye of Horus;land;medium
+EvoRTS - Glacier Pass;land;medium
+EvoRTS - Higher Grounds;land;medium
+EvoRTS - New Iammas;ffa;land;medium;small
+EvoRTS - Pockmark Valley;land;medium;small
+EvoRTS - Proving Grounds;land;medium;small
+EvoRTS - RiverGlade;amphibious;medium;small
+EvoRTS - Winter Basin;land;medium
+EvoRTS-Altored_Divide;land;small
+EvoRTS-A_House_Divided;land;medium
+EvoRTS-CaisRevenge;land;medium
+EvoRTS-Deserted_Gully;land;medium
+EvoRTS-Division;land;small
+EvoRTS-New_Iammas;ffa;land;medium;small
+EvoRTS-Pockmark_Valley;land;small
+EvoRTS-Riverdale;land;medium
+EvoRTS-RiverGlade;amphibious;small
+EvoRTS-SwampValley;amphibious;medium
+EvoRTS-Tale_of_Two_Hills;land;medium
+EvoRTS-TwinPeaks;land;medium
+Expandation;amphibious;medium
+ExpandedTropics;large;water
+Expanded_Confluence;amphibious;ffa;large
+Expanded_Confluence_dry;ffa;land;large
+Eye Of Horus;land;medium
+Eye_Of_Horus;land;medium
+Fairyland;land;small
+Fallendell;land;small
+Fastest Map;ffa;land;medium;metal
+Fastest Map - Big;ffa;land;large;metal
+FastestMapForever;ffa;land;medium;metal
+FataMorgana;amphibious;ffa;medium
+Faya;land;large
+Fetid Marsh;land;medium
+FF-AsteroidBattle;air;ffa;large;metal;void
+FF-SpeedPlatforms;ffa;large;metal;water
+FF-Surrounded;large;metal;water
+FHBeta;land;small
+Fields_Of_Isis;land;small
+Fields_of_silver;land;large
+Field_of_Isis;land;medium
+Fifteen Platforms;land;small;void
 FinalTestMap;small
-Finnish Flag;small
-FinnsRevengeR;medium
-Finns_Revenge;small
-FireAtWill;medium
-Firebreak;small
-Firebreak vBeta1;small
-Firebreak vBeta2;small
-Firebreak vBeta3;small
+Finnish Flag;land;small
+FinnsRevengeR;amphibious;medium
+Finns_Revenge;amphibious;small
+FireAtWill;land;medium;metal
+Firebreak;amphibious;small
+Firebreak vBeta1;amphibious;small
+Firebreak vBeta2;amphibious;small
+Firebreak vBeta3;amphibious;small
 first;small
-Fishbone_Ridge;medium
-Fissure_wip;small
-FizzyLakes;medium
-Flannel-World;large
-Flat-Map;medium
-Flathill Islands;small
-Flatlands;medium
-Flats and Forests Remake;large
-FlattyPatty;small
-FlattyPatty1.1;small
-Floating_CastleBETA;medium
-Flooded Valley;small
-FloodedDesert;medium
-Flooded_Valley;small
-Floppy Dgun;small
-Flower B1;large
-FolsomDam;ffa;medium;small
-FolsomDamCore;small
-FolsomDamDeluxe;medium
-FolsomDamFinal;medium
-FolsomDamFlooded;medium
-FolsomDamR;medium
+Fishbone_Ridge;land;medium
+Fissure_wip;land;small
+FizzyLakes;amphibious;medium
+Flannel-World;land;large
+Flat-Map;land;medium
+Flathill Islands;amphibious;small
+Flatlands;ffa;land;medium;metal
+Flats and Forests Remake;land;large
+FlattyPatty;land;small
+FlattyPatty1.1;land;small
+Floating_CastleBETA;amphibious;medium
+Flooded Valley;small;water
+FloodedDesert;amphibious;medium
+Flooded_Valley;small;water
+Floppy Dgun;land;metal;small
+Flower B1;amphibious;large
+FolsomDam;ffa;land;medium;small
+FolsomDamCore;land;small
+FolsomDamDeluxe;land;medium
+FolsomDamFinal;land;medium
+FolsomDamFlooded;amphibious;medium
+FolsomDamR;land;medium
 Foothills;small
-Foothill_Basin;small
-Foothill_Basin_Redux;medium
-Forge;medium
-ForgottenTemple;small
-Forgotten_Atoll;medium
-Forgotten_Crossing;small
-FortifiedIsland BETA;large
-FortifiedIslandSmall BETA;medium
-Fortress;medium
-Fortress of Hadez;large
-Fort_Delta;medium
-four islands;large
-Four_Lakes;medium
-Fracture beta;medium
-Fractured_Continents;medium
-Fractured_Eyes;small
-Fractured_Faces;medium
-Free-Zone;medium
-French Flag;small
-French Flag beta;small
-French Flag test;small
-French Flag test beta;small
-French Flag v1.34 Fixed;small
-French Flag v1.37 Fixed;small
-French Flag v1.4 Fixed;small
-FroobMetal;medium;metal
-FrostBite;small
-Frostburn;small
-FrostyCove;small
-FrozenFortress;medium
-FrozenFortress_v1;medium
-FrozenFourway;medium
-FrozenPlanet;small
-Frozen_Ford;small
-Frozen_Gauntlet_TNM03;small
-FTIG_Battlefield;small
-FujiMount;medium
-Full_Moon;small
-Gaatskaan;medium
-Ganymede;medium
-GargantuanEpicShore;large
-GargantuanFieldsOfIsis;large
-GargantuanIcyRun;large
-Garlic;medium;small
-Gasfornuis;medium
-Gecko Isle;medium
-Gehenna Rising;ffa;medium
-GenBloods-Crossing;small
-GengDoWoingDin;large
-Gentle Romp;small
+Foothill_Basin;land;small
+Foothill_Basin_Redux;land;medium
+Forge;land;lava;medium
+ForgottenTemple;land;small
+Forgotten_Atoll;amphibious;medium
+Forgotten_Crossing;land;small
+FortifiedIsland BETA;amphibious;large
+FortifiedIslandSmall BETA;amphibious;medium
+Fortress;amphibious;medium
+Fortress of Hadez;land;large
+Fort_Delta;land;medium
+four islands;amphibious;large
+Four_Lakes;amphibious;medium
+Fracture beta;land;medium
+Fractured_Continents;amphibious;medium
+Fractured_Eyes;amphibious;small
+Fractured_Faces;amphibious;medium
+Free-Zone;land;medium
+French Flag;land;metal;small
+French Flag beta;land;metal;small
+French Flag test;land;metal;small
+French Flag test beta;land;metal;small
+French Flag v1.34 Fixed;land;metal;small
+French Flag v1.37 Fixed;land;metal;small
+French Flag v1.4 Fixed;land;metal;small
+FroobMetal;land;medium;metal
+FrostBite;amphibious;small
+Frostburn;land;small
+FrostyCove;land;small
+FrozenFortress;land;medium
+FrozenFourway;ffa;land;medium
+FrozenPlanet;land;small
+Frozen_Ford;land;small
+Frozen_Gauntlet_TNM03;land;small
+FTIG_Battlefield;land;small
+FujiMount;land;medium
+Full_Moon;land;small
+Gaatskaan;amphibious;medium
+Ganymede;land;medium
+GargantuanEpicShore;large;water
+GargantuanFieldsOfIsis;land;large
+GargantuanIcyRun;land;large
+Garlic;land;medium;small
+Gasfornuis;land;medium;metal
+Gecko Isle;land;medium
+Gehenna Rising;ffa;land;lava;medium
+GenBloods-Crossing;land;small
+GengDoWoingDin;amphibious;large
+Gentle Romp;land;small
 Geo Green Fields;ffa;large
-GeoGreenFields X;medium
-GeoGreenFields X v4 Countdown;medium
-GeoGreenFields X v4 Countdown Fix;medium
-GeoGreenFieldsTechA;medium
-GeoGreenFieldsTechA Final;medium
-GeoGreenFieldsTechA Fix;medium
-GeoGreenFieldsTechA X;medium
-GeoGreenField_fix;ffa;large
-GeoGreenField_fix_final;ffa;large
-GeoGreenField_fix_v4-notidals;large
-GeoGreenField_fix_v5-notidals;large
-GeoGreenWideFields X;large
-Georgian_war;medium
-geo_green;large
-geo_green_widepass;large
-ger_vs_nk;medium
-Geyser_Plains_TNM04;small
-Geyser_Plains_ZK;small
-Ghenna Rising;ffa;medium
-GhostPeak;medium
-Giant Hills and Valleys b2;large
-Glacier;small
-Glacier Pass;small
-Glacier_Pass;medium
-Glacier_Plateau;large
-Glacies;small
-Glass_Dreams;large
-Gods Of War 2;medium
-Gods Of War 2 Remake;medium
-Goldrush;medium
-Gornhole;medium
-grad;medium
-GrainyCrossing;small
-GrandCanyon_Final;medium
-GrandRiver;large;small
-GrassyPlain;small
-Grassy_Paradox;small
-GravitySiegeDry;medium
-Graystone;medium
-Great Divide;small
-Great_Pyramid_Desert;small
-Green Comet;medium
-Green Comet Basic;medium
-Green Debug Build units;large
-Green Farms Concept;large
-Green fields mk2;large
-Green Flat x34;large
-Green River Confluence;ffa;medium
-Green-Canyon;small
-Greener Fields Big;large
-Greener_Fields;medium
-Greener_Fields no wind;medium
-Greenest Fields;ffa;medium
-GreenFields_Island;large
-GreenHaven;medium
-Greenhaven Remake;medium
-GreenHaven-Redux;medium
-Greenhaven_Remake;large
-Greenheaven;large
-greenriver;medium
-Greensnap;small
+GeoGreenFields X;land;medium
+GeoGreenFields X v4 Countdown;land;medium
+GeoGreenFields X v4 Countdown Fix;land;medium
+GeoGreenFieldsTechA;land;medium
+GeoGreenFieldsTechA Final;land;medium
+GeoGreenFieldsTechA Fix;land;medium
+GeoGreenFieldsTechA X;land;medium
+GeoGreenField_fix;ffa;land;large
+GeoGreenField_fix_final;ffa;land;large
+GeoGreenField_fix_v4-notidals;land;large
+GeoGreenField_fix_v5-notidals;land;large
+GeoGreenWideFields X;land;large
+Georgian_war;land;medium
+geo_green;land;large
+geo_green_widepass;land;large
+ger_vs_nk;land;medium
+Geyser_Plains_TNM04;land;small
+Geyser_Plains_ZK;land;small
+Ghenna Rising;ffa;land;lava;medium
+GhostPeak;land;medium
+Giant Hills and Valleys b2;land;large
+Glacier;amphibious;small
+Glacier Pass;land;small
+Glacier_Pass;land;medium
+Glacier_Plateau;land;large
+Glacies;land;small
+Glass_Dreams;amphibious;large
+Gods Of War 2;medium;water
+Gods Of War 2 Remake;medium;water
+Goldrush;land;medium
+Gornhole;acid;land;medium
+grad;land;medium;metal
+GrainyCrossing;land;small
+GrandCanyon_Final;land;medium
+GrandRiver;amphibious;large;small
+GrassyPlain;land;small
+Grassy_Paradox;land;metal;small
+GravitySiegeDry;land;medium
+Graystone;land;medium
+Great Divide;land;small
+Great_Pyramid_Desert;land;small
+Green Comet;land;medium
+Green Comet Basic;land;medium
+Green Debug Build units;land;large
+Green Farms Concept;land;large
+Green fields mk2;land;large
+Green Flat x34;land;large
+Green River Confluence;amphibious;ffa;medium
+Green-Canyon;land;small
+Greener Fields Big;land;large
+Greener_Fields;land;medium
+Greener_Fields no wind;land;medium
+Greenest Fields;ffa;land;medium
+GreenFields_Island;land;large
+GreenHaven;land;medium
+Greenhaven Remake;land;medium
+GreenHaven-Redux;land;medium
+Greenhaven_Remake;land;large
+Greenheaven;land;large
+greenriver;medium;water
+Greensnap;land;small
 GreenStress;medium
-GreenValley;medium
-Greenwold_Ghaut;small
-Green_Cool_Fields;large
-Green_Fields;medium
-Green_Fields_fix;medium
-Green_Fields_For_CA;medium
-Green_Geo_Fields;large
-Green_Pharms_R3.5a;large
-green_river_confluence;medium
-GreyHillValley;medium
-Grts_Cookedwell;large
-Grts_DesertValley;large
-Grts_Gantelope;medium
-Grts_Gunmetal_Harbor;large
-Grts_Messa;large
-Grts_Northernmountains;large
-Grts_RiverMouth;large
-Grts_RiverValley;large
-GRTS_River_Valley;large
-Grts_Rocky_Glacier;medium
-Gunmetal_Harbor;large
-Gyser_Plains_TNM04;small
-Halean Ruins;ffa;small
-HallstattLake;medium
-Halowarz;large
-HamburgerHill;large
-Harbinger;ffa;large
-hardnips;large
-Hard_Charge;small
-haunteddowns;medium
-HazardDesert;ffa;medium
-hazarddesert002;medium
-Heartbreaker;medium
-Heat;large
-Heavy_Metal;large;metal
-Hell;medium
-Hellite;small
-Hells Pass;medium
-Hells_Teeth;small
+GreenValley;land;medium
+Greenwold_Ghaut;land;small
+Green_Cool_Fields;land;large
+Green_Fields;land;medium
+Green_Fields_fix;land;medium
+Green_Fields_For_CA;land;medium
+Green_Geo_Fields;land;large
+Green_Pharms_R3.5a;amphibious;large
+green_river_confluence;amphibious;ffa;medium
+GreyHillValley;land;medium
+Grts_Cookedwell;land;large
+Grts_DesertValley;land;large
+Grts_Gantelope;land;medium
+Grts_Gunmetal_Harbor;amphibious;large
+Grts_Messa;land;large
+Grts_Northernmountains;land;large
+Grts_RiverMouth;amphibious;large
+Grts_RiverValley;amphibious;large
+GRTS_River_Valley;amphibious;large
+Grts_Rocky_Glacier;land;medium
+Gunmetal_Harbor;amphibious;large
+Gyser_Plains_TNM04;land;small
+Halean Ruins;ffa;land;small
+HallstattLake;amphibious;medium
+Halowarz;amphibious;large
+HamburgerHill;land;large
+Harbinger;acid;ffa;land;large
+hardnips;land;large;metal
+Hard_Charge;amphibious;small
+haunteddowns;land;medium
+HazardDesert;ffa;land;medium
+hazarddesert002;land;medium
+Heartbreaker;land;medium
+Heat;land;large
+Heavy_Metal;land;large;metal
+Hell;amphibious;medium;metal
+Hellite;land;lava;small
+Hells Pass;land;medium
+Hells_Teeth;land;small
 Hex Farm;large;small
-Hexian Arena;large
-Hexiwars;large
-Hide and Seek;ffa;medium
-Hide_and_Seek;medium
-High Forts;medium
-Higher_Grounds;ffa;medium
-Highfield;medium
-HighGround;medium
-HighGroundsDelta;large
-HighJump;medium
-HighJumpNoLava;medium
-highland;large
-HighNoon-Redux;medium
-HighTides;ffa;small
-Hightops3;small
-Highway 95;medium
-Highway 95 East;medium
-Highway 95 West;medium
-Highway To Skull Beta;small
-High_And_Low;large
-High_and_Low_Redux;large
-Hikinen_ja_Oksettava_Kaurapuuro;large
-Hikinen_ja_Oksettava_Kaurapuuro-5v5;medium
-Hills_And_Passes;medium
-Hills_and_Valleys;medium
-HnH_beta;small
-Hohenheim;large
-HoldTheFire;ffa;small
-HolyWater;small
-Hooked;small
-Horrors_of_War;medium
-HorstAndGraben;large
-Hostil Planet;large
-HostilPlanet;small
-hotlips001;large
-Hotlips_Redux;large
-hotstepper;small
-Hotstepper 5;ffa;small
-hotstepper_LM;small
-Hourglass;medium
-Hundred Isles Remake;small
-Hydraiel;medium
-Hydra_Dust_swamps;ffa;small
-Hydra_FFA;ffa;small
-Hydra_Landofthelost;small
-Hydra_Shard_valley;ffa;medium
-Hydra_Talus;medium
-Iammas Prime;ffa;medium
-Ibex;medium
-Ice Scream;medium
-IceArenA;ffa;medium
-IceBergs;large
-Iced Coffee;small
-Iceland;medium
-Ice_Bergs;ffa;large
-Ice_Mountain;ffa;medium
-Icy Crater;small
-Icy LongRun v2 beta;small
-Icy LongRun v2 beta2;small
-Icy LongRun v2 beta3;small
-Icy Run;small
-IcySea;ffa;large
-IcyVeryLong-10-Run;large
-IcyVeryLong-2-Run;medium
-IcyVeryLong-5-Run;large
-Icy_Shell;small
-Icy_Shell_alpha;small
-Icy_Shell_Beta;small
-Impact;medium;small
-Impact Beta;large
-Imperfect;small
+Hexian Arena;land;large;void
+Hexiwars;ffa;large;metal
+Hide and Seek;ffa;land;medium
+Hide_and_Seek;ffa;land;medium
+High Forts;land;medium;void
+Higher_Grounds;ffa;land;medium
+Highfield;land;medium
+HighGround;land;medium
+HighGroundsDelta;land;large
+HighJump;amphibious;medium
+HighJumpNoLava;amphibious;medium
+highland;land;large
+HighNoon-Redux;amphibious;medium
+HighTides;amphibious;ffa;small
+Hightops3;land;small
+Highway 95;land;medium
+Highway 95 East;land;medium
+Highway 95 West;land;medium
+Highway To Skull Beta;amphibious;small
+High_And_Low;amphibious;large
+High_and_Low_Redux;amphibious;large
+Hikinen_ja_Oksettava_Kaurapuuro;land;large
+Hikinen_ja_Oksettava_Kaurapuuro-5v5;land;medium
+Hills_And_Passes;land;medium
+Hills_and_Valleys;land;medium
+HnH_beta;land;small
+Hohenheim;land;large
+HoldTheFire;amphibious;ffa;small
+HolyWater;small;water
+Hooked;land;small
+Horrors_of_War;land;medium
+HorstAndGraben;land;large
+Hostil Planet;land;large
+HostilPlanet;land;small
+hotlips001;land;large
+Hotlips_Redux;land;large
+hotstepper;ffa;land;lava;small
+Hotstepper 5;ffa;land;lava;small
+hotstepper_LM;ffa;land;lava;small
+Hourglass;land;medium
+Hundred Isles Remake;small;water
+Hydraiel;amphibious;medium
+Hydra_Dust_swamps;amphibious;ffa;small
+Hydra_FFA;ffa;land;small
+Hydra_Landofthelost;land;small
+Hydra_Shard_valley;ffa;land;medium
+Hydra_Talus;land;medium
+Iammas Prime;ffa;land;medium
+Ibex;land;medium
+Ice Scream;land;medium
+IceArenA;ffa;land;medium
+IceBergs;large;water
+Iced Coffee;land;small
+Iceland;land;medium
+Ice_Bergs;ffa;large;water
+Ice_Mountain;ffa;land;medium
+Icy Crater;land;small
+Icy LongRun v2 beta;land;small
+Icy LongRun v2 beta2;land;small
+Icy LongRun v2 beta3;land;small
+Icy Run;land;small
+IcySea;amphibious;ffa;large
+IcyVeryLong-10-Run;land;large
+IcyVeryLong-2-Run;land;medium
+IcyVeryLong-5-Run;land;large
+Icy_Shell;land;small
+Icy_Shell_alpha;land;small
+Icy_Shell_Beta;land;small
+Impact;land;medium;small
+Impact Beta;amphibious;large
+Imperfect;land;small
 Imperfection;small
-Incandescence;medium
-Incandescence Remake;medium
-Inculta;medium
-Indar;medium
-indonesia;small
-indonesia003;small
-Industrial Revolution;medium
-Industrial_Revolution;medium
-Insular Encounter;medium
-Intercontinental32x32;large
-Intersection;ffa;small
-Into Battle;small
-Into Battle Redux;small
-Invernus;medium
-Inverse_conditions;ffa;medium
-IronHill;ffa;small
-Iron_Craters;ffa;medium
-Iron_Isle;medium
-IsisDelta;small
-Island in the Sun;medium
-IslandAlpha;small
-IslandConquest;medium
-IslandDivide;medium
-IslandHopping;medium
-Islandmap;large
-Islandos map;large
-IslandParadise;medium
-Islands_In_War;medium
-IslandTest;medium
-Isle of Grief;medium
-Isthmus Plain;small
-Italy_Fixed;large
-Ithaka;medium
-Its Wide;medium
-Ivands_Pocket_World;small
-Izki Channel;small
-Izki Channel vBeta2;small
-Izki Channel vBeta3;small
+Incandescence;land;lava;medium
+Incandescence Remake;land;lava;medium
+Inculta;land;medium
+Indar;land;medium
+indonesia;amphibious;small
+indonesia003;amphibious;small
+Industrial Revolution;amphibious;medium
+Industrial_Revolution;amphibious;medium
+Insular Encounter;amphibious;medium
+Intercontinental32x32;amphibious;large
+Intersection;ffa;land;small
+Into Battle;land;small
+Into Battle Redux;land;small
+Invernus;land;medium
+Inverse_conditions;ffa;land;medium
+IronHill;ffa;land;small
+Iron_Craters;ffa;land;medium
+Iron_Isle;amphibious;medium;metal
+IsisDelta;amphibious;small
+Island in the Sun;medium;water
+IslandAlpha;amphibious;small
+IslandConquest;amphibious;medium
+IslandDivide;amphibious;medium
+IslandHopping;medium;water
+Islandmap;large;water
+Islandos map;amphibious;large
+IslandParadise;amphibious;medium
+Islands_In_War;medium;water
+IslandTest;amphibious;medium
+Isle of Grief;amphibious;medium
+Isthmus Plain;amphibious;small
+Italy_Fixed;amphibious;large
+Ithaka;land;medium
+Its Wide;land;medium
+Ivands_Pocket_World;land;small
+Izki Channel;small;water
+Izki Channel vBeta2;small;water
+Izki Channel vBeta3;small;water
 JapanMap;small
-John''s-pond_rc;small
+John's-pond_rc;small
 johns_pass;small
-Jonathan''s-pond_beta;small
+Jonathan's-pond_beta;small
 jungle_MoonQ20x_remake;medium
 Jurassic Sands;small
 Kappa_Basin;medium
@@ -1031,7 +1028,7 @@ Kivekset_Halkova_Bassotaajuus;small
 Knockout;large
 KnockoutR;medium
 KochCanyon;medium
-Kolmogoro;ffa;large
+Kolmogorov;ffa;large
 Kolmogorov Remake;large
 Koom Gorge;medium
 Koom Gorge 3vs3 edition;small
@@ -1197,6 +1194,7 @@ MoonQ10;small
 MoonQ10x;small
 MoonQ20x;medium
 MoonQ20XR;medium
+MoonQ20XR.2;medium
 MoonQ20XR2;medium
 MoonRoom;medium
 Moor;large
@@ -1336,7 +1334,7 @@ PoolSide;medium
 Porculon;small
 Porky_Islands;medium
 Prime;medium
-Prime''s Ghetto;large
+Prime's Ghetto;large
 Pripyat Stadium;medium
 Prismar Archipelago;medium
 Pro-Iron-Pools;medium
@@ -1376,8 +1374,10 @@ RandomMapGen12x12 1.6.8 ZK;small
 RandomMapGen12x12 1.6.9 ZK;small
 RandomMapGen16x16;medium
 RandomMapGen24x24;large
-RandomMapGen24x24 TEST VERSION;large
+RandomMapGen24x24 Test Version;large
 RandomMapGen24x24 TestVersion1;large
+RandomMapGen2x2 TEST VERSION;large
+RandomMapGen4x4 TEST VERSION;large
 RandomMapGen8x8;small
 RandomMapGen8x8 Beta;small
 Rapids;small
@@ -1418,7 +1418,7 @@ ReRaghnarok;ffa;large
 res;medium
 Resting_Place;medium
 Richat;medium
-ridges_n''_passes;medium
+ridges_n'_passes;medium
 Rifted;medium
 Ring Atoll Remake;large
 Ring Atoll Remake AA-version;large
@@ -1463,8 +1463,8 @@ SailAway;medium
 SalmonStream;medium
 SaltrockColony;small
 SaltrockColonyR;ffa;small
-Sand Castles;small
-sandcastles;medium
+Sand Castles;medium;small
+sandcastles;medium;small
 SandCastles2;medium
 Sandcastles2Big;large
 SandCastles2_Meteors;medium
@@ -1499,7 +1499,7 @@ Sea Battle;medium
 sea Defense;large
 Sea of Dunes;large
 Seatofpower;ffa;medium
-Seatofpower_1.3;medium
+Seatofpower_1.3_;medium
 Sector9;medium
 SennaDuck;small
 SennaFields;ffa;large;medium
@@ -1507,7 +1507,7 @@ SennaFields_GeoFantasy;large
 sennafields_v4_k;large
 Sertagatta;medium
 Sertaleina;small
-Seth''s Ravine;medium
+Seth's Ravine;medium
 Seths Ravine Remake;medium
 Seths_Ravine;medium
 SevenIslands;large
@@ -1569,6 +1569,7 @@ sk_mudhole;small
 Slated_Fate;small
 Small Supreme Battlefield;medium
 Small Supreme Battlefield Dry;medium
+Small Supreme Battlefield Special;medium
 Small Supreme Battlefield V2 Special;medium
 Small Supreme Islands;medium
 Small Supreme Lake Dry;small
@@ -1745,6 +1746,7 @@ Techno Basin;large
 Techno Island;large
 Techno Island v0.1;large
 Techno Lands;large;small
+techno lands 3;small
 techno lands 3v3;small
 techno lands 3v3 b3;small
 techno lands 3v3 x3;small
@@ -1754,8 +1756,8 @@ Techno Lands 8v8 b3;large
 techno lands acidown;large
 Techno Lands Epyc Shore;large
 Techno Lands Final;large;medium
-Techno Lands Final 11.0;large
-Techno Lands Final 11.1;large
+Techno Lands Final 11.0 ;large
+Techno Lands Final 11.1 ;large
 Techno Lands Final Boat;large
 Techno Lands Final Lucky;medium
 Techno Lands Final TransAny;large
@@ -1800,7 +1802,7 @@ The Hole;medium
 The Oasis;small
 The Pass;medium
 The river Nix;large
-The Rock;small
+The Rock;ffa;medium;small
 The-Islands;ffa;large
 TheAbyss;large
 TheBeachBeta;medium
@@ -1813,8 +1815,8 @@ TheHunters;medium
 TheMission;ffa;large
 ThePass;small
 TheRing;ffa;small
-TheRiver;large
-TheRock;ffa;medium
+TheRiver;large;small
+TheRock;ffa;medium;small
 TheRockFinal;medium
 TheRockJungle;medium
 TheRockJungle_Fix2;medium
@@ -1823,7 +1825,7 @@ theWildBlue;medium
 The_Pass;medium
 The_Passzu!;small
 the_rising;medium
-The_River;small
+The_River;large;small
 The_Road;medium
 The_Road_Final;medium
 The_Road_Vtest;medium
@@ -1851,6 +1853,7 @@ TinySkirmishRedux1.1;small
 tiny_dry_lake;small
 Titan;medium
 Titan -v2 Singularity Mode;medium
+Titan Singu Mode;medium
 Titan-Flooded;medium
 Titan-v2 Commshare Test b;medium
 Titan-v2 Commshare v1.1 Test b;medium
@@ -1881,7 +1884,7 @@ TitanDuel UnbalancedCommanders Beta4;small
 TitanDuel UnbalancedCommanders Beta5;small
 TL Dropzone;large
 TMA;ffa;large
-TMA-0 v1;ffa;large
+TMA-0;ffa;large
 TMA20;large
 TMA20X;ffa;large
 TMA20XR;large
@@ -1947,11 +1950,11 @@ Twin Lakes Park Redux;large
 twintower4step;small
 Twisted Treeline;medium
 Twisted Treeline unba;medium
-Twisted Treeline Unbalanced Commanders Beta 20 -- It''s WAR;medium
-Twisted Treeline Unbalanced Commanders Beta 21 -- It''s WAR;medium
-Twisted Treeline Unbalanced Commanders Beta 21.1 -- It''s WAR;medium
-Twisted Treeline Unbalanced Commanders Beta 21.2 -- It''s WAR;medium
-Twisted Treeline Unbalanced Commanders Beta 21.4 -- It''s WAR;medium
+Twisted Treeline Unbalanced Commanders Beta 20 -- It's WAR;medium
+Twisted Treeline Unbalanced Commanders Beta 21 -- It's WAR;medium
+Twisted Treeline Unbalanced Commanders Beta 21.1 -- It's WAR;medium
+Twisted Treeline Unbalanced Commanders Beta 21.2 -- It's WAR;medium
+Twisted Treeline Unbalanced Commanders Beta 21.4 -- It's WAR;medium
 Twisted Treeline Unbalanced Commanders Beta 22.1 moBA;medium
 Twisted Treeline Unbalanced Commanders Beta 22.2 moBA;medium
 Twisted Treeline Unbalanced Commanders Beta 22.666 moBA;medium
@@ -1972,21 +1975,21 @@ Unit Catcher;medium
 urban_skirmish;small
 USA Invasion;large
 USA1;small
-Valiant_Saltscape;medium
+Valiant_Saltscape;land;medium
 Valkrishau;medium
 Valles Marineris;medium
 VallesMarineris;small
 Valles_Marineris;medium
 Valley Of Unrest;small
-ValleyofDeath;medium
-ValleyofWar;medium
-VallysAndHills;small
+ValleyofDeath;land;medium
+ValleyofWar;land;medium
+VallysAndHills;land;small
 Vantage;small
-Vantage vBeta1;small
-Vantage vBeta2;small
-Vapor2;medium
-vauban;large
-VaubanFortress;large
+Vantage vBeta1;land;small
+Vantage vBeta2;land;small
+Vapor2;land;medium
+vauban;land;large
+VaubanFortress;land;large
 Vein;medium
 Verdant;medium;small
 vernal;small

@@ -21,11 +21,9 @@ for d in filesToCheck:
 	version = d["version"]
 	# workaround for version being empty on maps, get it from the file name, if possible
 	if not version :
-		matches = re.search('(?<=[\-_ vV])([vV]?[0-9\.]+[^\-_ ]*)(?=.sd.$)',filename)
-		if matches:
-			version = matches.group(1)
-
-	nameWithoutVersion = re.sub('(?i)[\-_ ]*[vV]?'+version,'',d["name"]).strip()
+		version = extract_metadata.getVersionFromFilename(filename)
+	
+	nameWithoutVersion = extract_metadata.getNameWithoutVersion(d["name"],version)
 	versionSortNumber = extract_metadata.getVersionSortNumber(version)
 	metadata = None 
 	try :
