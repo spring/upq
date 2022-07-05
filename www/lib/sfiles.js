@@ -42,7 +42,8 @@ var mapKeywordDescriptions = {
 	"void": "Has void instead of water",
 	air: "Key areas only reachable by air units",
 	// other
-	metal: "Continuous metal yield across the surface instead of discrete metal spots",
+	metal: "Very high metal yield, often continuous across the surface instead of discrete metal spots",
+	nometal: "No metal spots",
 	ffa: "Map suitable for free-for-all battles"
 };
 
