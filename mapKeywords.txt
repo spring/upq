@@ -214,6 +214,7 @@ Bethezda;amphibious;medium
 Big Road;land;small
 bigmap;land;medium
 Bilateral;amphibious;large
+Bismuth Valley;land;large
 Black Mescalin;land;small
 BlackLake_Swamp;land;medium
 BlackLake_Swamp_v;land;small
@@ -326,6 +327,7 @@ Christmas Comet;land;medium
 Christmas Horse;land;small
 circled;small
 Cirme5;land;small
+Cirolata;land;medium
 CityConflict;land;small
 CityControl;land;metal;small
 Clashtle;small
@@ -728,7 +730,7 @@ Flannel-World;land;large
 Flat-Map;land;medium
 Flathill Islands;amphibious;small
 Flatlands;ffa;land;medium;metal
-Flats and Forests;land;medium
+Flats and Forests;land;large
 Flats and Forests Remake;land;large
 FlattyPatty;land;small
 FlattyPatty1.1;land;small
@@ -931,6 +933,7 @@ Horrors_of_War;land;medium
 HorstAndGraben;land;large
 Hostil Planet;land;large
 HostilPlanet;land;small
+Hotlips Remake;land;large
 hotlips001;land;large
 Hotlips_Redux;land;large
 hotstepper;ffa;land;lava;small
@@ -1069,6 +1072,7 @@ LEGO;land;large;metal
 Lego_of_me;land;metal;small
 Levels;land;medium
 Leyline;amphibious;medium
+Lightside Darkside;land;large
 LittleValley;land;medium
 Little_Brook;land;medium
 Living Lands;land;small
@@ -1452,6 +1456,7 @@ RoughShores;amphibious;ffa;medium
 RumblingForest;land;medium
 Rush_Hour-By_Wired;amphibious;metal;small
 Rust Valley;land;small
+Rustcrown Canyon;amphibious;medium
 Rusted_Divide;small;water
 Rusty Warehouse;land;small
 RustyDelta;land;medium
@@ -1506,6 +1511,7 @@ SennaDuck;land;metal;small
 SennaFields;ffa;land;large;medium;nometal
 SennaFields_GeoFantasy;land;large;nometal
 sennafields_v4_k;land;large;nometal
+Serene Caldera;large;water
 Sertagatta;land;medium
 Sertaleina;land;small
 Seth's Ravine;land;medium;void
@@ -1563,6 +1569,7 @@ Skullduggery 1.3 WIP;medium;water
 Skullduggery 1.4 WIP;medium;water
 SkullIslandFFA;ffa;land;large
 Sky Fortress Sigma;land;medium;small;void
+Sky Isle;land;medium;void
 Sky_Fortress;land;metal;small;void
 sk_doom;land;small
 sk_hive;land;small
@@ -1935,6 +1942,7 @@ TrumptonHill;land;small
 Tuckedup_16x12;land;medium
 TulwarCanyon;land;medium
 Tumult;land;medium
+Tumult Remake;land;medium
 Tundra;amphibious;medium
 Tundra Continents;large;water
 Turkish Flag;land;metal;small
