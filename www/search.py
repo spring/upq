@@ -8,6 +8,7 @@ from lib import upqdb, upqconfig
 import json
 import random
 import cgi
+import re
 
 def getlimit(request):
 	offset = 0
@@ -15,7 +16,7 @@ def getlimit(request):
 	if "offset" in request:
 		offset = int(request["offset"])
 	if "limit" in request:
-		limit = min(64, int(request["limit"]))
+		limit = min(6400, int(request["limit"]))
 	return "LIMIT %d, %d" %(offset, limit)
 
 def GetQuery(request, binary, tag, cond):
@@ -57,10 +58,60 @@ def GetTags(db, fid):
 		res.append(row[0])
 	return res
 
+def GetMapKeywordData(db):
+	rows = db.query("""SELECT fk.keyword,
+	COUNT(DISTINCT fk.fid) AS files, 
+	COUNT(DISTINCT f.name_without_version) AS maps 
+	FROM file_keyword fk 
+	INNER JOIN file f ON (fk.fid=f.fid) 
+	WHERE f.cid=2 GROUP BY fk.keyword ORDER BY fk.keyword ASC""")
+	res = []
+	for row in rows:
+		res.append(dict(row))
+	
+	return res
+
+def PrintMapKeywordList():
+	cfg = upqconfig.UpqConfig()
+	db = upqdb.UpqDB(cfg.db['url'], cfg.db['debug'])
+	rows = db.query("""SELECT CONCAT(f.name_without_version,COALESCE(CONCAT(';',GROUP_CONCAT(DISTINCT fk.keyword ORDER BY fk.keyword ASC SEPARATOR ';')),'')) AS line 
+	FROM file f 
+	LEFT JOIN file_keyword fk ON (f.fid=fk.fid) 
+	WHERE f.cid=2 
+	GROUP BY f.name_without_version 
+	ORDER BY f.name_without_version ASC""")
+
+	print("Content-Type: text/plain\n")
+	for row in rows:
+		line = row[0]
+		if line:
+			print(line)
+	
+def GetKeywordsConditionsForQuery(kwStr):
+	query = ""
+	kwArr = kwStr.split(",")
+	pattern = re.compile("[A-Za-z0-9]+")
+	havingAdded = False
+	
+	for i in range(len(kwArr)):
+		kw = kwArr[i]
+		if pattern.fullmatch(kw):
+			if havingAdded == False:
+				query += " HAVING "
+				havingAdded = True
+			if i > 0:
+				query += " AND "
+			query += " keywords RLIKE '[[:<:]]%s[[:>:]]' " % kw
+	return query
+
 def GetResult(request):
 	cfg = upqconfig.UpqConfig()
 	db = upqdb.UpqDB(cfg.db['url'], cfg.db['debug'])
 	wherecond = ""
+
+	# get a simpler result with counts of files and maps by keyword
+	if "getMapKeywordData" in request:
+		return GetMapKeywordData(db)
 
 	if "logical" in request and request["logical"] == "or":
 		logical = " OR "
@@ -82,8 +133,12 @@ def GetResult(request):
 		# FIXME: concat is really slow!
 		"springname": "((f.name LIKE {binary} '{springname}' OR f.version LIKE {binary} '{springname}') OR (CONCAT(f.name,' ',f.version) LIKE {binary} '{springname}'))",
 		"md5": "f.md5 = '{md5}'",
+		"minW": "map_width >= '{minW}'",
+		"minH": "map_height >= '{minH}'",
+		"maxW": "map_width <= '{maxW}'",
+		"maxH": "map_height <= '{maxH}'"
+		# "keywords": "keyword LIKE {binary}'{keyword}'",
 	}
-
 	wheres = []
 	for tag, condition in conditions.items():
 		wheres += GetQuery(request, binary, tag, condition)
@@ -93,8 +148,8 @@ def GetResult(request):
 		wherecond = " AND " + wherecond
 
 
-	#print(wherecond)
-	rows = db.query("""SELECT
+
+	query = """SELECT
 	distinct(f.fid) as fid,
 	f.name as name,
 	f.filename as filename,
@@ -105,18 +160,38 @@ def GetResult(request):
 	LOWER(c.name) as category,
 	f.size as size,
 	f.timestamp as timestamp,
+	GROUP_CONCAT(fk.keyword ORDER BY keyword ASC SEPARATOR ',') as keywords, 
 	f.metadata as metadata
 	FROM file as f
 	LEFT JOIN categories as c ON f.cid=c.cid
 	LEFT JOIN tag as t ON  f.fid=t.fid
-	WHERE c.cid>0
-	AND f.status=1
-	%s
-	ORDER BY f.timestamp DESC
-	%s
-	"""%(wherecond, getlimit(request)))
+	LEFT JOIN file_keyword AS fk ON (f.fid=fk.fid)
+	"""
 
+
+	# use different query to show only latest version for each name (maps only, for now)
+	if "latestOnly" in request and int(request["latestOnly"]) == 1 and "category" in request:
+		query += """INNER JOIN (SELECT name_without_version,MAX(version_sort_number) AS latest FROM file WHERE cid=2 GROUP BY name_without_version) f2 ON (f.name_without_version=f2.name_without_version) 
+		WHERE f.version_sort_number=f2.latest
+		AND c.cid>0
+		"""
+	else:
+		query += " WHERE c.cid>0 "
+
+	query += """ AND f.status=1
+	%s
+	"""% wherecond
+
+	query += " GROUP BY f.fid "
+	if "keywords" in request and request["keywords"] != "":
+		query += GetKeywordsConditionsForQuery(request["keywords"])
+	
+	query += " ORDER BY f.timestamp DESC %s " % getlimit(request)
+
+	#print(wherecond)
+	rows = db.query(query)
 	clientres = []
+	#clientres.append(query)
 	for row in rows:
 		d = dict(row)
 		#inject local file as mirror
@@ -165,21 +240,22 @@ request = {}
 #request={'_': '1630833475755', 'callback': 'processData', 'images': 'on', 'nosensitive': 'on', 'springname': '*'}
 
 #request = {"md5": "311d2bc8fd1bdb092b7d1f162da5fc44"}
-
 for k,v in cgi.parse().items():
 	if isinstance(v, list):
 		request[k] = v[0]
 	else:
 		request[k] = v
 
-result = GetResult(request)
-
-if "callback" in request:
-	# strip anything except a-Z0-9
-	print("Content-type: application/javascript\n")
-	cb = upqdb.escape(request["callback"], set("abcdefhijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"));
-	print( cb + "(" +  json.dumps(result) + ");")
+if "printMapKeywordList" in request:
+	PrintMapKeywordList()
 else:
-	print("Content-type: application/json\n")
-	print(json.dumps(result))
+	result = GetResult(request)
+	if "callback" in request:
+		# strip anything except a-Z0-9
+		print("Content-type: application/javascript\n")
+		cb = upqdb.escape(request["callback"], set("abcdefhijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"));
+		print( cb + "(" +  json.dumps(result) + ");")
+	else:
+		print("Content-type: application/json\n")
+		print(json.dumps(result))
 

@@ -27,6 +27,7 @@ import json
 import filecmp
 import logging
 import datetime
+import re
 
 from lib.unitsync import unitsync
 
@@ -300,7 +301,7 @@ def dumpLuaTree(usync, depth = 0):
 	return res
 
 def luaToPy(usync, archiveh, filename):
-	""" laods filename from archiveh, parses it and returns lua-tables as dict """
+	""" loads filename from archiveh, parses it and returns lua-tables as dict """
 	try:
 		luafile = getFile(usync, archiveh, filename)
 	except Exception as e:
@@ -407,7 +408,7 @@ def saveImage(image, size, imagedir):
 	""" store a image, called with an Image object, returns the filename """
 	m = hashlib.md5()
 	m.update(image.tobytes())
-	if (size[0]>1024): # shrink if to big
+	if (size[0]>1024): # shrink if too big
 		sizey=int((1024.0/size[0])*size[1])
 		logging.debug("image to big %dx%d, resizing... to %dx%d" % (size[0], size[1], 1024, sizey))
 		image=image.resize((1024, sizey))
@@ -448,6 +449,10 @@ def insertData(db, data):
 			"metadata": metadata,
 			"uid": data['uid'],
 			"path": data["path"],
+			"name_without_version": data["name_without_version"],
+			"map_width": data["map_width"],
+			"map_height": data["map_height"],
+			"version_sort_number": data["version_sort_number"],
 			"filename": data["filename"],
 			"timestamp": data["timestamp"],
 			"size": data["size"],
@@ -457,7 +462,7 @@ def insertData(db, data):
 			"sha256": data["sha256"],
 			})
 	else:
-		db.query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s', md5='%s', sha1='%s', sha256='%s', status=1, filename='%s', path='%s' WHERE fid=%s" %(
+		db.query("UPDATE file SET name='%s', version='%s', sdp='%s', cid=%s, metadata='%s', md5='%s', sha1='%s', sha256='%s', status=1, filename='%s', path='%s', name_without_version='%s', map_width=%d, map_height=%d, version_sort_number=%f WHERE fid=%s" %(
 			data['name'],
 			data['version'],
 			data['sdp'],
@@ -468,6 +473,10 @@ def insertData(db, data):
 			data["sha256"],
 			data["filename"],
 			data["path"],
+			data["name_without_version"],
+			data["map_width"],
+			data["map_height"],
+			data["version_sort_number"],
 			fid
 			))
 	# remove already existing depends
@@ -550,6 +559,49 @@ def dumpmap(usync, springname, outpath, filename, idx):
 	res.append(createMapInfoImage(usync,springname, "metal",1, "L","L;I", scaledsize, outpath))
 	return res
 
+def getVersionFromFilename(filename):
+	version = ""
+	matches = re.search('(?<=[\-_ vV])([vV]?[0-9\.]+[^\-_ ]*)(?=.sd.$)',filename)
+	if matches:
+		version = matches.group(1)
+	return version
+
+def getNameWithoutVersion(name,version):
+	if version:
+		return re.sub('(?i)[\-_ ]*[vV]?'+version,'',name).strip()
+	return name
+
+def getVersionSortNumber(version):
+	vCompArr=version.split('.')
+	cvString = ""
+	first = True
+	for vComp in vCompArr:
+		if first:
+			cvString += re.sub('[^0-9]','',vComp)
+			cvString += '.'
+			first = False
+		else:
+			cvString += '0'+re.sub('[^0-9]','0',vComp)
+	result = 0
+	try:
+		result = float(cvString)
+	except ValueError:
+		result = 0
+		
+	return result
+	
+def addInheritedKeywords(db,fid,nameWithoutVersion):
+	nameWithoutVersion = nameWithoutVersion.replace("'","\\'")
+	db.query("INSERT IGNORE INTO file_keyword (SELECT DISTINCT %d,keyword FROM file_keyword fk INNER JOIN file f ON (fk.fid=f.fid) WHERE f.name_without_version='%s')" % (fid,nameWithoutVersion))
+
+def setSizeKeywords(db,fid,width,height):
+	kw = "small"
+	if width*height > 18*18:
+		kw = "large"
+	elif width*height > 12*12:
+		kw = "medium"
+	db.query("REPLACE INTO file_keyword(fid,keyword) VALUES(%d,'%s')" % (fid,kw))
+
 def extractmetadata(usync, filepath, metadir):
 	"""
 	>>> datadir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)),  "../tests"))
@@ -605,7 +657,20 @@ def extractmetadata(usync, filepath, metadir):
 	data["name"] = escape(data["metadata"]['Name'])
 	data["version"] = escape(data["metadata"]['Version'])
 	data['sdp']=sdp
+	if idx >=0: # file is map
+		version = data["version"]
+		# workaround for version being empty on maps, get it from the file name, if possible
+		if not version : 
+			version = getVersionFromFilename(data["filename"])
 
+		data["name_without_version"] = getNameWithoutVersion(data["name"],version)
+		data["version_sort_number"] = getVersionSortNumber(version)
+		
+		metadata = data["metadata"]
+		data["map_width"] = int(metadata['Width'])
+		data["map_height"] = int(metadata['Height'])
+	
+	
 	usync.CloseArchive(archiveh)
 	return data
 
@@ -627,17 +692,24 @@ def extract_metadata_unitsync(cfg, db, filepath, accountid, tmpdir):
 	movefile(filepath, moveto)
 	assert(os.path.isfile(moveto))
 
+	fid = 0
 	try:
-		insertData(db, data)
+		fid = insertData(db, data)
 	except upqdb.UpqDBIntegrityError as e:
 		logging.error("Duplicate file detected: %s %s %s %s" % (data["filename"], data['name'], data['version'], str(e)))
 		return False
 
 	logging.info("Updated '%s' version '%s' sdp '%s' in the mirror-system" % (data['name'], data['version'], data['sdp']))
-
+		
 	usync.RemoveAllArchives()
 	usync.UnInit()
 	del usync
+
+	# add keywords information
+	if fid > 0:
+		addInheritedKeywords(db,fid,data["name_without_version"])
+		setSizeKeywords(db,fid,data["map_width"],data["map_height"])
+	
 	logging.info("*** Done! ***")
 	return True
 
