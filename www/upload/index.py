@@ -68,7 +68,7 @@ def SaveUploadedFile(form):
 	for path in [cfg.paths["files"], tmpdir]:
 		total, used, free = shutil.disk_usage(path)
 		if free < 5 * 1024 * 1024 * 1024:
-			return "To few disk space available: %d MiB in %s" %(free / (1024 * 1024), path)
+			return "Insufficient disk space available: %d MiB in %s" %(free / (1024 * 1024), path)
 
 	filename = save_uploaded_file(fileitem, tmpdir)
 	if not filename:

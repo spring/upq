@@ -39,7 +39,6 @@ var mapKeywordDescriptions = {
 	obstructed: "Many steep hills, chasms, land/water transitions or other choke points",
 	lava: "Has lava instead of water",
 	acid: "Has damage-dealing acid instead of water",
-	"void": "Has void instead of water",
 	air: "Key areas only reachable by air units",
 	// other
 	metal: "Very high metal yield, often continuous across the surface instead of discrete metal spots",
@@ -297,7 +296,7 @@ function getItemThumbnail(item) {
 		var category = item.category.toUpperCase();
 		var lcName = item.springname.toLowerCase();
 		if (item.mapimages && item.mapimages[0]) {
-			img = item.mapimages[0];
+			img = item.mapimages[0].replace(".jpg","_thumbnail.jpg");
 		} else {
 			if (category.indexOf("ENGINE") >= 0) {
 				img = "images/spring_logo.png";
@@ -515,7 +514,8 @@ function processData(data,showLimit) {
 				document.title = item.springname;
 				
 				// details for the matching item
-				h += '<table cellpadding="5" cellspacing="0" border="0" class="search_results" style="width:100%"><tr><th colspan="2" align="center"><span class="content_h1">'+name+(version ? '<br><span style="font-size:70%">version '+version+'</span>':'')+'</span></th></tr>';
+				var delButton = '<button type="button" onclick="fGo(\'/delete/?fid='+item.fid+'\')" title="Delete this item. Requires authentication (account must match uploader)" style="float: right;padding-inline:8px;margin-top:auto;line-height:1.4vw"> Delete </button>';
+				h += '<table cellpadding="5" cellspacing="0" border="0" class="search_results" style="width:100%"><tr><th colspan="2" align="center"><span class="content_h1">'+name+(version ? '<br><span style="font-size:70%">version '+version+'</span>':'')+'</span>'+delButton+'</th></tr>';
 
 				// details table
 				h+= '<tr><td valign="top"><table>';
@@ -751,11 +751,11 @@ function go(type,filter,category,keywords) {
 	switch(parseInt(type)) {
 		case (TYPE_GENERAL):
 			query = "?type=" + TYPE_GENERAL;	
-			sfQuery = "?nosensitive=on&images=on&metadata=1&springname=*";
+			sfQuery = "?nosensitive=on&notags=1&nomirrors=1&images=on&metadata=1&springname=*";
 		break;
 		case (TYPE_SEARCH):
 			query = "?type=" + TYPE_SEARCH+"&filter="+filter+"&category="+category+filterformQStr;	
-			sfQuery = "?nosensitive=on&images=on&metadata=1&springname=*"+filter+"*&category=*"+category+"*&keywords="+keywords+"&limit="+MAX_SEARCH_ITEMS+filterformQStr;
+			sfQuery = "?nosensitive=on&notags=1&nomirrors=1&images=on&metadata=1&springname=*"+filter+"*&category=*"+category+"*&keywords="+keywords+"&limit="+MAX_SEARCH_ITEMS+filterformQStr;
 		break;		
 		case (TYPE_DETAILS):
 			query = "?type=" + TYPE_DETAILS + "&filter=" + filter;

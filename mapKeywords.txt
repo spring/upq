@@ -435,6 +435,7 @@ CrustyCrust;small
 Crystal-Bridges;amphibious;medium
 Crystal-Harbor;medium;water
 Crystal-World;amphibious;metal;small
+Crystallized Plains;land;medium
 CT_Archway;land;medium
 CT_Conflict_Luna;land;medium
 CT_Eitbyeit_Gorge;amphibious;small
@@ -1135,8 +1136,10 @@ MartianDesert;amphibious;small
 Martian_Battleground;land;medium
 maze;ffa;land;metal;small
 Mearth;amphibious;ffa;large
+Medit;amphibious;ffa;large
 Melange;ffa;land;large
 Melt;ffa;land;medium
+Melting Glacier;amphibious;large
 Meltwater;medium;water
 MeltyHeck;ffa;land;metal;small
 MentalDuck;ffa;land;metal;small
@@ -1511,7 +1514,7 @@ SennaDuck;land;metal;small
 SennaFields;ffa;land;large;medium;nometal
 SennaFields_GeoFantasy;land;large;nometal
 sennafields_v4_k;land;large;nometal
-Serene Caldera;large;water
+Serene Caldera;ffa;large;water
 Sertagatta;land;medium
 Sertaleina;land;small
 Seth's Ravine;land;medium;void
@@ -1523,6 +1526,7 @@ SevenIslandsMini-V3;large;metal;water
 Sever;land;lava;medium
 Severnaya_Industrial;land;medium
 sf;land;large;nometal
+Shallow Straits;amphibious;small
 Share mode test beta;land;small
 SheEp;land;small
 SheerMetal;land;large;metal
