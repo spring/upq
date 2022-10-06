@@ -52,7 +52,7 @@ function init() {
 			<tr>
 				<td><div class="menu_icon"><a href="index.html" class="menu_button">≡</a></div>&emsp;</td>
 				<td>
-					Search: <input type="text" id="filter" value="" style="width:100px" onchange="syncFormField(this)">
+					Search: <input type="text" id="filter" value="" style="width:100px" onchange="syncFormField(this)" onkeydown="checkGo(event)">
 					<button type="button" id="filterFormButton" onclick="toggleFilterFormVisibility()" title="Show/hide filter form">Filter</button>
 					<button type="button" onclick="go(TYPE_SEARCH)" title="Apply filter">go!</button>
 					<button type="button" onclick="clearFilter()" title="Clear filter">x</button>

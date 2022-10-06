@@ -684,6 +684,14 @@ function getFormCheckboxField(paramId) {
 	return null;
 }
 
+// trigger search if enter key is pressed on the search input
+function checkGo(e) {
+	if (e && e.which == 13) {
+		go(TYPE_SEARCH);
+		e.preventDefault();
+	}
+}
+
 // send request to get data from server
 // set parameters override formFields table
 // response updates url query string to match
