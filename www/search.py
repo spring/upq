@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import sys, os
+import sys, os, time
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 
@@ -111,7 +111,7 @@ def GetResult(request):
 
 	# get a simpler result with counts of files and maps by keyword
 	if "getMapKeywordData" in request:
-		return GetMapKeywordData(db)
+		return GetMapKeywordData(db), time.perf_counter()
 
 	if "logical" in request and request["logical"] == "or":
 		logical = " OR "
@@ -190,19 +190,21 @@ def GetResult(request):
 
 	#print(wherecond)
 	rows = db.query(query)
+	t1 = time.perf_counter()
 	clientres = []
-	#clientres.append(query)
 	for row in rows:
-		d = dict(row)
-		#inject local file as mirror
-		if d["category"] in ["game", "map"]:
-			d["mirrors"] = ["https://springfiles.springrts.com/files/" + d["path"] + "/" + d["filename"]]
-		else:
-			d["mirrors"] = []
+		clientres.append(dict(row))
+	
+	#clientres.append(query)
+	for d in clientres:
+		if "nomirrors" not in request:
+			#inject local file as mirror
+			if d["category"] in ["game", "map"]:
+				d["mirrors"] = ["https://springfiles.springrts.com/files/" + d["path"] + "/" + d["filename"]]
+			else:
+				d["mirrors"] = []
 
-		d["mirrors"] += GetMirrors(db, d["fid"])
-		#print(mirrors)
-		#print(row)
+			d["mirrors"] += GetMirrors(db, d["fid"])
 
 		try:
 			d["metadata"] = json.loads(d["metadata"]) if d["metadata"] else {}
@@ -220,9 +222,9 @@ def GetResult(request):
 		#if "splash" in request:
 		#if "images" in request:
 
-		#json.dumps(row)
-		d["tags"] = GetTags(db, d["fid"])
-		del(d["fid"])
+		if "notags" not in request:
+			d["tags"] = GetTags(db, d["fid"])
+
 		if d["timestamp"]:
 			d["timestamp"] = d["timestamp"].isoformat()
 
@@ -230,11 +232,9 @@ def GetResult(request):
 			d["springname"] = d["name"]
 		else:
 			d["springname"] = d["name"] + " " + d["version"]
-
-
-		clientres.append(d)
-
-	return clientres
+	
+	
+	return clientres, t1
 
 request = {}
 #request={'_': '1630833475755', 'callback': 'processData', 'images': 'on', 'nosensitive': 'on', 'springname': '*'}
@@ -249,13 +249,20 @@ for k,v in cgi.parse().items():
 if "printMapKeywordList" in request:
 	PrintMapKeywordList()
 else:
-	result = GetResult(request)
+	t0 = time.perf_counter()
+	result, t1 = GetResult(request)
+	t2 = time.perf_counter()
+	jsonResult = json.dumps(result)
+	t3 = time.perf_counter()
+	# add mainQueryTime, metaQueriesTime and jsonTime performance info to result json as attributes to first element in result array
+	jsonResult = jsonResult.replace("[{",("[{\"mainQueryTime\":%f ,\"metaQueriesTime\":%f ,\"jsonTime\":%f ," % (t1-t0,t2-t1,t3-t2)),1)
+	
 	if "callback" in request:
 		# strip anything except a-Z0-9
 		print("Content-type: application/javascript\n")
 		cb = upqdb.escape(request["callback"], set("abcdefhijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"));
-		print( cb + "(" +  json.dumps(result) + ");")
+		print( cb + "(" +  jsonResult + ");")
 	else:
 		print("Content-type: application/json\n")
-		print(json.dumps(result))
+		print(jsonResult)
 

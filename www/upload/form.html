@@ -4,16 +4,51 @@
 	<meta charset="UTF-8">
 	<title>SpringFiles map + game upload form</title>
 	<link rel="shortcut icon" type="image/x-icon" href="../images/favicon.ico?v=2" />
+	<link rel="stylesheet" type="text/css" href="../style.css?cIdx=10" />
 </head>
-<body> 
-<form enctype = "multipart/form-data" action = "." method = "post">
-<ul>
-	<li>Map or Game (.sdz / .sd7): <input type="file" name="filename" /></li> 
-	<li>lobby.springrts.com Username: <input type="text" name="username"></li>
-	<li>Password: <input type="password" name="password"/></li>
-	<li><input type = "submit" value = "Upload" /></li> 
-</ul>
-</form>
-%messages%
-</body> 
+<body class="background">
+<!-- wrapper  -->
+<table class="main_table">
+<!-- header  -->
+<tr>
+<td>
+	<div class="header_background">
+		<table style="width: 60%; height: 4.6vw; margin:auto;">
+		<tr>
+		<td><a class="header_title" style="text-decoration:none;" href="../index.html">SPRINGFILES</a></td>
+		<td class="header_label">Keeps you playing.</td>
+		<td style="width: 45%">
+			&nbsp;
+		</td>
+		</tr>
+		</table>
+	</div>
+	<div style="height:4.5vw;"></div>
+</td>
+</tr>
+<!-- content -->
+<tr>
+<td class="content">
+	<table style="width : 100%">
+	<tr>
+		<td class="content_cell">
+			<h1 class="content_h1">Upload File</h1>
+			<form enctype = "multipart/form-data" action = "." method = "post">
+			<ul>
+				<li>Map or Game (.sdz / .sd7): <input type="file" name="filename" /><br><br></li> 
+				<li>lobby.springrts.com Username: <input type="text" name="username"><br><br></li>
+				<li>Password: <input type="password" name="password"/><br><br></li>
+				<li><input type = "submit" value = "Upload" /><br><br></li> 
+			</ul>
+			</form>
+			<div style="width:50vw;overflow-x:scroll;font-size:80%">
+			%messages%
+			</div>
+		</td>
+	</tr>
+	</table>
+</td>
+</tr>
+</table>
+</body>
 </html> 

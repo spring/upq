@@ -404,7 +404,7 @@ def getMapData(usync, filename, idx, archiveh, springname):
 	res['Version']=version
 	return res
 
-def saveImage(image, size, imagedir):
+def saveImage(image, size, imagedir, createThumbnail=None):
 	""" store a image, called with an Image object, returns the filename """
 	m = hashlib.md5()
 	m.update(image.tobytes())
@@ -423,6 +423,14 @@ def saveImage(image, size, imagedir):
 	image.save(absname)
 	os.chmod(absname,int("0644",8))
 	logging.debug("Wrote " + filename)
+	# add thumbnail, if necessary
+	if createThumbnail is not None:
+		image = Image.open(absname)
+		image.thumbnail((256, 256))
+		thumbName = absname.replace('.jpg','_thumbnail.jpg')
+		image.save(thumbName)
+		os.chmod(thumbName,int("0644",8))
+		logging.debug("Wrote " + thumbName)
 	return filename
 
 
@@ -520,7 +528,7 @@ def createMapImage(usync, mapname, size, metadir):
 	data=ctypes.string_at(usync.GetMinimap(mapname.encode("ascii"), 0), 1024*1024*2)
 	im = Image.frombuffer("RGB", (1024, 1024), data, "raw", "BGR;16")
 	del data
-	return saveImage(im, size, metadir)
+	return saveImage(im, size, metadir, True)
 
 def createMapInfoImage(usync, mapname, maptype, byteperpx, decoder,decoderparm, size, metadir):
 	assert(isinstance(mapname, str))
