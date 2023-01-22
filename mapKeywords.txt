@@ -96,6 +96,7 @@ Altored_Earth;amphibious;ffa;large
 Amalthea;amphibious;medium
 Amarante;ffa;land;medium
 AmazonDelta;amphibious;medium
+Ancient Bastion;land;large
 AncientArena;land;large
 Angel Crossing;ffa;land;medium
 Angel Pass;land;medium
@@ -794,6 +795,7 @@ GargantuanIcyRun;land;large
 Garlic;land;medium;small
 Gasfornuis;land;medium;metal
 Gecko Isle;land;medium
+Gecko Isle Remake;land;medium
 Gehenna Rising;ffa;land;lava;medium
 GenBloods-Crossing;land;small
 GengDoWoingDin;amphibious;large
@@ -893,6 +895,7 @@ Hard_Charge;amphibious;small
 haunteddowns;land;medium
 HazardDesert;ffa;land;medium
 hazarddesert002;land;medium
+Heartbreak Hill;land;medium
 Heartbreaker;land;medium
 Heat;land;large
 Heavy_Metal;land;large;metal
@@ -1138,6 +1141,7 @@ Martian_Battleground;land;medium
 maze;ffa;land;metal;small
 Mearth;amphibious;ffa;large
 Medit;amphibious;ffa;large
+Mediterraneum;amphibious;large
 Melange;ffa;land;large
 Melt;ffa;land;medium
 Melting Glacier;amphibious;large
@@ -1308,6 +1312,7 @@ Paridise-Revamp;ffa;land;medium
 Passe-muraille;land;medium
 Pathway;land;medium
 Pathways;land;large
+Pawn Retreat;land;large
 PaxPrime;land;large
 PCB;small
 PeakyMcPeakaMuffin;land;small
@@ -1335,6 +1340,7 @@ Platform;land;metal;small
 Plethora_of_Ponds;amphibious;large
 Plutonian_Pass;land;small
 Plutonium_Fields;ffa;land;small
+Point of No Return;amphibious;large
 Polish Actual Flag;land;metal;small
 Polish Fixed Flag;land;metal;small
 Polish Flag;land;metal;small
@@ -1447,7 +1453,7 @@ Road to War;land;large
 Road_to_War_Remake;land;large
 Robot Plateau;land;large
 Robot Plateau med;land;large
-Rock river;medium;land
+Rock river;land;medium
 Rockies;land;small
 RockoNRoll;land;small
 Rogues River;ffa;land;medium
@@ -1720,6 +1726,7 @@ Supreme Battlefield Dry;land;large
 Supreme Battlefield Remix;amphibious;large
 Supreme Lake;amphibious;medium
 Supreme Lake Dry;land;medium
+Supreme Strait;amphibious;large
 SupremeBattlefieldMirrored Beta;amphibious;large
 Supreme_Battlefield_Dry;land;large
 Supreme_Crossing;amphibious;medium
@@ -1758,7 +1765,6 @@ Tau12;amphibious;medium
 TeamFortress;land;small
 tech mix lands;land;large
 Techno Basin;amphibious;large
-Techno Bronze;large;land
 Techno Island;amphibious;large
 Techno Island v0.1;amphibious;large
 Techno Lands;land;large;small
@@ -1772,7 +1778,6 @@ Techno Lands 8v8 b3;land;large
 techno lands acidown;acid;ffa;land;large
 Techno Lands Epyc Shore;large;water
 Techno Lands Final;land;large;medium
-Techno Lands Final 14.9 Morf;land;large
 Techno Lands Final Boat;large;water
 Techno Lands Final Lucky;land;medium
 Techno Lands Final TransAny;large
