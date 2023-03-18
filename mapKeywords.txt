@@ -97,6 +97,7 @@ Amalthea;amphibious;medium
 Amarante;ffa;land;medium
 AmazonDelta;amphibious;medium
 Ancient Bastion;land;large
+Ancient Vault;large;land
 AncientArena;land;large
 Angel Crossing;ffa;land;medium
 Angel Pass;land;medium
@@ -280,6 +281,7 @@ Canyon_Crossing;land;medium
 Canyon_Redux;land;medium
 Canyon_Wasteland;land;medium
 Cape_Violet;amphibious;medium
+Carrot Mountains;large;land;ffa
 Castel_gods;ffa;land;medium
 Castel_godsV21_fix;ffa;land;medium
 Castle Well;land;small
@@ -626,6 +628,7 @@ EE-RiverGlade;amphibious;medium
 EE-Waterways;amphibious;large
 EgoGreenFields;land;medium
 Egypt;amphibious;medium
+Eight Horses;large;land
 Eisenwald;land;medium
 Eisland;amphibious;large;metal
 Elements3;amphibious;medium
@@ -749,6 +752,7 @@ FolsomDamDeluxe;land;medium
 FolsomDamFinal;land;medium
 FolsomDamFlooded;amphibious;medium
 FolsomDamR;land;medium
+Fool''s mate;large;land
 Foothills;small
 Foothill_Basin;land;small
 Foothill_Basin_Redux;land;medium
@@ -1420,6 +1424,7 @@ Red Planet Remake;land;small
 Red River North Remake;amphibious;medium
 Red River Remake;amphibious;large
 Red Rock Desert;ffa;land;medium
+Red Triangle Remake;medium;amphibious;ffa
 Redhaven;land;medium
 RedPlague;land;small
 red_beta;amphibious;medium
@@ -1689,6 +1694,7 @@ Spring-Islands;ffa;large;water
 SpringMountainDelta;amphibious;medium
 Squonut v1 by Zeaga;small
 StarLightStation;amphibious;small
+Starwatcher;large;land
 Steel_Fields;ffa;large;metal
 StoneBridges;land;medium
 StormBay;amphibious;medium
@@ -1730,6 +1736,7 @@ Supreme Strait;amphibious;large
 SupremeBattlefieldMirrored Beta;amphibious;large
 Supreme_Battlefield_Dry;land;large
 Supreme_Crossing;amphibious;medium
+Supreme_Crossing_V2;medium
 Supreme_Lake;amphibious;medium
 Supreme_Lake_Dry;land;medium
 Surrounded_Grounds;land;medium
@@ -1814,7 +1821,9 @@ testt;small
 test_geogreen;ffa;large
 Tetrad;ffa;land;small
 ThatBridge;medium
+The Cold Place BAR;medium;amphibious;ffa
 The Cold Place Remake;amphibious;small
+The Halite Maze;small;land
 The Highlands;amphibious;medium
 The Hole;land;medium;void
 The Oasis;land;small
@@ -1839,6 +1848,7 @@ TheRockFinal;amphibious;medium
 TheRockJungle;amphibious;medium
 TheRockJungle_Fix2;amphibious;medium
 TheSwampFinal;acid;air;small
+Theta Crystals;medium;land
 theWildBlue;amphibious;medium
 The_Pass;land;medium
 The_Passzu!;small
