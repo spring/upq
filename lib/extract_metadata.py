@@ -457,10 +457,10 @@ def insertData(db, data):
 			"metadata": metadata,
 			"uid": data['uid'],
 			"path": data["path"],
-			"name_without_version": data["name_without_version"],
-			"map_width": data["map_width"],
-			"map_height": data["map_height"],
-			"version_sort_number": data["version_sort_number"],
+			"name_without_version": data.get("name_without_version"),
+			"map_width": data.get("map_width",0),
+			"map_height": data.get("map_height",0),
+			"version_sort_number": data.get("version_sort_number",0),
 			"filename": data["filename"],
 			"timestamp": data["timestamp"],
 			"size": data["size"],
@@ -481,10 +481,10 @@ def insertData(db, data):
 			data["sha256"],
 			data["filename"],
 			data["path"],
-			data["name_without_version"],
-			data["map_width"],
-			data["map_height"],
-			data["version_sort_number"],
+			data.get("name_without_version"),
+			data.get("map_width",0),
+			data.get("map_height",0),
+			data.get("version_sort_number",0),
 			fid
 			))
 	# remove already existing depends
@@ -665,7 +665,7 @@ def extractmetadata(usync, filepath, metadir):
 	data["name"] = escape(data["metadata"]['Name'])
 	data["version"] = escape(data["metadata"]['Version'])
 	data['sdp']=sdp
-	if idx >=0: # file is map
+	if data['category_name'] == "map" : # file is map
 		version = data["version"]
 		# workaround for version being empty on maps, get it from the file name, if possible
 		if not version : 
@@ -714,7 +714,7 @@ def extract_metadata_unitsync(cfg, db, filepath, accountid, tmpdir):
 	del usync
 
 	# add keywords information
-	if fid > 0:
+	if fid > 0 and data.get('category_name') == "map" :
 		addInheritedKeywords(db,fid,data["name_without_version"])
 		setSizeKeywords(db,fid,data["map_width"],data["map_height"])
 	
