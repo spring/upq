@@ -136,7 +136,7 @@ Arkadash Desert;land;small
 Armoduland;land;medium
 ARock;small
 AS-BAF2;land;small
-Ascendancy;large;land
+Ascendancy;land;large
 Ashap_Plateau;land;small
 Ashap_Plateau_III;land;small
 Ashpen;small
@@ -192,6 +192,7 @@ BarR;ffa;land;small
 BarracudaBay;amphibious;small
 Barreer;land;small
 Barren;land;small
+Baryon Tar Lake;medium;amphibious
 Bastion;land;medium
 Battle for Planet XIV;land;medium
 Battle for PlanetXVII;land;small
@@ -249,6 +250,7 @@ Brickland;land;small
 Bridge;amphibious;small
 Bridge Fix;land;small
 Bridge map;amphibious;large
+Bridges on Core Prime;medium;amphibious;metal
 Bridging_the_Divide;amphibious;medium
 brun;small
 Bryce_Arena;land;small
@@ -351,6 +353,7 @@ Clover_Isle_Basic fix;acid;ffa;land;small
 coagulation;small
 Coagulation Marsh;amphibious;medium;small
 Coast To Coast BAR;small;water
+Coast To Coast Dry X;small;land
 Coast To Coast Remake;small;water
 Coastal;small;water
 CoastalDry;land;small
@@ -427,6 +430,7 @@ Crater Islands Remake;amphibious;small
 CrazyMase;small;water
 Crescent_Bay;amphibious;ffa;large
 Crestfallen-Metropolis;amphibious;medium
+Crimson Bay;large;amphibious;ffa
 Crimson Comet;land;small
 Crimson Crater;land;small
 Crimson_Paradise;land;medium
@@ -436,7 +440,7 @@ Crossing;land;medium
 Crossing_4_final;land;small
 CrossWar;amphibious;large
 Crubick Plains;amphibious;medium
-Crubick Plains BAR;medium;amphibious
+Crubick Plains BAR;amphibious;medium
 Crucible;land;lava;small
 Crucifix;amphibious;large
 Crust;land;medium
@@ -480,6 +484,7 @@ DeepSpaceConflict;air;large;void
 DeepWater;small
 Defender's Advantage;land;small
 Delta Seige Dry Reloaded vBETA4;land;medium
+Delta Siege Dry;medium;land
 Delta Siege Dry Reloaded vBETA4;land;medium
 DeltaSiege;land;medium
 DeltaSiege Morph;land;medium
@@ -659,6 +664,7 @@ EpicShore2;large;water
 EpicShoreLongcat;medium;water
 Epic_Water_v1_x80;large;water
 EpsilonSiegeDry_alpha6;land;medium
+Erebos Lakes;large;amphibious
 erml;medium;metal;water
 Errotep_Crossing;amphibious;large;metal
 escalante_beta3;land;medium
@@ -709,7 +715,8 @@ Expanded_Confluence;amphibious;ffa;large
 Expanded_Confluence_dry;ffa;land;large
 Eye Of Horus;land;medium
 Eye_Of_Horus;land;medium
-Factions and Factious;large;land;ffa
+Factions and Factious;ffa;land;large
+Failed Negotiations;large;amphibious
 Fairyland;land;small
 Fallendell;land;small
 Faster Than Light;small
@@ -717,6 +724,7 @@ Fastest Map;ffa;land;medium;metal
 Fastest Map - Big;ffa;land;large;metal
 FastestMapForever;ffa;land;medium;metal
 FataMorgana;amphibious;ffa;medium
+Faultline;small;land
 Faya;land;large
 Fetid Marsh;land;medium
 FF-AsteroidBattle;air;ffa;large;metal;void
@@ -798,6 +806,7 @@ Frozen_Ford;land;small
 Frozen_Gauntlet_TNM03;land;small
 FTIG_Battlefield;land;small
 FujiMount;land;medium
+Full Metal Plate;large;land;metal
 Full_Moon;land;small
 Gaatskaan;amphibious;medium
 Ganymede;land;medium
@@ -829,12 +838,13 @@ Georgian_war;land;medium
 geo_green;land;large;nometal
 geo_green_widepass;land;large;nometal
 ger_vs_nk;land;medium
-Geyser Plains BAR;small;land
+Geyser Plains BAR;land;small
 Geyser_Plains_TNM04;land;small
 Geyser_Plains_ZK;land;small
 Ghenna Rising;ffa;land;lava;medium
 GhostPeak;land;medium
 Giant Hills and Valleys b2;land;large
+Glacial Gap;large;amphibious
 Glacier;amphibious;small
 Glacier Pass;land;small
 Glacier_Pass;land;medium
@@ -870,7 +880,7 @@ Greener_Fields no wind;land;medium
 Greenest Fields;ffa;land;medium
 GreenFields_Island;land;large
 GreenHaven;land;medium
-Greenhaven BAR;medium;land
+Greenhaven BAR;land;medium
 Greenhaven Remake;land;medium
 GreenHaven-Redux;land;medium
 Greenhaven_Remake;land;large
@@ -1013,7 +1023,7 @@ Inverse_conditions;ffa;land;medium
 IronHill;ffa;land;small
 Iron_Craters;ffa;land;medium
 Iron_Isle;amphibious;medium;metal
-Isidis crack;medium;land
+Isidis crack;land;medium
 IsisDelta;amphibious;small
 Island in the Sun;medium;water
 IslandAlpha;amphibious;small
@@ -1034,8 +1044,9 @@ Ivands_Pocket_World;land;small
 Izki Channel;small;water
 Izki Channel vBeta2;small;water
 Izki Channel vBeta3;small;water
-Jade Empress;large;amphibious
+Jade Empress;amphibious;large
 JapanMap;air;small
+Jensmap;large;land
 John's-pond_rc;small
 johns_pass;amphibious;small
 Jonathan's-pond_beta;amphibious;small
@@ -1052,6 +1063,7 @@ Katastrophe;land;medium
 Keksland;land;small
 KillahDeathMetal.1.1;land;metal;small
 KingOfTheCastle;land;medium;metal
+Kings Assault;medium;land;acid
 Kithrup;amphibious;medium
 Kivekset_Halkova_Bassotaajuus;amphibious;small
 Knockout;ffa;land;large
@@ -1092,6 +1104,7 @@ Lava And Two Hills;air;lava;small
 Lava Highground;ffa;lava;small
 Lava Rivers;small
 Lava_Reef;air;lava;small
+Lavender Bender;medium;land
 LeCuir;land;small
 LEGO;land;large;metal
 Lego_of_me;land;metal;small
@@ -1135,6 +1148,7 @@ Makmap;land;small
 Malibu Beach;amphibious;medium
 Malmi;land;medium
 Mamap;land;small
+Mandelbrot Set;large;amphibious
 mandelbrot2x2;small
 MandoCastles;ffa;land;large;medium
 MandoCastlesDuo;land;large
@@ -1294,6 +1308,7 @@ Obsidian_0.5_beta;land;medium
 Obsidian_0.6_beta;land;medium
 OceanHills;amphibious;small
 Ocean_Battlefield;small;water
+Odderon Strandflats;large;amphibious;ffa
 OkiRiver;amphibious;large
 Okiriver_Remake;amphibious;large
 Oktogon;ffa;land;large
@@ -1350,6 +1365,7 @@ PirateDivide;medium;water
 Pit Chasm v;land;medium
 PizzaTime;ffa;land;medium;metal
 Placid_Stream;land;medium
+Plains and Passes;large;land
 Plains_and_passes;land;large
 Plateau;land;small
 plateau2;amphibious;medium
@@ -1438,7 +1454,7 @@ Red Craters;land;small
 Red Planet Impact;land;small
 Red Planet Impact v2;land;small
 Red Planet Remake;land;small
-Red River Estuary;large;amphibious
+Red River Estuary;amphibious;large
 Red River North Remake;amphibious;medium
 Red River Remake;amphibious;large
 Red Rock Desert;ffa;land;medium
@@ -1500,6 +1516,7 @@ rysia_hrf;land;large
 S44_fields6x14;land;small
 Sacrifice;land;medium
 SailAway;medium;water
+Salmiakki;medium;land
 SalmonStream;amphibious;medium
 SaltrockColony;amphibious;ffa;small
 SaltrockColonyR;amphibious;ffa;small
@@ -1534,12 +1551,14 @@ ScorpioBattleground;amphibious;medium
 Scorpion;ffa;land;medium
 Scrap-Metal;amphibious;large;metal
 screwThisMapName;land;medium
+Scylla and Charybdis;medium;land
 Sea Barrier;amphibious;small
 Sea Battle;medium;water
 sea Defense;amphibious;large;metal
 Sea of Dunes;land;large
 Seatofpower;amphibious;ffa;medium
 Seatofpower_1.3_;amphibious;medium
+Sector 318C;medium;land
 Sector9;land;medium
 SennaDuck;land;metal;small
 SennaFields;ffa;land;large;medium;nometal
@@ -1551,6 +1570,7 @@ Sertaleina;land;small
 Seth's Ravine;land;medium;void
 Seths Ravine Remake;land;medium;void
 Seths_Ravine;land;medium;void
+Seven Rivers;large;amphibious
 SevenIslands;large;metal;water
 SevenIslandsMini;large;metal;water
 SevenIslandsMini-V3;large;metal;water
@@ -1595,6 +1615,7 @@ SimpleBowl;land;small
 SimpleChess;ffa;land;small
 Singu Test;land;metal;small
 Singularity Test;land;metal;small
+Sinkhole Network;large;land;ffa
 SixWayIsland;amphibious;ffa;small
 Skape;land;medium
 SkirmishValley;land;small
@@ -1702,7 +1723,7 @@ Speed_StormSiegeDuoWet;amphibious;medium;metal
 Speed_Talus;land;medium;metal
 Speed_TheRockJungle;amphibious;medium;metal
 Speed_Throne;land;large;metal
-Sphagnum Bog;medium
+Sphagnum Bog;medium;amphibious
 spiders web;land;medium
 Splintered4x4;amphibious;ffa;small
 SplinteredTropics;amphibious;medium
@@ -1750,6 +1771,7 @@ Super_Speed_Ball_Matrix_16_Way;ffa;large;metal;water
 Supreme Battlefield;amphibious;large
 Supreme Battlefield Dry;land;large
 Supreme Battlefield Remix;amphibious;large
+Supreme Isthmus;large;amphibious
 Supreme Lake;amphibious;medium
 Supreme Lake Dry;land;medium
 Supreme Strait;amphibious;large
@@ -1761,6 +1783,7 @@ Supreme_Lake;amphibious;medium
 Supreme_Lake_Dry;land;medium
 Surrounded_Grounds;land;medium
 SwampIsland;amphibious;large
+Swirly Rock;large;land
 Sypor;land;medium
 SyporBeta;land;medium
 SyrinBeta;amphibious;medium
@@ -1805,6 +1828,7 @@ Techno Lands 8v8 b3;land;large
 techno lands acidown;acid;ffa;land;large
 Techno Lands Epyc Shore;large;water
 Techno Lands Final;land;large;medium
+Techno Lands Final 16.0 Monsters;large;land
 Techno Lands Final Boat;large;water
 Techno Lands Final Lucky;land;medium
 Techno Lands Final TransAny;large
@@ -1844,6 +1868,7 @@ ThatBridge;medium
 The BARrier Reef Remake;large;water
 The Cold Place BAR;amphibious;ffa;medium
 The Cold Place Remake;amphibious;small
+The Ditch Remake;large;amphibious
 The Halite Maze;land;small
 The Highlands;amphibious;medium
 The Hole;land;medium;void
@@ -1938,7 +1963,7 @@ TMA-0;ffa;land;large;void
 TMA20;land;large;void
 TMA20X;ffa;land;large;void
 TMA20XR;land;large;void
-To Kill The Middle;large;land;lava;ffa
+To Kill The Middle;ffa;land;large;lava
 Tombstone Desert;land;small
 Tombstone_Desert;land;small
 Top_Gear;land;small
@@ -2086,7 +2111,7 @@ WesternFrontier;land;medium
 Whakamutunga_Riri;land;medium
 WhaleOnTheMiddle;small
 white;medium
-White Fire Remake;medium;land
+White Fire Remake;land;medium
 White Rabbit;land;medium
 Wide Pass;land;medium
 Wide Pass Final;land;medium

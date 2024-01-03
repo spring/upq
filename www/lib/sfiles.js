@@ -387,6 +387,9 @@ function processData(data,showLimit) {
 		var h = '<table width="100%" ><tr><td align="center">';
 		
 		if (formFields.type == TYPE_GENERAL) {
+			// update document title
+			document.title = "SpringFiles";
+
 			h+='<table width="100%"><tr>';
 			
 			// general description
@@ -424,7 +427,7 @@ function processData(data,showLimit) {
 				
 				h+='<tr><td>'+name+'</td><td align="right"><span class="category"> '+category+' </span></td></tr>';
 				h+='<tr><td style="font-size:80%">'+date+(version ? '<br>version '+version:'')+(mapSizeStr ? '<br>'+mapSizeStr:'')+'</td><td rowspan="2" style="width:6vw;"><img class="search_thumbnail" src="'+img+'"></td></tr>';
-				h+='<tr><td><button onclick="go('+TYPE_DETAILS+',\''+md5+'\')">view details...</button></td></tr>';
+				h+='<tr><td><button title="Click for details/download\n\nUse SHIFT to open in a new window" onclick="go('+TYPE_DETAILS+',\''+md5+'\')">view details...</button></td></tr>';
 				
 				h += '</table></td></tr>';
 				if (i >= MAX_RECENT_ITEMS -1) {
@@ -441,6 +444,9 @@ function processData(data,showLimit) {
 			
 			h+='</tr></table>';
 		} else if (formFields.type == TYPE_SEARCH) {
+			// update document title
+			document.title = "SpringFiles";
+
 			// list of matching items
 			h += '<table cellpadding="5" cellspacing="0" border="0" class="search_results" style="width:70%"><tr><th colspan="2" align="center"><span class="content_h1">Search Results<br><span style="font-size:50%">'+(data.length > MAX_SEARCH_ITEMS ? (Math.min(data.length,MAX_SEARCH_ITEMS)+"+") : data.length )+' matches</span></span></th></tr>';
 			if (data && data.length > 0) {
@@ -464,7 +470,7 @@ function processData(data,showLimit) {
 					
 					h+='<tr><td>'+name+'</td><td align="right"><span class="category"> '+category+' </span></td></tr>';
 					h+='<tr><td style="font-size:80%">'+date+(version ? '<br>version '+version:'')+(mapSizeStr ? '<br>'+mapSizeStr:'')+'</td><td rowspan="2" style="width:6vw;"><img class="search_thumbnail" src="'+img+'"></td></tr>';
-					h+='<tr><td><button onclick="go(TYPE_DETAILS,\''+md5+'\')">view details...</button></td></tr>';
+					h+='<tr><td><button title="Click for details/download\n\nUse SHIFT to open in a new window" onclick="go(TYPE_DETAILS,\''+md5+'\')">view details...</button></td></tr>';
 					
 					h += '</table></td></tr>';
 					resultsShown++;
@@ -696,6 +702,12 @@ function checkGo(e) {
 // set parameters override formFields table
 // response updates url query string to match
 function go(type,filter,category,keywords) {
+	// shift-click on a details button just opens a new window
+	if (event.shiftKey && type == TYPE_DETAILS) {
+		window.open("?type=" + TYPE_DETAILS + "&filter=" + filter, "_blank");
+		return;
+	}
+	
 	if (!type) {
 		type = formFields.type;
 	} else {
