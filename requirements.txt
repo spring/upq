@@ -1,4 +1,4 @@
 requests==2.31.0
 SQLAlchemy==1.4.23
-pillow==10.0.1
+pillow==10.2.0
 
