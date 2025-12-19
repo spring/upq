@@ -270,7 +270,12 @@ function getMapSizeStrFromMetadata(item) {
 	var metadata = item.metadata;
 	var mapSizeStr = "";
 	if (metadata && item.category == "map") {
-		mapSizeStr = ""+metadata.Width +"&nbsp;X&nbsp;"+ metadata.Height; 
+		// consider cases where the map size wasn't processed correctly for some reason
+		if (metadata.Width <=0 || metadata.Height <=0 ) {
+			mapSizeStr = "?&nbsp;X&nbsp;?"; 
+		} else {
+			mapSizeStr = ""+metadata.Width +"&nbsp;X&nbsp;"+ metadata.Height; 
+		}
 	}
 	return mapSizeStr;
 }

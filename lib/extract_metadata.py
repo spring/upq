@@ -597,10 +597,11 @@ def getVersionSortNumber(version):
 		result = 0
 		
 	return result
-	
+
+# copy keywords from previously added files corresponding to different versions of the same item, excluding the map size ones	
 def addInheritedKeywords(db,fid,nameWithoutVersion):
 	nameWithoutVersion = nameWithoutVersion.replace("'","\\'")
-	db.query("INSERT IGNORE INTO file_keyword (SELECT DISTINCT %d,keyword FROM file_keyword fk INNER JOIN file f ON (fk.fid=f.fid) WHERE f.name_without_version='%s')" % (fid,nameWithoutVersion))
+	db.query("INSERT IGNORE INTO file_keyword (SELECT DISTINCT %d,keyword FROM file_keyword fk INNER JOIN file f ON (fk.fid=f.fid) WHERE f.name_without_version='%s' AND fk.keyword NOT IN ('small','medium','large'))" % (fid,nameWithoutVersion))
 
 def setSizeKeywords(db,fid,width,height):
 	kw = "small"
