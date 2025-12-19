@@ -39,6 +39,7 @@
 2_Valleys_V.3-By_Wired;land;small
 3 Pass Greenland;land;medium
 3 Way Red Sea;amphibious;ffa;medium
+32x32 Hotstepper;ffa;land;lava;large
 3_Bridges;land;medium
 4 Way Battle;amphibious;ffa;land;large
 4B_facility;land;medium;metal
@@ -221,6 +222,7 @@ BellicoseIslands_ZK;small;water
 Bethezda;amphibious;medium
 Big Road;land;small
 bigmap;land;medium
+BigMap2;land;small
 Bilateral;amphibious;large
 Bismuth Valley;land;large
 Black Mescalin;land;small
@@ -244,6 +246,7 @@ Blue Lagoon v4 (Large);ffa;medium;water
 Blue Planet;medium;water
 BlueBend;land;medium
 bluer_fields_no_wind;land;large;nometal
+Bluescreen fields;land;large;nometal
 bluetardfields;land;large
 blue_fields;land;large;nometal
 Blue_Lagoon;small;water
@@ -565,6 +568,7 @@ DesolateBattlefield;land;medium
 Desolation;land;small
 Dessicated Sinkhole b1;large
 Detroit;amphibious;large
+Devil''s Postpiles;land;small
 DianaBeach;amphibious;ffa;medium
 DigitalDivide_PT2;land;small
 Digital_Siege;land;small
@@ -639,6 +643,7 @@ Earth FFA;amphibious;ffa;large
 Easter Bunny v1 Horse;land;medium
 Easter Bunny v2 Horse;land;medium
 Echo Canyon;land;small
+Eclipsed;land;medium
 EE-DeltaGlade;amphibious;medium
 EE-Deserted_Sinkhole;land;large
 EE-DustBowl;land;medium
@@ -765,6 +770,7 @@ Flats and Forests Remake;land;large
 FlattyPatty;land;small
 FlattyPatty1.1;land;small
 Floating_CastleBETA;amphibious;medium
+Flooded Ruins;medium;water
 Flooded Valley;small;water
 FloodedDesert;amphibious;medium
 Flooded_Valley;small;water
@@ -822,6 +828,7 @@ GargantuanEpicShore;large;water
 GargantuanFieldsOfIsis;land;large
 GargantuanIcyRun;land;large
 Garlic;land;medium
+Gasbag Grabens;acid;land;medium
 Gasfornuis;land;medium;metal
 Gecko Isle;land;medium
 Gecko Isle Remake;land;medium
@@ -1047,6 +1054,7 @@ Islands_In_War;medium;water
 IslandTest;amphibious;medium
 Isle of Grief;amphibious;medium
 Isthmus Plain;amphibious;small
+Isthmus Temple;amphibious;small
 Italy_Fixed;amphibious;large
 Ithaka;land;medium
 Its Wide;land;medium
@@ -1263,7 +1271,7 @@ Moor;land;large
 MorbusXeno;land;medium;metal
 MorsFort;land;metal;small
 Mosaic;small
-MOSAIC_LastDayOfDubai;amphibious;small
+MOSAIC_LastDayOfDubai_V4;land;medium;nometal
 Mosh_Pit;amphibious;ffa;large
 Motkottava_Nakkivahvero;land;medium
 Mountain Lake;amphibious;medium
@@ -1398,6 +1406,7 @@ Polish Actual Flag;land;metal;small
 Polish Fixed Flag;land;metal;small
 Polish Flag;land;metal;small
 ponysrock;land;metal;small
+Pools of Ilys;land;medium
 PoolSide;amphibious;medium
 Porculon;land;small
 Porky_Islands;amphibious;medium
@@ -1405,6 +1414,7 @@ Prime;land;medium;metal
 Prime's Ghetto;land;large;metal
 Pripyat Stadium;land;medium
 Prismar Archipelago;amphibious;medium
+Prismatic Anomaly;land;medium
 Pro-Iron-Pools;amphibious;medium;metal
 Prokhorovka;land;medium
 Proving Grounds;land;nometal;small
@@ -1452,6 +1462,7 @@ Rapids;amphibious;small
 RatRace;land;medium;metal
 RattleSnake;nometal;small
 Ravaged;land;small
+Ravaged Plateaus;land;lava;small
 Ravaged Remake;small
 Ravaged_flooded;land;small
 Ravaged_Lava;land;lava;small
@@ -1539,6 +1550,7 @@ Salt Reef;land;medium
 SaltrockColony;amphibious;ffa;small
 SaltrockColonyR;amphibious;ffa;small
 Sand Castles;land;medium
+Sand Crowns;ffa;land;large
 sandcastles;land;medium
 SandCastles2;land;medium
 Sandcastles2Big;land;large
@@ -1679,6 +1691,8 @@ SoupAssault;land;medium;metal
 Sparewood;ffa;land;small
 Sparewood_Remake;land;small
 Spartan_Isle;ffa;land;small
+Special Hotstepper;ffa;land;large;lava
+Special Reef;ffa;land;large
 Speed Ball Hovers;acid;metal;small
 Speed Metal River;amphibious;medium;metal
 Speed2Metal;metal;small
@@ -1767,6 +1781,7 @@ summer_dream_alpha;land;large;metal
 summer_dream_s44_alpha;land;large;metal
 Sunderance;land;medium
 SunkenOutpost;amphibious;medium
+SunwooMap;land;small
 supcom;amphibious;large
 SuperCorePrimeCorridor;land;metal;small
 SuperCorePrimeCorridor-V1.3;land;metal;small
@@ -1844,6 +1859,8 @@ Techno Lands 8v8 b3;land;large
 techno lands acidown;acid;ffa;land;large
 Techno Lands Final;land;large
 Techno Lands Final 14.9 Morf;land;large
+Techno Lands Final 19.3 Boss;land;large
+Techno Lands Final 2.60 Wide;land;large
 Techno Lands Silver OP Epic;land;medium
 Techno Lands Silver OP Epic Tidal;land;medium
 techno lands throwdown;land;large
@@ -2124,6 +2141,7 @@ WhaleOnTheMiddle;small
 white;medium
 White Fire Remake;land;medium
 White Rabbit;land;medium
+Why did I let PtaQ talk me into this;amphibious;ffa;large
 Wide Pass;land;medium
 Wide Pass Final;land;medium
 Wide Pass NM;land;medium
