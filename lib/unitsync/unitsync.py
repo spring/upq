@@ -1,28 +1,6 @@
-import os, ctypes
+import os, ctypes, logging
 from ctypes import c_bool, POINTER, c_ushort, c_char, c_char_p, c_int, c_uint, c_float, Structure, create_string_buffer, cast, pointer
 
-class StartPos(Structure):
-	_fields_ = [('x', c_int), ('y', c_int)]
-	def __str__(self):
-		return '(%i, %i)' % (self.x, self.y)
-
-class MapInfo(Structure):
-	def __init__(self):
-		self.author = cast(create_string_buffer(200), c_char_p) # BUG: author field shows up as empty, probably something to do with the fact it's after the startpos structs
-		self.description = cast(create_string_buffer(255), c_char_p)
-
-	_fields_ = [('description', c_char_p),
-			('tidalStrength', c_int),
-			('gravity', c_int),
-			('maxMetal', c_float),
-			('extractorRadius', c_int),
-			('minWind', c_int),
-			('maxWind', c_int),
-			('width', c_int),
-			('height', c_int),
-			('posCount', c_int),
-			('StartPos', StartPos * 16),
-			('author', c_char_p)]
 
 class Unitsync:
 	def has(self, name):
@@ -38,7 +16,14 @@ class Unitsync:
 		"""Load unitsync from location and attempt to load all known procedures.
 		Location must end with .so (Linux) or .dll (Windows)"""
 		if location.endswith('.so'):
-			self.unitsync = ctypes.cdll.LoadLibrary(location)
+			try:
+				ctypes.CDLL("liblzma.so.5",mode=ctypes.RTLD_GLOBAL)
+				logging.info("loaded liblzma")
+
+				self.unitsync = ctypes.CDLL(location)
+				logging.info("loaded libunitsync")
+			except Exception as e:
+				logging.info(f"Error loading libs: {e}")
 		elif location.endswith('.dll'):
 			locationdir = os.path.dirname(location)
 			# load devil first, to avoid dll conflicts
@@ -48,6 +33,7 @@ class Unitsync:
 			ctypes.windll.LoadLibrary(locationdir + "/SDL.dll" )
 			self.unitsync = ctypes.windll.LoadLibrary(location)
 
+		#TODO commented functions are no longer available on libunitsync from recoil 2025.06.21, eventually remove
 		self._init("GetNextError", c_char_p)
 		self._init("GetSpringVersion", c_char_p)
 		self._init("GetSpringVersionPatchset", c_char_p)
@@ -57,32 +43,32 @@ class Unitsync:
 		self._init("GetDataDirectoryCount", c_int)
 		self._init("GetDataDirectory", c_char_p)
 		self._init("ProcessUnits", c_int)
-		self._init("ProcessUnitsNoChecksum", c_int)
+		#self._init("ProcessUnitsNoChecksum", c_int)
 		self._init("GetUnitCount", c_int)
 		self._init("GetUnitName", c_char_p)
 		self._init("GetFullUnitName", c_char_p)
 		self._init("GetArchiveChecksum", c_uint)
 		self._init("GetArchivePath", c_char_p)
-		self._init("GetMapInfoEx", c_int)
+		#self._init("GetMapInfoEx", c_int)
 		self._init("GetMapInfo", c_int)
 		self._init("GetMapCount", c_int)
 		self._init("GetMapName", c_char_p)
 		self._init("GetMapFileName", c_char_p)
-		self._init("GetMapDescription", c_char_p)
-		self._init("GetMapAuthor", c_char_p)
-		self._init("GetMapWidth", c_int)
-		self._init("GetMapHeight", c_int)
-		self._init("GetMapTidalStrength", c_int)
-		self._init("GetMapWindMin", c_int)
-		self._init("GetMapWindMax", c_int)
-		self._init("GetMapGravity", c_int)
-		self._init("GetMapResourceCount", c_int)
-		self._init("GetMapResourceName", c_char_p)
-		self._init("GetMapResourceMax", c_float)
-		self._init("GetMapResourceExtractorRadius", c_int)
-		self._init("GetMapPosCount", c_int)
-		self._init("GetMapPosX", c_float)
-		self._init("GetMapPosZ", c_float)
+		#self._init("GetMapDescription", c_char_p)
+		#self._init("GetMapAuthor", c_char_p)
+		#self._init("GetMapWidth", c_int)
+		#self._init("GetMapHeight", c_int)
+		#self._init("GetMapTidalStrength", c_int)
+		#self._init("GetMapWindMin", c_int)
+		#self._init("GetMapWindMax", c_int)
+		#self._init("GetMapGravity", c_int)
+		#self._init("GetMapResourceCount", c_int)
+		#self._init("GetMapResourceName", c_char_p)
+		#self._init("GetMapResourceMax", c_float)
+		#self._init("GetMapResourceExtractorRadius", c_int)
+		#self._init("GetMapPosCount", c_int)
+		#self._init("GetMapPosX", c_float)
+		#self._init("GetMapPosZ", c_float)
 		self._init("GetMapMinHeight", c_float)
 		self._init("GetMapMaxHeight", c_float)
 		self._init("GetMapArchiveCount", c_int)
@@ -102,16 +88,17 @@ class Unitsync:
 		self._init("GetInfoValueFloat", c_float)
 		self._init("GetInfoValueBool", c_bool)
 		self._init("GetInfoDescription", c_char_p)
+		self._init("GetMapInfoCount", c_int)
 		self._init("GetSkirmishAIOptionCount", c_int)
 		self._init("GetPrimaryModCount", c_int)
 		self._init("GetPrimaryModInfoCount", c_int)
-		self._init("GetPrimaryModName", c_char_p)
-		self._init("GetPrimaryModShortName", c_char_p)
-		self._init("GetPrimaryModVersion", c_char_p)
-		self._init("GetPrimaryModMutator", c_char_p)
-		self._init("GetPrimaryModGame", c_char_p)
-		self._init("GetPrimaryModShortGame", c_char_p)
-		self._init("GetPrimaryModDescription", c_char_p)
+		#self._init("GetPrimaryModName", c_char_p)
+		#self._init("GetPrimaryModShortName", c_char_p)
+		#self._init("GetPrimaryModVersion", c_char_p)
+		#self._init("GetPrimaryModMutator", c_char_p)
+		#self._init("GetPrimaryModGame", c_char_p)
+		#self._init("GetPrimaryModShortGame", c_char_p)
+		#self._init("GetPrimaryModDescription", c_char_p)
 		self._init("GetPrimaryModArchive", c_char_p)
 		self._init("GetPrimaryModArchiveCount", c_int)
 		self._init("GetPrimaryModArchiveList", c_char_p)
@@ -128,7 +115,7 @@ class Unitsync:
 		self._init("GetOptionScope", c_char_p)
 		self._init("GetOptionName", c_char_p)
 		self._init("GetOptionSection", c_char_p)
-		self._init("GetOptionStyle", c_char_p)
+		#self._init("GetOptionStyle", c_char_p)
 		self._init("GetOptionDesc", c_char_p)
 		self._init("GetOptionType", c_int)
 		self._init("GetOptionBoolDef", c_int)
@@ -153,7 +140,7 @@ class Unitsync:
 		self._init("InitSubDirsVFS", c_int)
 		self._init("FindFilesVFS", c_int)
 		self._init("OpenArchive", c_int)
-		self._init("OpenArchiveType", c_int)
+		#self._init("OpenArchiveType", c_int)
 		self._init("FindFilesArchive", c_int)
 		self._init("OpenArchiveFile", c_int)
 		self._init("ReadArchiveFile", c_int)
@@ -198,7 +185,7 @@ class Unitsync:
 	def GetDataDirectoryCount(self): return self.unitsync.GetDataDirectoryCount()
 	def GetDataDirectory(self, index): return self.unitsync.GetDataDirectory(index)
 	def ProcessUnits(self): return self.unitsync.ProcessUnits()
-	def ProcessUnitsNoChecksum(self): return self.unitsync.ProcessUnitsNoChecksum()
+	#def ProcessUnitsNoChecksum(self): return self.unitsync.ProcessUnitsNoChecksum()
 	def GetUnitCount(self): return self.unitsync.GetUnitCount()
 	def GetUnitName(self, unit): return self.unitsync.GetUnitName(unit)
 	def GetFullUnitName(self, unit): return self.unitsync.GetFullUnitName(unit)
@@ -207,26 +194,26 @@ class Unitsync:
 	def RemoveAllArchives(self): return self.unitsync.RemoveAllArchives()
 	def GetArchiveChecksum(self, archiveName): return self.unitsync.GetArchiveChecksum(archiveName)
 	def GetArchivePath(self, archiveName): return self.unitsync.GetArchivePath(archiveName)
-	def GetMapInfoEx(self, mapName, outInfo, version): return self.unitsync.GetMapInfoEx(mapName, pointer(outInfo), version)
+	#def GetMapInfoEx(self, mapName, outInfo, version): return self.unitsync.GetMapInfoEx(mapName, pointer(outInfo), version)
 	def GetMapInfo(self, mapName, outInfo): return self.unitsync.GetMapInfo(mapName, pointer(outInfo))
 	def GetMapCount(self): return self.unitsync.GetMapCount()
 	def GetMapName(self, index): return self.unitsync.GetMapName(index)
 	def GetMapFileName(self, index): return self.unitsync.GetMapFileName(index)
-	def GetMapDescription(self, index): return self.unitsync.GetMapDescription(index)
-	def GetMapAuthor(self, index): return self.unitsync.GetMapAuthor(index)
-	def GetMapWidth(self, index): return self.unitsync.GetMapWidth(index)
-	def GetMapHeight(self, index): return self.unitsync.GetMapHeight(index)
-	def GetMapTidalStrength(self, index): return self.unitsync.GetMapTidalStrength(index)
-	def GetMapWindMin(self, index): return self.unitsync.GetMapWindMin(index)
-	def GetMapWindMax(self, index): return self.unitsync.GetMapWindMax(index)
-	def GetMapGravity(self, index): return self.unitsync.GetMapGravity(index)
-	def GetMapResourceCount(self, index): return self.unitsync.GetMapResourceCount(index)
-	def GetMapResourceName(self, index, resourceIndex): return self.unitsync.GetMapResourceName(index, resourceIndex)
-	def GetMapResourceMax(self, index, resourceIndex): return self.unitsync.GetMapResourceMax(index, resourceIndex)
-	def GetMapResourceExtractorRadius(self, index, resourceIndex): return self.unitsync.GetMapResourceExtractorRadius(index, resourceIndex)
-	def GetMapPosCount(self, index): return self.unitsync.GetMapPosCount(index)
-	def GetMapPosX(self, index, posIndex): return self.unitsync.GetMapPosX(index, posIndex)
-	def GetMapPosZ(self, index, posIndex): return self.unitsync.GetMapPosZ(index, posIndex)
+	#def GetMapDescription(self, index): return self.unitsync.GetMapDescription(index)
+	#def GetMapAuthor(self, index): return self.unitsync.GetMapAuthor(index)
+	#def GetMapWidth(self, index): return self.unitsync.GetMapWidth(index)
+	#def GetMapHeight(self, index): return self.unitsync.GetMapHeight(index)
+	#def GetMapTidalStrength(self, index): return self.unitsync.GetMapTidalStrength(index)
+	#def GetMapWindMin(self, index): return self.unitsync.GetMapWindMin(index)
+	#def GetMapWindMax(self, index): return self.unitsync.GetMapWindMax(index)
+	#def GetMapGravity(self, index): return self.unitsync.GetMapGravity(index)
+	#def GetMapResourceCount(self, index): return self.unitsync.GetMapResourceCount(index)
+	#def GetMapResourceName(self, index, resourceIndex): return self.unitsync.GetMapResourceName(index, resourceIndex)
+	#def GetMapResourceMax(self, index, resourceIndex): return self.unitsync.GetMapResourceMax(index, resourceIndex)
+	#def GetMapResourceExtractorRadius(self, index, resourceIndex): return self.unitsync.GetMapResourceExtractorRadius(index, resourceIndex)
+	#def GetMapPosCount(self, index): return self.unitsync.GetMapPosCount(index)
+	#def GetMapPosX(self, index, posIndex): return self.unitsync.GetMapPosX(index, posIndex)
+	#def GetMapPosZ(self, index, posIndex): return self.unitsync.GetMapPosZ(index, posIndex)
 	def GetMapMinHeight(self, mapName): return self.unitsync.GetMapMinHeight(mapName)
 	def GetMapMaxHeight(self, mapName): return self.unitsync.GetMapMaxHeight(mapName)
 	def GetMapArchiveCount(self, mapName): return self.unitsync.GetMapArchiveCount(mapName)
@@ -246,16 +233,17 @@ class Unitsync:
 	def GetInfoValueFloat(self, index): return self.unitsync.GetInfoValueFloat(index)
 	def GetInfoValueBool(self, index): return self.unitsync.GetInfoValueBool(index)
 	def GetInfoDescription(self, index): return self.unitsync.GetInfoDescription(index)
+	def GetMapInfoCount(self, mapIdx): return self.unitsync.GetMapInfoCount(mapIdx)
 	def GetSkirmishAIOptionCount(self, index): return self.unitsync.GetSkirmishAIOptionCount(index)
 	def GetPrimaryModCount(self): return self.unitsync.GetPrimaryModCount()
 	def GetPrimaryModInfoCount(self, index): return self.unitsync.GetPrimaryModInfoCount(index)
-	def GetPrimaryModName(self, index): return self.unitsync.GetPrimaryModName(index)
-	def GetPrimaryModShortName(self, index): return self.unitsync.GetPrimaryModShortName(index)
-	def GetPrimaryModVersion(self, index): return self.unitsync.GetPrimaryModVersion(index)
-	def GetPrimaryModMutator(self, index): return self.unitsync.GetPrimaryModMutator(index)
-	def GetPrimaryModGame(self, index): return self.unitsync.GetPrimaryModGame(index)
-	def GetPrimaryModShortGame(self, index): return self.unitsync.GetPrimaryModShortGame(index)
-	def GetPrimaryModDescription(self, index): return self.unitsync.GetPrimaryModDescription(index)
+	#def GetPrimaryModName(self, index): return self.unitsync.GetPrimaryModName(index)
+	#def GetPrimaryModShortName(self, index): return self.unitsync.GetPrimaryModShortName(index)
+	#def GetPrimaryModVersion(self, index): return self.unitsync.GetPrimaryModVersion(index)
+	#def GetPrimaryModMutator(self, index): return self.unitsync.GetPrimaryModMutator(index)
+	#def GetPrimaryModGame(self, index): return self.unitsync.GetPrimaryModGame(index)
+	#def GetPrimaryModShortGame(self, index): return self.unitsync.GetPrimaryModShortGame(index)
+	#def GetPrimaryModDescription(self, index): return self.unitsync.GetPrimaryModDescription(index)
 	def GetPrimaryModArchive(self, index): return self.unitsync.GetPrimaryModArchive(index)
 	def GetPrimaryModArchiveCount(self, index): return self.unitsync.GetPrimaryModArchiveCount(index)
 	def GetPrimaryModArchiveList(self, archive): return self.unitsync.GetPrimaryModArchiveList(archive)
@@ -272,7 +260,7 @@ class Unitsync:
 	def GetOptionScope(self, optIndex): return self.unitsync.GetOptionScope(optIndex)
 	def GetOptionName(self, optIndex): return self.unitsync.GetOptionName(optIndex)
 	def GetOptionSection(self, optIndex): return self.unitsync.GetOptionSection(optIndex)
-	def GetOptionStyle(self, optIndex): return self.unitsync.GetOptionStyle(optIndex)
+	#def GetOptionStyle(self, optIndex): return self.unitsync.GetOptionStyle(optIndex)
 	def GetOptionDesc(self, optIndex): return self.unitsync.GetOptionDesc(optIndex)
 	def GetOptionType(self, optIndex): return self.unitsync.GetOptionType(optIndex)
 	def GetOptionBoolDef(self, optIndex): return self.unitsync.GetOptionBoolDef(optIndex)
@@ -298,7 +286,7 @@ class Unitsync:
 	def InitSubDirsVFS(self, path, pattern, modes): return self.unitsync.InitSubDirsVFS(path, pattern, modes)
 	def FindFilesVFS(self, file, nameBuf, size): return self.unitsync.FindFilesVFS(file, nameBuf, size)
 	def OpenArchive(self, name): return self.unitsync.OpenArchive(name)
-	def OpenArchiveType(self, name, type): return self.unitsync.OpenArchiveType(name, type)
+	#def OpenArchiveType(self, name, type): return self.unitsync.OpenArchiveType(name, type)
 	def CloseArchive(self, archive): return self.unitsync.CloseArchive(archive)
 	def FindFilesArchive(self, archive, file, nameBuf, size): return self.unitsync.FindFilesArchive(archive, file, nameBuf, size)
 	def OpenArchiveFile(self, archive, name): return self.unitsync.OpenArchiveFile(archive, name)

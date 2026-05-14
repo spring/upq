@@ -15,10 +15,9 @@ import os
 if __name__ == "__main__":
 	sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
-from lib import log, upqdb
+from lib import log
 
 import ctypes
-from PIL import Image
 from io import BytesIO
 import shutil
 import tempfile
@@ -28,6 +27,12 @@ import filecmp
 import logging
 import datetime
 import re
+import subprocess
+
+# done to avoid issue where libunitsync segfaults on Init if it runs after importing these
+if __name__ != "__main__":
+	from lib import upqdb
+	from PIL import Image
 
 from lib.unitsync import unitsync
 
@@ -238,19 +243,25 @@ def GetNormalizedFilename(name, version, extension):
 def getMapIdx(usync, filename):
 	assert(isinstance(filename, str))
 	mapcount = usync.GetMapCount()
+	logging.info(f"mapCount={mapcount}")
 	for i in range(0, mapcount):
-		usync.GetMapArchiveCount(usync.GetMapName(i)) # initialization for GetMapArchiveName()
-		mapfilename = os.path.basename(usync.GetMapArchiveName(0).decode())
-		if filename==mapfilename:
+		mac=usync.GetMapArchiveCount(usync.GetMapName(i)) # initialization for GetMapArchiveName()
+		logging.info(f"mapIdx={i} GetMapFileName()={usync.GetMapFileName(i).decode()} GetMapArchiveName()={usync.GetMapArchiveName(i).decode()} GetMapName={usync.GetMapName(i).decode()}")
+		mapfilename = os.path.basename(usync.GetMapArchiveName(i).decode())
+		if filename==mapfilename:       # this never matches because GetMapArchiveName returns the spring name not the file name e.g. "Wanderlust 2.1" instead of "wanderlust_2.1.sd7"
 			return i
+		else:
+			return 0        # just assume it's the first map item
 	return -1
 
 def getGameIdx(usync, filename):
 	assert(isinstance(filename, str))
 	gamecount = usync.GetPrimaryModCount()
+	logging.info(f"gameCount={gamecount}")
 	for i in range(0, gamecount):
-		gamename=usync.GetPrimaryModArchive(i).decode()
-		if filename == gamename:
+		gameName=usync.GetPrimaryModArchive(i).decode()
+		logging.info(f"gameIdx {i} {gameName}")
+		if filename == gameName:
 			return i
 	return -1
 
@@ -315,6 +326,7 @@ def luaToPy(usync, archiveh, filename):
 		logging.error(err)
 	return res
 
+#TODO uses deprecated functions on the lib, remove?
 def getMapResources(usync, idx, Map):
 	res=[]
 	resourceCount=usync.GetMapResourceCount(idx)
@@ -324,6 +336,7 @@ def getMapResources(usync, idx, Map):
 			"ExtractorRadius": usync.GetMapResourceExtractorRadius(idx, i)})
 	return res
 
+#TODO uses deprecated functions on the lib, remove?
 def getMapPositions(usync, idx, Map):
 	startpositions = usync.GetMapPosCount(idx)
 	res = []
@@ -334,16 +347,16 @@ def getMapPositions(usync, idx, Map):
 	return res
 
 def getDepends(usync, archiveh, filename):
-	filterdeps = [ 'bitmaps.sdz', 'springcontent.sdz', 'maphelper.sdz', 'cursors.sdz', 'Map Helper v1', 'Spring content v1' ]
-	res = luaToPy(usync, archiveh, filename)
-	if 'depend' in res:
-		vals = []
-		for i in res['depend'].values():
-			if i not in filterdeps:
-				vals.append(i)
-		logging.info(vals)
-		return vals
-	return []
+    filterdeps = [ 'bitmaps.sdz', 'springcontent.sdz', 'maphelper.sdz', 'cursors.sdz', 'Map Helper v1', 'Spring content v1' ]
+    res = luaToPy(usync, archiveh, filename)
+    if 'depend' in res:
+        vals = []
+        for i in res['depend'].values():
+            if i not in filterdeps:
+                vals.append(i)
+        logging.info(vals)
+        return vals
+    return []
 
 def getUnits(usync, archive):
 	while usync.ProcessUnits()>0:
@@ -357,52 +370,125 @@ def getUnits(usync, archive):
 			"FullUnitName": decodeString(usync.GetFullUnitName(i))})
 	return res
 
-def getGameData(usync, idx, gamesarchivecount, archivename, archiveh):
-	res={}
-	springname=usync.GetPrimaryModName(idx).decode()
-	version=usync.GetPrimaryModVersion(idx).decode()
-	if version==springname:
-		version=""
-	elif springname.endswith(version) : # Hack to get version independant string
-		springname=springname[:len(springname)-len(version)]
-		if springname.endswith(" ") : #remove space at end (added through unitsync hack)
-			springname=springname[:len(springname)-1]
 
-	res['Name']= springname
-	res['Description']= decodeString(usync.GetPrimaryModDescription(idx))
-	res['Version'] = version
-	res['Depends'] =  getDepends(usync, archiveh, "modinfo.lua")
-	res['Units'] = getUnits(usync, archivename)
-	return res
+def getInfoMap(usync,infoCount):
+	propMap = {}
+	for i in range(infoCount):
+		key = usync.GetInfoKey(i)
+		infoType = usync.GetInfoType(i)
+
+		if isinstance(key, bytes):
+			key = key.decode('utf-8')
+
+		if isinstance(infoType, bytes):
+			infoType = infoType.decode('utf-8')
+
+		try:
+			if infoType == 'integer':
+				value = usync.GetInfoValueInteger(i)
+			elif infoType == 'float':
+				value = usync.GetInfoValueFloat(i)
+			elif infoType == 'bool':
+				value = usync.GetInfoValueBool(i)
+			elif infoType == 'string':
+				value = usync.GetInfoValueString(i)
+				if isinstance(value, bytes):
+					value = value.decode('utf-8')
+			else:
+				value = None
+
+			# Store with lowercase key for case-insensitive lookup
+			propMap[key.lower()] = value
+			logging.info(f"  {key} ({infoType}): {value}")
+		except Exception as e:
+			logging.error(f"  Error reading {key}: {e}")
+			continue
+	return propMap
+
+def getPropFromInfoMap(propMap, propName, default=None):
+	return propMap.get(propName.lower(), default)
+
+def addResPropIfSet(resMap,propMap,propName,resPropName,default=None):
+	value = getPropFromInfoMap(propMap, propName, default)
+	if value is not None:
+		resMap[resPropName] = value
+
+def getGameData(usync, idx, archivename, archiveh):
+	res = {}
+
+	try:
+		infoCount = usync.GetPrimaryModInfoCount(idx)
+		if infoCount <= 0:
+			logging.info(f"No mod info available for {archivename}")
+			return res
+
+		# Create a dictionary with lowercase keys for case-insensitive lookup
+		propMap = getInfoMap(usync,infoCount)
+
+		addResPropIfSet(res,propMap,'name_pure','Name')
+		addResPropIfSet(res,propMap,'description','Description')
+		addResPropIfSet(res,propMap,'version','Version')
+		addResPropIfSet(res,propMap,'author','Author')
+		addResPropIfSet(res,propMap,'shortname','Shortname')
+		addResPropIfSet(res,propMap,'mutator','Mutator')
+		addResPropIfSet(res,propMap,'game','Game')
+
+		logging.info(f"Successfully extracted {len(propMap)} properties from {archivename}")
+
+		# other properties
+		res['Depends'] =  getDepends(usync, archiveh, "modinfo.lua")
+		res['Units'] = getUnits(usync, archivename)
+		return res
+	except AttributeError as e:
+		logging.error(f"Error: GetPrimaryModInfoCount not available: {e}")
+		return res
 
 def getMapData(usync, filename, idx, archiveh, springname):
-	res={}
-	mapname=usync.GetMapName(idx).decode()
+	res = {}
+
+	mapname = usync.GetMapName(idx).decode()
 	res['Name'] = mapname
-	author = usync.GetMapAuthor(idx)
-	res['Author'] = author.decode() if author else ""
-	res['Description'] = decodeString(usync.GetMapDescription(idx))
-	res['Gravity'] = usync.GetMapGravity(idx)
-	res['MaxWind'] = usync.GetMapWindMax(idx)
-	res['MinWind'] = usync.GetMapWindMin(idx)
-	res['TidalStrength'] = usync.GetMapTidalStrength(idx)
+	res['Version'] = ""		#TODO as of may 2026, lib still doesn't actually add this to its info map
 
-	res['Height'] = usync.GetMapHeight(idx) / 512
-	res['Width'] = usync.GetMapWidth(idx) / 512
+	try:
+		infoCount = usync.GetMapInfoCount(idx)
+		if infoCount <= 0:
+			logging.info(f"No map info available for {springname}")
+			return res
 
-	res['Gravity'] = usync.GetMapGravity(idx)
-	res['MapFileName'] = usync.GetMapFileName(idx).decode()
-	res['MapMinHeight'] = usync.GetMapMinHeight(mapname)
-	res['MapMaxHeight'] = usync.GetMapMaxHeight(mapname)
+		# Create a dictionary with lowercase keys for case-insensitive lookup
+		propMap = getInfoMap(usync,infoCount)
 
-	res['Resources'] = getMapResources(usync, idx,filename)
-	res['Units'] = getUnits(usync, filename)
+		addResPropIfSet(res,propMap,'minwind','MinWind')
+		addResPropIfSet(res,propMap,'maxwind','MaxWind')
+		addResPropIfSet(res,propMap,'tidalstrength','TidalStrength')
+		addResPropIfSet(res,propMap,'gravity','Gravity')
+		addResPropIfSet(res,propMap,'maxmetal','MaxMetal')
+		addResPropIfSet(res,propMap,'extractorradius','ExtractorRadius')
+		addResPropIfSet(res,propMap,'author','Author')
+		addResPropIfSet(res,propMap,'description','Description')
+		addResPropIfSet(res,propMap,'width','Width')
+		addResPropIfSet(res,propMap,'height','Height')
+		addResPropIfSet(res,propMap,'version','Version')
+		
+		if res['Height'] is not None:
+			res['Height'] = res['Height']/512
 
-	res['StartPos'] = getMapPositions(usync,idx,filename.encode("ascii"))
-	res['Depends'] = getDepends(usync, archiveh, "mapinfo.lua")
-	version="" #TODO: add support
-	res['Version']=version
-	return res
+		if res['Width'] is not None:
+			res['Width'] = res['Width']/512
+
+		logging.info(f"Successfully extracted {len(propMap)} properties from {springname}")
+
+		# other properties
+		#res['Resources'] = getMapResources(usync, idx,filename)
+		#res['Units'] = getUnits(usync, filename)
+		#res['StartPos'] = getMapPositions(usync,idx,filename.encode("ascii"))
+		res['Depends'] = getDepends(usync, archiveh, "mapinfo.lua")
+		return res
+	except Exception as e:
+		logging.error(f"Error getting map data: {e}")
+		#traceback.print_exc()
+		return res
 
 def saveImage(image, size, imagedir, createThumbnail=None):
 	""" store a image, called with an Image object, returns the filename """
@@ -440,7 +526,7 @@ def insertData(db, data):
 	results = db.query("SELECT fid FROM file WHERE sdp='%s' or md5='%s'"% (data['sdp'], data['md5']))
 	res=results.first()
 	if res:
-		fid=res['fid']
+		fid=res._mapping['fid']
 	else:
 		fid=0
 
@@ -489,18 +575,19 @@ def insertData(db, data):
 			))
 	# remove already existing depends
 	db.query("DELETE FROM file_depends WHERE fid = %s" % (fid) )
-	for depend in data["metadata"]['Depends']:
-		res=db.query("SELECT fid FROM file WHERE CONCAT(name,' ',version)='%s'" % (depend))
-		row=res.first()
-		if not row:
-			id=0
-		else:
-			id=row['fid']
-		try:
-			db.insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
-			logging.info("Added '%s' version '%s' to the mirror-system" % (data['name'], data['version']))
-		except upqdb.UpqDBIntegrityError:
-			pass
+	if 'Depends' in data["metadata"]:
+		for depend in data["metadata"]['Depends']:
+			res=db.query("SELECT fid FROM file WHERE CONCAT(name,' ',version)='%s'" % (depend))
+			row=res.first()
+			if not row:
+				id=0
+			else:
+				id=row._mapping['fid']
+			try:
+				db.insert("file_depends", {"fid":fid, "depends_string": depend, "depends_fid": id})
+				logging.info("Added '%s' version '%s' to the mirror-system" % (data['name'], data['version']))
+			except upqdb.UpqDBIntegrityError:
+				pass
 	return fid
 
 def createSplashImages(usync, archiveh, filelist, metadir):
@@ -554,9 +641,9 @@ def createMapInfoImage(usync, mapname, maptype, byteperpx, decoder,decoderparm, 
 	logging.error("Error creating image %s" % (getErrors(usync)))
 	raise Exception("Error creating image")
 
-def dumpmap(usync, springname, outpath, filename, idx):
-	mapwidth=float(usync.GetMapWidth(idx))
-	mapheight=float(usync.GetMapHeight(idx))
+def dumpMap(usync, springname, outpath, filename, idx, mapData):
+	mapwidth=float(mapData['Width'])
+	mapheight=float(mapData['Height'])
 	if mapwidth>mapheight:
 		scaledsize=(1024, int(((mapheight/mapwidth) * 1024)))
 	else:
@@ -569,14 +656,14 @@ def dumpmap(usync, springname, outpath, filename, idx):
 
 def getVersionFromFilename(filename):
 	version = ""
-	matches = re.search('(?<=[\-_ vV])([vV]?[0-9\.]+[^\-_ ]*)(?=.sd.$)',filename)
+	matches = re.search(r'(?<=[\-_ vV])([vV]?[0-9\.]+[^\-_ ]*)(?=.sd.$)',filename)
 	if matches:
 		version = matches.group(1)
 	return version
 
 def getNameWithoutVersion(name,version):
 	if version:
-		return re.sub('(?i)[\-_ ]*[vV]?'+version,'',name).strip()
+		return re.sub(r'(?i)[\-_ ]*[vV]?'+version,'',name).strip()
 	return name
 
 def getVersionSortNumber(version):
@@ -643,7 +730,7 @@ def extractmetadata(usync, filepath, metadir):
 	if idx>=0: #file is map
 		springname = usync.GetMapName(idx).decode()
 		data["metadata"] = getMapData(usync, filename, idx, archiveh, springname)
-		data['metadata']['mapimages'] = dumpmap(usync, springname, metadir, filename,idx)
+		data['metadata']['mapimages'] = dumpMap(usync, springname, metadir, filename,idx, data['metadata'])
 		data['path'] = "maps"
 		data['category_name'] = "map"
 	else: # file is a game
@@ -652,7 +739,7 @@ def extractmetadata(usync, filepath, metadir):
 			logging.error("Invalid file detected: %s %s %s"% (filename, getErrors(usync), idx))
 			return False
 		gamearchivecount = usync.GetPrimaryModArchiveCount(idx) # initialization for GetPrimaryModArchiveList()
-		data["metadata"] = getGameData(usync, idx, gamearchivecount, archivepath, archiveh)
+		data["metadata"] = getGameData(usync, idx, archivepath, archiveh)
 		data['path'] = "games"
 		data['category_name'] = "game"
 
@@ -679,10 +766,8 @@ def extractmetadata(usync, filepath, metadir):
 		data["map_width"] = int(metadata['Width'])
 		data["map_height"] = int(metadata['Height'])
 	
-	
 	usync.CloseArchive(archiveh)
 	return data
-
 
 def extract_metadata_unitsync(cfg, db, filepath, accountid, tmpdir):
 	#filename of the archive to be scanned
@@ -692,9 +777,45 @@ def extract_metadata_unitsync(cfg, db, filepath, accountid, tmpdir):
 		logging.error("File doesn't exist: %s" %(filepath))
 		return False
 
-	usync = initUnitSync(cfg.paths['unitsync'], tmpdir)
+	# get data for content package using unitsync lib
+	#usync = initUnitSync(cfg.paths['unitsync'], tmpdir)
+	#data = extractmetadata(usync, filepath, cfg.paths["metadata"])
+	#usync.RemoveAllArchives()
+	#usync.UnInit()
+	#del usync
+	# use external process as workaround for usync.Init crashing after importing sqlalchemy or PIL.image
+	try:
+		result = subprocess.run(
+			[sys.executable, os.path.join(os.path.dirname(__file__), "extract_metadata.py"), tmpdir, filepath],
+			capture_output=True,
+			text=True,
+			timeout=30  # 30 second timeout
+		)
+        
+		if result.returncode != 0:
+			logging.error(f"Worker failed: {result.stderr}")
+			return False
 
-	data = extractmetadata(usync, filepath, cfg.paths["metadata"])
+
+		# Split output by marker and parse JSON output after it
+		if "--- RESULT" not in result.stdout:
+			logging.error("Marker '--- RESULT' not found in output")
+			return False
+
+		jsonOutput = result.stdout.split("--- RESULT", 1)[1].strip()
+		data = json.loads(jsonOutput)
+	except subprocess.TimeoutExpired:
+		logging.error("Metadata extraction timeout")
+		return False
+	except json.JSONDecodeError:
+		logging.error(f"Invalid JSON from worker: {result.stdout}")
+		return False
+	except Exception as e:
+		logging.error(f"ERROR : {e}")
+		return False
+	if "timestamp" in data:
+		data['timestmap'] = datetime.datetime.fromisoformat(data['timestamp'])
+
 	data['uid'] = accountid
 
 	moveto = os.path.join(cfg.paths['files'], data["path"], data["filename"])
@@ -710,10 +831,6 @@ def extract_metadata_unitsync(cfg, db, filepath, accountid, tmpdir):
 
 	logging.info("Updated '%s' version '%s' sdp '%s' in the mirror-system" % (data['name'], data['version'], data['sdp']))
 		
-	usync.RemoveAllArchives()
-	usync.UnInit()
-	del usync
-
 	# add keywords information
 	if fid > 0 and data.get('category_name') == "map" :
 		addInheritedKeywords(db,fid,data["name_without_version"])
@@ -734,6 +851,34 @@ def Extract_metadata(cfg, db, filepath, accountid):
 		os.chdir(oldcwd)
 
 if __name__ == "__main__":
-	import doctest
-	doctest.testmod()
+	# when run directly, print extracted metadata as json
+	# useful for testing and required to avoid issue where importing sqlalchemy or PIL.image makes unitsync's Init segfault
+	tmpdir = ""
+	filepath = ""
+	if len(sys.argv) < 3:
+		print("Usage : extract_metadata.py <tmpdir> <filepath>")
+		sys.exit(1)
+	else:
+		tmpdir = sys.argv[1]
+		filepath = sys.argv[2]
+		
+	
+	from lib import upqconfig
+	cfg = upqconfig.UpqConfig()
+
+	logging.info(f"usync={cfg.paths['unitsync']} meta={cfg.paths['metadata']}")
+	usync = initUnitSync(cfg.paths['unitsync'], tmpdir)
+	from PIL import Image		# import this after running Init
+	data = extractmetadata(usync, filepath, cfg.paths["metadata"])
+	if data['timestamp']:
+		data['timestamp'] = data['timestamp'].isoformat()
+	usync.RemoveAllArchives()
+	usync.UnInit()
+	del usync
+	logging.info(f"result={data}")
+	print("--- RESULT")
+	print(json.dumps(data, indent=2))
+
+	#import doctest
+	#doctest.testmod()
 

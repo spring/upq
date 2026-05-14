@@ -15,7 +15,7 @@ if not os.path.isfile(MAP_KW_FILE) :
 	sys.exit(1)
 
 
-mapNamePat = re.compile('[a-zA-Z0-9_ ()!:\'.\-]+')
+mapNamePat = re.compile(r'[a-zA-Z0-9_ ()!:\'.\-]+')
 mapKwPat = re.compile('[a-z0-9]+')
 
 kwFile = open(MAP_KW_FILE, 'r')
@@ -42,7 +42,7 @@ while True:
 
 	#print("name="+mapName)
 	# remove keywords for this map, if any
-	db.query("DELETE fk FROM file_keyword fk LEFT JOIN file f ON (f.fid=fk.fid) WHERE f.cid=2 AND f.name_without_version='"+mapName+"'")
+	db.query("DELETE fk FROM file_keyword fk LEFT JOIN file f ON (f.fid=fk.fid) WHERE f.cid=2 AND f.name_without_version=:mapName", {"mapName" : mapName})
 	
 	# if new keywords are set, add them
 	length = len(lineArr)
@@ -55,7 +55,7 @@ while True:
 				print("keyword has invalid characters: "+kw+" : skip")
 				continue
 			#print("kw="+kw)
-			db.query("REPLACE INTO file_keyword (SELECT fid,'"+kw+"' FROM file WHERE cid=2 AND name_without_version='"+mapName+"')")
+			db.query("REPLACE INTO file_keyword (SELECT fid,:kw FROM file WHERE cid=2 AND name_without_version=:mapName)", {"kw" : kw, "mapName" : mapName})
 			
 
 

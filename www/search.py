@@ -10,7 +10,7 @@ import random
 import cgi
 import re
 
-def getlimit(request):
+def getLimit(request):
 	offset = 0
 	limit = 10
 	if "offset" in request:
@@ -35,9 +35,9 @@ def GetMirrors(db, fid):
 		FROM mirror_file as mf
 		LEFT JOIN mirror as m ON mf.mid=m.mid
 		LEFT JOIN file as f ON f.fid=mf.fid
-		WHERE f.fid=%d
+		WHERE f.fid=:fid
 		AND (m.status=1 or m.status=2)
-		AND mf.status=1""" % fid);
+		AND mf.status=1""", {"fid":fid});
 
 	res = []
 	for row in rows:
@@ -52,7 +52,7 @@ def GetMetadataPaths(images):
 	return res
 
 def GetTags(db, fid):
-	rows = db.query('SELECT tag FROM tag WHERE fid=%d' % fid)
+	rows = db.query('SELECT tag FROM tag WHERE fid=:fid', {"fid":fid})
 	res = []
 	for row in rows:
 		res.append(row[0])
@@ -67,7 +67,7 @@ def GetMapKeywordData(db):
 	WHERE f.cid=2 GROUP BY fk.keyword ORDER BY fk.keyword ASC""")
 	res = []
 	for row in rows:
-		res.append(dict(row))
+		res.append(dict(row._mapping))
 	
 	return res
 
@@ -104,6 +104,7 @@ def GetKeywordsConditionsForQuery(kwStr):
 			query += " keywords RLIKE '[[:<:]]%s[[:>:]]' " % kw
 	return query
 
+#TODO change to bound parameters. Current should be safe due to string composition done with integer and alphanumeric strings, but...
 def GetResult(request):
 	cfg = upqconfig.UpqConfig()
 	db = upqdb.UpqDB(cfg.db['url'], cfg.db['debug'])
@@ -186,14 +187,14 @@ def GetResult(request):
 	if "keywords" in request and request["keywords"] != "":
 		query += GetKeywordsConditionsForQuery(request["keywords"])
 	
-	query += " ORDER BY f.timestamp DESC %s " % getlimit(request)
+	query += " ORDER BY f.timestamp DESC %s " % getLimit(request)
 
 	#print(wherecond)
 	rows = db.query(query)
 	t1 = time.perf_counter()
 	clientres = []
 	for row in rows:
-		clientres.append(dict(row))
+		clientres.append(dict(row._mapping))
 	
 	#clientres.append(query)
 	for d in clientres:

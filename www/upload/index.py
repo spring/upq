@@ -1,9 +1,8 @@
 #!/usr/bin/python3
 
-import cgi, os, cgitb, html, shutil
+import cgi, os, cgitb, html, shutil, io, re
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
-
 
 print("Content-type: text/html\n")
 cgitb.enable()
@@ -94,12 +93,25 @@ def ParseAndAddFile(filename, accountid, cfg):
 	extract_metadata.Extract_metadata(cfg, db, filename, accountid)
 	return output.getvalue()
 
+
 form = cgi.FieldStorage()
 
-if os.environ['REQUEST_METHOD'] == 'POST':
-	msgs = SaveUploadedFile(form)
-else:
-	msgs = ""
+try:
+	if os.environ['REQUEST_METHOD'] == 'POST':
+		msgs = SaveUploadedFile(form)
+	else:
+		msgs = ""
 
-ShowForm({"messages": "<pre>" + html.escape(msgs) + "</pre>"})
+	ShowForm({"messages": "<pre>" + html.escape(msgs) + "</pre>"})
+except:
+	# Capture cgitb's output
+	oldStdout = sys.stdout
+	sys.stdout = io.StringIO()
+	cgitb.Hook(display=1, logdir=None, format="html")(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
+	output = sys.stdout.getvalue()
+	sys.stdout = oldStdout
+    
+	# Redact and print
+	output = re.sub(r"('password'[^']*)'([^']+)'", r"\1'***REDACTED***'", output)
+	print(output)
 

@@ -11,7 +11,7 @@
 
 import logging
 
-from sqlalchemy import create_engine, Index, Table, Column, Integer, Float, String,DateTime,PickleType, MetaData, ForeignKey, Sequence, UniqueConstraint
+from sqlalchemy import create_engine, text, Index, Table, Column, Integer, Float, String,DateTime,PickleType, MetaData, ForeignKey, Sequence, UniqueConstraint
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import insert
 from sqlalchemy.exc import IntegrityError
@@ -53,7 +53,7 @@ class UpqDB():
 			logging.info("SQL version: %s", res[0])
 
 	def __init__(self, databaseurl, debug):
-		self.engine = create_engine(databaseurl, encoding="utf-8", echo=debug, pool_recycle=True)
+		self.engine = create_engine(databaseurl, echo=debug, pool_recycle=3600)
 		logging.info("Opened DB connection.")
 		self.meta=MetaData()
 		self.tables['mirror']=Table('mirror', self.meta, #table with file mirrors
@@ -132,12 +132,12 @@ class UpqDB():
 			raise Exception("Unable to initialize database %s:%s" %(databaseurl, e))
 		self.meta.bind = self.engine
 
-	def query(self, query):
+	def query(self, query, params=None):
 		#logging.debug(query)
 		res=None
 		try:
 			s = Session(self.engine)
-			res=s.execute(query)
+			res=s.execute(text(query) if isinstance(query, str) else query, params or {})
 			s.commit()
 		except Exception as e:
 			logging.error("Error %s executing query %s" % (str(e), str(query)))
@@ -152,7 +152,8 @@ class UpqDB():
 		for key in values.keys():
 			if values[key].__class__==str:
 				values[key]=values[key].replace("'", "\'")
-		query=self.tables[table].insert(values)
+		#query=self.tables[table].insert(values)				# old syntax
+		query=self.tables[table].insert().values(**values)		# new syntax for SQLAlchemy 2.0+
 		s=Session(self.engine)
 		try:
 			s.execute(query)
@@ -161,9 +162,9 @@ class UpqDB():
 			raise UpqDBIntegrityError("Integrity Error" + e.statement + str(values))
 		finally:
 			try:
-				result=s.scalar("SELECT LAST_INSERT_ID()")
+				result=s.scalar(text("SELECT LAST_INSERT_ID()"))
 			except:
-				result=s.scalar("SELECT last_insert_rowid()")
+				result=s.scalar(text("SELECT last_insert_rowid()"))
 			s.close()
 			logging.debug("%s (%s) id:%s", query, values, result)
 		return result
