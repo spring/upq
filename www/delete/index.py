@@ -40,13 +40,13 @@ def CheckFields(form, required):
 
 def DeleteAssociatedRecords(fid):
 	#db.query("DELETE FROM file_depends WHERE fid=%d" % fid)	#TODO table is empty
-	db.query("DELETE FROM file_keyword WHERE fid=%d" % fid)
+	db.query("DELETE FROM file_keyword WHERE fid=:fid",{"fid" : fid})
 	#db.query("DELETE FROM image_file WHERE fid=%d" % fid)  #TODO image and image_file tables are empty
-	db.query("DELETE FROM mirror_file WHERE fid=%d" % fid)
-	db.query("DELETE FROM sf_sync WHERE fid=%d" % fid)
-	db.query("DELETE FROM sf_sync2 WHERE fid=%d" % fid)
-	db.query("DELETE FROM tag WHERE fid=%d" % fid)
-	db.query("DELETE FROM file WHERE fid=%d" % fid)
+	db.query("DELETE FROM mirror_file WHERE fid=:fid",{"fid" : fid})
+	db.query("DELETE FROM sf_sync WHERE fid=:fid",{"fid" : fid})
+	db.query("DELETE FROM sf_sync2 WHERE fid=:fid",{"fid" : fid})
+	db.query("DELETE FROM tag WHERE fid=:fid",{"fid" : fid})
+	db.query("DELETE FROM file WHERE fid=:fid",{"fid" : fid})
 
 
 def CheckDeleteFile(filePath):
@@ -58,8 +58,8 @@ def CheckDeleteFile(filePath):
 
 
 def GetItemDetails(fid):
-	rows = db.query("SELECT fid,uid,filename,timestamp,f.name,c.name AS category,path FROM file f INNER JOIN categories c ON (f.cid=c.cid) WHERE f.fid=%d" % fid)
-	result = rows.first()
+	rows = db.query("SELECT fid,uid,filename,timestamp,f.name,c.name AS category,path FROM file f INNER JOIN categories c ON (f.cid=c.cid) WHERE f.fid=:fid", {"fid" : fid})
+	result = rows.mappings().first()
 	if result is None:
 		return False
 	return dict(result)
@@ -67,37 +67,43 @@ def GetItemDetails(fid):
 
 def DeleteItem(fid,d):
 	if (not d):
-		logging.info("no file found for fid=%d" % fid)
+		logging.info("no file found for fid=:fid",{"fid":fid})
 		return False,"ERROR : File not found"
 	
 	logging.info("user fid=%d filename=%s category=%s" % (d["fid"],d["filename"],d["category"]))
 	if d["category"] == "map":
-		# check referenced image files
-		fileRes = db.query("SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(metadata,'\"mapimages\": [',-1),']',1) AS imgStr FROM file WHERE fid=%d" % fid)
-		fileRes = fileRes.first()
-		if (fileRes is not None):
-			imgListStr = fileRes[0]
-			imgListStr = re.sub('[" ]','',imgListStr)
-			#logging.info("imgStr=%s" % imgListStr)
-			imgList = imgListStr.split(",")
-			for i,imgFile in enumerate(imgList):
-				# check if each image file is safe to delete
-				# image file names follow a <MD5_OF_BYTES>.jpg convention so each may be referenced by many maps
-				useCount = 0
-				useRes = db.query("SELECT COUNT(DISTINCT fid) AS useCount FROM file WHERE metadata LIKE '%%%s%%'" % imgFile)
-				useRes = useRes.first()
-				if (useRes is not None):
-					useCount = useRes[0]
-					if useCount > 1:
-						logging.info("image %s is still necessary (%d files): removal aborted" % (imgFile,useCount))
-						continue
-				imgFilePath = MAP_IMAGE_PATH+"/"+imgFile 
-				CheckDeleteFile(imgFilePath)
-		# check the original file
-		oFile = d["filename"]
-		oFilePath = MAP_PATH + "/" + oFile
-		DeleteAssociatedRecords(fid)
-		CheckDeleteFile(oFilePath)
+		try:
+			# check referenced image files
+			fileRes = db.query("SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(metadata,'\"mapimages\": [',-1),']',1) AS imgStr FROM file WHERE fid=:fid", {"fid" : fid})
+			if (fileRes is not None):
+				fileRes = fileRes.mappings().first()
+				if (fileRes is not None):
+					imgListStr = fileRes['imgStr']
+					imgListStr = re.sub('[" ]','',imgListStr)
+					#logging.info("imgStr=%s" % imgListStr)
+					imgList = imgListStr.split(",")
+					for i,imgFile in enumerate(imgList):
+						# check if each image file is safe to delete
+						# image file names follow a <MD5_OF_BYTES>.jpg convention so each may be referenced by many maps
+						useCount = 0
+						useRes = db.query("SELECT COUNT(DISTINCT fid) AS useCount FROM file WHERE metadata LIKE CONCAT('%', :imgFile, '%')", {"imgFile" : imgFile})
+						if (useRes is not None):
+							useRes = useRes.mappings().first()
+							if (useRes is not None):
+								useCount = useRes['useCount']
+								if useCount > 1:
+									logging.info("image %s is still necessary (%d files): removal aborted" % (imgFile,useCount))
+									continue
+						imgFilePath = MAP_IMAGE_PATH+"/"+imgFile 
+						CheckDeleteFile(imgFilePath)
+			# check the original file
+			oFile = d["filename"]
+			oFilePath = MAP_PATH + "/" + oFile
+			DeleteAssociatedRecords(fid)
+			CheckDeleteFile(oFilePath)
+		except Exception as e:
+			logging.error(e, exc_info=True)
+			return False,("Error deleting file %d or associated information" % fid)
 	elif d["category"] == "game":
 		oFile = d["filename"]
 		oFilePath = GAME_PATH + "/" + oFile
